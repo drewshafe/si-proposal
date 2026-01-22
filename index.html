@@ -43,7 +43,8 @@
         }
 
         .input-group input,
-        .input-group textarea {
+        .input-group textarea,
+        .input-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -146,23 +147,6 @@
             white-space: pre-wrap;
         }
 
-        .value-props {
-            margin-top: 20px;
-        }
-
-        .value-props ol {
-            margin-left: 20px;
-        }
-
-        .value-props li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-
-        .value-props strong {
-            color: #333;
-        }
-
         .actions {
             margin-top: 30px;
             display: flex;
@@ -241,7 +225,6 @@
             </select>
         </div>
 
-
         <div class="input-group">
             <label>Proposal Notes (optional)</label>
             <textarea id="meetingNotes" placeholder="Add any relevant notes from your meeting..."></textarea>
@@ -252,7 +235,7 @@
 
     <div class="proposal-container" id="proposalContainer">
         <div class="proposal-header">
-            <img src="https://raw.githubusercontent.com/drewshafe/shipinsure-roi-calculator/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 45px; margin-bottom: 20px;">
+            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 45px; margin-bottom: 20px;">
             <h1>Our Proposal for <span id="propMerchantName"></span></h1>
             <img id="merchantLogo" src="" alt="" style="height: 60px; margin-top: 15px; display: none;">
         </div>
@@ -349,7 +332,6 @@
         }
 
         function formatPercent(value) {
-            // Show only integer if decimal is .00, otherwise show 2 decimals
             if (value % 1 === 0) {
                 return value.toFixed(0) + '%';
             }
@@ -370,7 +352,6 @@
                 return;
             }
 
-            // Handle logo upload
             if (logoFile) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -381,7 +362,6 @@
                 };
                 reader.readAsDataURL(logoFile);
             } else {
-                // Check if there's a saved logo
                 const savedLogo = localStorage.getItem('si_proposal_logo');
                 if (savedLogo) {
                     const logoImg = document.getElementById('merchantLogo');
@@ -393,44 +373,17 @@
             try {
                 const data = parseCalculatorLink(calculatorLink);
                 
-                console.log('Parsed data:', data); // Debug log
-                
-                // Calculate annual values
                 const annualOrders = data.orders * 12;
-                // Use avg_premium from URL if available, otherwise calculate from percentage
                 const avgPremium = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
-                const totalClaims = annualOrders * (data.claims / 100);
-                const costPerClaim = (data.aov * (data.cogs / 100)) + data.cs;
-                const currentCostOfClaims = totalClaims * costPerClaim;
-                const lostRevenue = currentCostOfClaims; // Total cost of claims without ShipInsure
                 const protectedOrders = annualOrders * (data.attach / 100);
                 const protectedClaims = protectedOrders * (data.claims / 100);
                 const premiumPool = protectedOrders * avgPremium;
                 const reshipRevenue = protectedClaims * data.aov;
                 const postClaimBalance = premiumPool - reshipRevenue;
                 const revenueShare = postClaimBalance * (data.share / 100);
-                const totalNewRevenue = reshipRevenue + revenueShare; // FIXED: was lostRevenue + revenueShare
+                const totalNewRevenue = reshipRevenue + revenueShare;
                 const keepPercent = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
-
-                // Map template parameter to display name
-                const templateDisplayNames = {
-                    '1.5_accurate': '1.5% Accurate',
-                    '2_accurate': '2% Accurate',
-                    '2_round_50': '2% Round up nearest 50 cents',
-                    '2.5_accurate': '2.5% Accurate',
-                    '3_accurate': '3% Accurate',
-                    '3.5_accurate': '3.5% Accurate',
-                    'static_1.5_300': 'Static $1.50<$300, $2.00>$300',
-                    'flat_1.5': '$1.50 Flat',
-                    'flat_5.95': '$5.95 Flat',
-                    '2_flat_0.98': '2% flat $0.98',
-                    '3_accurate_1.95': '3% Accurate. <$100 = $1.95',
-                    '3.25_1.55': '3.25% $1.55 minimum',
-                    '2.5_1.95': '2.5% $1.95',
-                    'born_primitive': 'Born Primitive Custom'
-                };
                 
-                // Populate proposal
                 document.getElementById('propMerchantName').textContent = merchantName;
                 document.getElementById('propCoverageType').textContent = coverageType;
                 document.getElementById('propDeliveryIssue').textContent = deliveryIssue;
@@ -447,16 +400,12 @@
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
                 document.getElementById('propNotes').textContent = meetingNotes;
 
-                // Hide Customer Premium % row if not percentage-based pricing
                 const percentageTemplates = ['1.5_accurate', '2_accurate', '2_round_50', '2.5_accurate', '3_accurate', '3.5_accurate'];
                 const isPercentageBased = !data.template || data.template === '' || percentageTemplates.includes(data.template);
                 document.getElementById('customerPremiumRow').style.display = isPercentageBased ? 'block' : 'none';
 
-                // Show proposal, hide input
                 document.querySelector('.input-container').style.display = 'none';
                 document.getElementById('proposalContainer').style.display = 'block';
-                
-                // Scroll to top
                 window.scrollTo(0, 0);
             } catch (error) {
                 alert('Error parsing calculator link: ' + error.message);
@@ -470,7 +419,6 @@
             window.scrollTo(0, 0);
         }
 
-        // Auto-fill from localStorage if available
         window.addEventListener('load', function() {
             const savedMerchant = localStorage.getItem('si_proposal_merchant');
             const savedLink = localStorage.getItem('si_proposal_link');
@@ -486,7 +434,6 @@
             if (savedDeployment) document.getElementById('deploymentPlan').value = savedDeployment;
             if (savedNotes) document.getElementById('meetingNotes').value = savedNotes;
 
-            // Save on input
             document.getElementById('merchantName').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_merchant', e.target.value);
             });
