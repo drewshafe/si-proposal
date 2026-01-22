@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShipInsure Proposal Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .input-container h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .proposal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .proposal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .proposal-header img {
+            height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .proposal-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .proposal-section {
+            margin-bottom: 20px;
+        }
+
+        .proposal-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        table td:first-child {
+            font-weight: 600;
+            background: #f9f9f9;
+            width: 50%;
+        }
+
+        .metrics-table {
+            margin-bottom: 20px;
+        }
+
+        .metrics-table td {
+            vertical-align: top;
+        }
+
+        .notes-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            min-height: 80px;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .value-props {
+            margin-top: 20px;
+        }
+
+        .value-props ol {
+            margin-left: 20px;
+        }
+
+        .value-props li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .value-props strong {
+            color: #333;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        .print-btn {
+            background: #28a745;
+        }
+
+        .edit-btn {
+            background: #6c757d;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .input-container,
+            .actions {
+                display: none !important;
+            }
+            .proposal-container {
+                box-shadow: none;
+                padding: 40px;
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <h1>ShipInsure Proposal Generator</h1>
+        
+        <div class="input-group">
+            <label>Merchant Name</label>
+            <input type="text" id="merchantName" placeholder="Acme Co">
+        </div>
+
+        <div class="input-group">
+            <label>Merchant Logo (optional)</label>
+            <input type="file" id="logoUpload" accept="image/*" style="padding: 10px;">
+        </div>
+
+        <div class="input-group">
+            <label>Calculator Link</label>
+            <input type="text" id="calculatorLink" placeholder="https://drewshafe.github.io/si-roi-calculator?orders=25000&aov=60...">
+        </div>
+
+        <div class="input-group">
+            <label>Coverage Type (optional)</label>
+            <input type="text" id="coverageType" placeholder="e.g., Full Coverage, Basic Protection">
+        </div>
+
+        <div class="input-group">
+            <label>Most Common Delivery Issue (optional)</label>
+            <input type="text" id="deliveryIssue" placeholder="e.g., Porch theft, Lost in transit">
+        </div>
+
+        <div class="input-group">
+            <label>Deployment Option (optional)</label>
+            <select id="deploymentPlan">
+                <option value="">Select deployment option...</option>
+                <option value="Cart: Dual Checkout">Cart: Dual Checkout</option>
+                <option value="Cart: Toggle Switch">Cart: Toggle Switch</option>
+                <option value="Cart: Dual Checkout + Checkbox at Checkout">Cart: Dual Checkout + Checkbox at Checkout</option>
+                <option value="Cart: Toggle Switch + Checkbox at Checkout">Cart: Toggle Switch + Checkbox at Checkout</option>
+                <option value="Checkout: Checkbox">Checkout: Checkbox</option>
+                <option value="Included in Shipping Fees">Included in Shipping Fees</option>
+                <option value="Custom">Custom</option>
+            </select>
+        </div>
+
+
+        <div class="input-group">
+            <label>Proposal Notes (optional)</label>
+            <textarea id="meetingNotes" placeholder="Add any relevant notes from your meeting..."></textarea>
+        </div>
+
+        <button onclick="generateProposal()">Generate Proposal</button>
+    </div>
+
+    <div class="proposal-container" id="proposalContainer">
+        <div class="proposal-header">
+            <img src="https://raw.githubusercontent.com/drewshafe/shipinsure-roi-calculator/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 45px; margin-bottom: 20px;">
+            <h1>Our Proposal for <span id="propMerchantName"></span></h1>
+            <img id="merchantLogo" src="" alt="" style="height: 60px; margin-top: 15px; display: none;">
+        </div>
+
+        <div class="proposal-section">
+            <p><strong>Coverage Type:</strong> <span id="propCoverageType">[ ]</span></p>
+            <p><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue">[ ]</span></p>
+            <p><strong>Deployment Option:</strong> <span id="propDeploymentPlan">[ ]</span></p>
+        </div>
+
+        <div class="proposal-section">
+            <table class="metrics-table">
+                <tr>
+                    <td style="width: 50%;">
+                        <div id="customerPremiumRow">
+                            <strong>Customer Premium %:</strong><br>
+                            <span id="propPremiumPct"></span><br><br>
+                        </div>
+                        <strong>Average ShipInsure Premium:</strong><br>
+                        <span id="propAvgPremium"></span><br><br>
+                        <strong>Expected Protected Attach Rate:</strong><br>
+                        <span id="propAttachRate"></span>
+                    </td>
+                    <td style="width: 50%;">
+                        <strong>Annual Estimate</strong><br><br>
+                        <strong>Protected Orders:</strong><br>
+                        <span id="propProtectedOrders"></span><br><br>
+                        <strong>Premiums Funded by Customers:</strong><br>
+                        <span id="propPremiumsFunded"></span><br><br>
+                        <strong>Reship/Refund Revenue:</strong><br>
+                        <span id="propReshipRevenue"></span><br><br>
+                        <strong>Revenue Share at <span id="propRevSharePct2"></span>:</strong><br>
+                        <span id="propRevShare"></span><br><br>
+                        <strong>You Keep <span id="propKeepPct"></span> of Premiums<br>Total New Revenue:</strong><br>
+                        <span id="propTotalNewRevenue"></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="proposal-section">
+            <h3>Proposal Notes:</h3>
+            <div class="notes-box" id="propNotes"></div>
+        </div>
+
+        <div class="actions">
+            <button class="edit-btn" onclick="editProposal()">Edit</button>
+            <button class="print-btn" onclick="window.print()">Print/Save PDF</button>
+        </div>
+    </div>
+
+    <script>
+        function parseCalculatorLink(url) {
+            const urlObj = new URL(url);
+            const params = new URLSearchParams(urlObj.search);
+            
+            return {
+                orders: parseFloat(params.get('orders')) || 0,
+                aov: parseFloat(params.get('aov')) || 0,
+                claims: parseFloat(params.get('claims')) || 0,
+                cogs: parseFloat(params.get('cogs')) || 0,
+                cs: parseFloat(params.get('cs')) || 0,
+                share: parseFloat(params.get('share')) || 0,
+                attach: parseFloat(params.get('attach')) || 0,
+                premium: parseFloat(params.get('premium')) || 0,
+                avg_premium: parseFloat(params.get('avg_premium')) || 0,
+                template: params.get('template') || ''
+            };
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatCurrencyWithCents(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            // Show only integer if decimal is .00, otherwise show 2 decimals
+            if (value % 1 === 0) {
+                return value.toFixed(0) + '%';
+            }
+            return value.toFixed(2) + '%';
+        }
+
+        function generateProposal() {
+            const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
+            const calculatorLink = document.getElementById('calculatorLink').value;
+            const coverageType = document.getElementById('coverageType').value || '[ ]';
+            const deliveryIssue = document.getElementById('deliveryIssue').value || '[ ]';
+            const deploymentPlan = document.getElementById('deploymentPlan').value || '[ ]';
+            const meetingNotes = document.getElementById('meetingNotes').value || '';
+            const logoFile = document.getElementById('logoUpload').files[0];
+
+            if (!calculatorLink) {
+                alert('Please enter a calculator link');
+                return;
+            }
+
+            // Handle logo upload
+            if (logoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoImg = document.getElementById('merchantLogo');
+                    logoImg.src = e.target.result;
+                    logoImg.style.display = 'block';
+                    localStorage.setItem('si_proposal_logo', e.target.result);
+                };
+                reader.readAsDataURL(logoFile);
+            } else {
+                // Check if there's a saved logo
+                const savedLogo = localStorage.getItem('si_proposal_logo');
+                if (savedLogo) {
+                    const logoImg = document.getElementById('merchantLogo');
+                    logoImg.src = savedLogo;
+                    logoImg.style.display = 'block';
+                }
+            }
+
+            try {
+                const data = parseCalculatorLink(calculatorLink);
+                
+                console.log('Parsed data:', data); // Debug log
+                
+                // Calculate annual values
+                const annualOrders = data.orders * 12;
+                // Use avg_premium from URL if available, otherwise calculate from percentage
+                const avgPremium = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
+                const totalClaims = annualOrders * (data.claims / 100);
+                const costPerClaim = (data.aov * (data.cogs / 100)) + data.cs;
+                const currentCostOfClaims = totalClaims * costPerClaim;
+                const lostRevenue = currentCostOfClaims; // Total cost of claims without ShipInsure
+                const protectedOrders = annualOrders * (data.attach / 100);
+                const protectedClaims = protectedOrders * (data.claims / 100);
+                const premiumPool = protectedOrders * avgPremium;
+                const reshipRevenue = protectedClaims * data.aov;
+                const postClaimBalance = premiumPool - reshipRevenue;
+                const revenueShare = postClaimBalance * (data.share / 100);
+                const totalNewRevenue = reshipRevenue + revenueShare; // FIXED: was lostRevenue + revenueShare
+                const keepPercent = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
+
+                // Map template parameter to display name
+                const templateDisplayNames = {
+                    '1.5_accurate': '1.5% Accurate',
+                    '2_accurate': '2% Accurate',
+                    '2_round_50': '2% Round up nearest 50 cents',
+                    '2.5_accurate': '2.5% Accurate',
+                    '3_accurate': '3% Accurate',
+                    '3.5_accurate': '3.5% Accurate',
+                    'static_1.5_300': 'Static $1.50<$300, $2.00>$300',
+                    'flat_1.5': '$1.50 Flat',
+                    'flat_5.95': '$5.95 Flat',
+                    '2_flat_0.98': '2% flat $0.98',
+                    '3_accurate_1.95': '3% Accurate. <$100 = $1.95',
+                    '3.25_1.55': '3.25% $1.55 minimum',
+                    '2.5_1.95': '2.5% $1.95',
+                    'born_primitive': 'Born Primitive Custom'
+                };
+                
+                // Populate proposal
+                document.getElementById('propMerchantName').textContent = merchantName;
+                document.getElementById('propCoverageType').textContent = coverageType;
+                document.getElementById('propDeliveryIssue').textContent = deliveryIssue;
+                document.getElementById('propDeploymentPlan').textContent = deploymentPlan;
+                document.getElementById('propPremiumPct').textContent = formatPercent(data.premium);
+                document.getElementById('propAvgPremium').textContent = formatCurrencyWithCents(avgPremium);
+                document.getElementById('propPremiumsFunded').textContent = formatCurrency(premiumPool);
+                document.getElementById('propReshipRevenue').textContent = formatCurrency(reshipRevenue);
+                document.getElementById('propRevSharePct2').textContent = formatPercent(data.share);
+                document.getElementById('propRevShare').textContent = formatCurrency(revenueShare);
+                document.getElementById('propKeepPct').textContent = formatPercent(keepPercent);
+                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
+                document.getElementById('propAttachRate').textContent = formatPercent(data.attach);
+                document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
+                document.getElementById('propNotes').textContent = meetingNotes;
+
+                // Hide Customer Premium % row if not percentage-based pricing
+                const percentageTemplates = ['1.5_accurate', '2_accurate', '2_round_50', '2.5_accurate', '3_accurate', '3.5_accurate'];
+                const isPercentageBased = !data.template || data.template === '' || percentageTemplates.includes(data.template);
+                document.getElementById('customerPremiumRow').style.display = isPercentageBased ? 'block' : 'none';
+
+                // Show proposal, hide input
+                document.querySelector('.input-container').style.display = 'none';
+                document.getElementById('proposalContainer').style.display = 'block';
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+            } catch (error) {
+                alert('Error parsing calculator link: ' + error.message);
+                console.error('Full error:', error);
+            }
+        }
+
+        function editProposal() {
+            document.querySelector('.input-container').style.display = 'block';
+            document.getElementById('proposalContainer').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // Auto-fill from localStorage if available
+        window.addEventListener('load', function() {
+            const savedMerchant = localStorage.getItem('si_proposal_merchant');
+            const savedLink = localStorage.getItem('si_proposal_link');
+            const savedCoverageType = localStorage.getItem('si_proposal_coverage_type');
+            const savedIssue = localStorage.getItem('si_proposal_issue');
+            const savedDeployment = localStorage.getItem('si_proposal_deployment');
+            const savedNotes = localStorage.getItem('si_proposal_notes');
+
+            if (savedMerchant) document.getElementById('merchantName').value = savedMerchant;
+            if (savedLink) document.getElementById('calculatorLink').value = savedLink;
+            if (savedCoverageType) document.getElementById('coverageType').value = savedCoverageType;
+            if (savedIssue) document.getElementById('deliveryIssue').value = savedIssue;
+            if (savedDeployment) document.getElementById('deploymentPlan').value = savedDeployment;
+            if (savedNotes) document.getElementById('meetingNotes').value = savedNotes;
+
+            // Save on input
+            document.getElementById('merchantName').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_merchant', e.target.value);
+            });
+            document.getElementById('calculatorLink').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_link', e.target.value);
+            });
+            document.getElementById('coverageType').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_coverage_type', e.target.value);
+            });
+            document.getElementById('deliveryIssue').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_issue', e.target.value);
+            });
+            document.getElementById('deploymentPlan').addEventListener('change', (e) => {
+                localStorage.setItem('si_proposal_deployment', e.target.value);
+            });
+            document.getElementById('meetingNotes').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_notes', e.target.value);
+            });
+            document.getElementById('logoUpload').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        localStorage.setItem('si_proposal_logo', event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
