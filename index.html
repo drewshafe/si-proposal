@@ -441,7 +441,7 @@
                 let totalReturnsOffset  = 0;
 
                 if (data.returnsEnabled) {
-                    const annualReturns  = annualOrders * (data.rr / 100);
+                    const annualReturns  = protectedOrders * (data.rr / 100);
                     coveredLabelCost     = annualReturns * data.rlc;
                     coveredPlatformCost  = data.rpc * 12;
                     totalReturnsOffset   = coveredLabelCost + coveredPlatformCost;
