@@ -114,12 +114,13 @@
             margin-bottom: 16px;
         }
 
-        .proposal-section p {
+        /* Only the outside-table label rows get white text */
+        .proposal-section p.white-text {
             color: white;
             margin-bottom: 3px;
         }
 
-        .proposal-section strong {
+        .proposal-section p.white-text strong {
             color: white;
         }
 
@@ -133,11 +134,14 @@
             padding: 8px;
             border: 1px solid #ddd;
             font-size: 14px;
+            color: #333;
+            background: white;
         }
 
         table td:first-child {
             font-weight: 600;
             background: #f9f9f9;
+            color: #333;
             width: 50%;
         }
 
@@ -150,21 +154,21 @@
         }
 
         .notes-box {
-            background: rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.9);
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid #e0e0e0;
             min-height: 80px;
             margin-bottom: 15px;
             white-space: pre-wrap;
-            color: white;
+            color: #333;
         }
 
         .proposal-section h3 {
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: rgba(255,255,255,0.8);
+            color: white;
         }
 
         .actions {
@@ -186,13 +190,13 @@
         }
 
         .returns-divider {
-            border-top: 1px solid rgba(255,255,255,0.2);
+            border-top: 1px solid #e0e0e0;
             margin: 8px 0;
             padding-top: 8px;
         }
 
         .grand-total-row {
-            border-top: 2px solid rgba(255,255,255,0.4);
+            border-top: 2px solid #333;
             margin-top: 10px;
             padding-top: 8px;
         }
@@ -293,10 +297,10 @@
         </div>
 
         <div class="proposal-section">
-            <p id="propCoverageSection"><strong>Coverage Type:</strong> <span id="propCoverageType"></span></p>
-            <p id="propDeliverySection"><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue"></span></p>
-            <p id="propReturnReasonRow" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason"></span></p>
-            <p id="propDeploySection"><strong>Deployment Option:</strong> <span id="propDeploymentPlan"></span></p>
+            <p id="propCoverageSection" class="white-text"><strong>Coverage Type:</strong> <span id="propCoverageType"></span></p>
+            <p id="propDeliverySection" class="white-text"><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue"></span></p>
+            <p id="propReturnReasonRow" class="white-text" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason"></span></p>
+            <p id="propDeploySection" class="white-text"><strong>Deployment Option:</strong> <span id="propDeploymentPlan"></span></p>
         </div>
 
         <div class="proposal-section">
@@ -312,7 +316,7 @@
                         <strong>Expected Protected Attach Rate:</strong><br>
                         <span id="propAttachRate"></span>
 
-                        <div id="propReturnsValueProp" style="display:none; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.6;">
+                        <div id="propReturnsValueProp" style="display:none; margin-top: 18px; padding-top: 14px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #444; line-height: 1.6;">
                             <strong style="font-size:13px;">There's no fee to use ShipInsure.</strong> Customers opt-in at checkout for <strong>Free Returns + Package Protection</strong> — and because returns anxiety is universal, more customers opt in. Their premiums fund everything: your claims, your return labels, and your AfterShip returns platform.<br><br>
                             The only real cost is doing nothing: <strong><span id="propTotalCostWithout"></span></strong> in annual losses your business absorbs today. ShipInsure converts that into <strong><span id="propTotalNewRevenueCopy"></span></strong> in net upside — likely the highest-ROI move available to your margins this quarter.
                         </div>
@@ -338,12 +342,12 @@
                             <span id="propCoveredPlatformCost"></span><br><br>
                             <strong>Total Returns Offset:</strong><br>
                             <span id="propTotalReturnsOffset"></span><br>
-                            <span id="propReturnsOffsetPct" style="font-size:12px; color:rgba(255,255,255,0.6);"></span><br><br>
+                            <span id="propReturnsOffsetPct" style="font-size:12px; color:#555;"></span><br><br>
                             <div class="returns-divider"></div>
                         </div>
 
                         <strong>You Keep <span id="propKeepPct"></span> of Premiums</strong><br>
-                        <span style="font-size:12px; color:rgba(255,255,255,0.6);" id="propKeepPctNote"></span><br><br>
+                        <span style="font-size:12px; color:#555;" id="propKeepPctNote"></span><br><br>
 
                         <div class="grand-total-row">
                             <strong>Extra Revenue with ShipInsure:</strong><br>
@@ -355,7 +359,7 @@
         </div>
 
         <div id="propDisclaimerSection" style="display:none; margin-bottom: 12px;">
-            <p id="propDisclaimer" style="font-size: 11px; color: rgba(255,255,255,0.55); font-style: italic;"></p>
+            <p id="propDisclaimer" style="font-size: 11px; color: rgba(255,255,255,0.7); font-style: italic;"></p>
         </div>
 
         <div class="proposal-section" id="propNotesSection">
