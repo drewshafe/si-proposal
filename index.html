@@ -165,6 +165,18 @@
             background: #6c757d;
         }
 
+        .returns-divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 8px 0;
+            padding-top: 8px;
+        }
+
+        .grand-total-row {
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 8px;
+        }
+
         @media print {
             body {
                 background: white;
@@ -211,6 +223,11 @@
             <input type="text" id="deliveryIssue" placeholder="e.g., Porch theft, Lost in transit">
         </div>
 
+        <div class="input-group" id="returnReasonGroup" style="display:none;">
+            <label>Most Common Return Reason (optional)</label>
+            <input type="text" id="returnReason" placeholder="e.g., Wrong size, Changed mind">
+        </div>
+
         <div class="input-group">
             <label>Deployment Option (optional)</label>
             <select id="deploymentPlan">
@@ -243,6 +260,7 @@
         <div class="proposal-section">
             <p><strong>Coverage Type:</strong> <span id="propCoverageType">[ ]</span></p>
             <p><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue">[ ]</span></p>
+            <p id="propReturnReasonRow" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason">[ ]</span></p>
             <p><strong>Deployment Option:</strong> <span id="propDeploymentPlan">[ ]</span></p>
         </div>
 
@@ -269,8 +287,28 @@
                         <span id="propReshipRevenue"></span><br><br>
                         <strong>Revenue Share at <span id="propRevSharePct2"></span>:</strong><br>
                         <span id="propRevShare"></span><br><br>
-                        <strong>You Keep <span id="propKeepPct"></span> of Premiums<br>Total New Revenue:</strong><br>
-                        <span id="propTotalNewRevenue"></span>
+
+                        <!-- Returns Offset block — only shown when returns params present -->
+                        <div id="propReturnsOffsetBlock" style="display:none;">
+                            <div class="returns-divider"></div>
+                            <strong>Returns Offset (via AfterShip):</strong><br><br>
+                            <strong>Covered Return Label Cost:</strong><br>
+                            <span id="propCoveredLabelCost"></span><br><br>
+                            <strong>Covered Platform Cost:</strong><br>
+                            <span id="propCoveredPlatformCost"></span><br><br>
+                            <strong>Total Returns Offset:</strong><br>
+                            <span id="propTotalReturnsOffset"></span><br>
+                            <span id="propReturnsOffsetPct" style="font-size:12px; color:#555;"></span><br><br>
+                            <div class="returns-divider"></div>
+                        </div>
+
+                        <strong>You Keep <span id="propKeepPct"></span> of Premiums</strong><br>
+                        <span style="font-size:12px; color:#555;" id="propKeepPctNote"></span><br><br>
+
+                        <div class="grand-total-row">
+                            <strong>Extra Revenue with ShipInsure:</strong><br>
+                            <span id="propTotalNewRevenue" style="font-size:16px; font-weight:700;"></span>
+                        </div>
                     </td>
                 </tr>
             </table>
@@ -292,60 +330,75 @@
             const urlObj = new URL(url);
             const params = new URLSearchParams(urlObj.search);
             
+            const rr  = params.get('rr');
+            const rpc = params.get('rpc');
+            const rlc = params.get('rlc');
+            const returnsEnabled = rr !== null && rpc !== null && rlc !== null;
+
             return {
-                orders: parseFloat(params.get('orders')) || 0,
-                aov: parseFloat(params.get('aov')) || 0,
-                claims: parseFloat(params.get('claims')) || 0,
-                cogs: parseFloat(params.get('cogs')) || 0,
-                cs: parseFloat(params.get('cs')) || 0,
-                share: parseFloat(params.get('share')) || 0,
-                attach: parseFloat(params.get('attach')) || 0,
-                premium: parseFloat(params.get('premium')) || 0,
+                orders:      parseFloat(params.get('orders'))      || 0,
+                aov:         parseFloat(params.get('aov'))         || 0,
+                claims:      parseFloat(params.get('claims'))      || 0,
+                cogs:        parseFloat(params.get('cogs'))        || 0,
+                cs:          parseFloat(params.get('cs'))          || 0,
+                share:       parseFloat(params.get('share'))       || 0,
+                attach:      parseFloat(params.get('attach'))      || 0,
+                premium:     parseFloat(params.get('premium'))     || 0,
                 avg_premium: parseFloat(params.get('avg_premium')) || 0,
-                template: params.get('template') || ''
+                template:    params.get('template') || '',
+                returnsEnabled,
+                rr:          returnsEnabled ? parseFloat(rr)  : 0,
+                rpc:         returnsEnabled ? parseFloat(rpc) : 0,
+                rlc:         returnsEnabled ? parseFloat(rlc) : 0,
             };
         }
 
         function formatCurrency(value) {
             return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
+                style: 'currency', currency: 'USD',
+                minimumFractionDigits: 0, maximumFractionDigits: 0
             }).format(value);
         }
 
         function formatCurrencyWithCents(value) {
             return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+                style: 'currency', currency: 'USD',
+                minimumFractionDigits: 2, maximumFractionDigits: 2
             }).format(value);
         }
 
         function formatNumber(value) {
             return new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
+                minimumFractionDigits: 0, maximumFractionDigits: 0
             }).format(value);
         }
 
         function formatPercent(value) {
-            if (value % 1 === 0) {
-                return value.toFixed(0) + '%';
-            }
+            if (value % 1 === 0) return value.toFixed(0) + '%';
             return value.toFixed(2) + '%';
         }
 
+        // Show/hide return reason field based on whether calc link has returns params
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('calculatorLink').addEventListener('input', function(e) {
+                try {
+                    const data = parseCalculatorLink(e.target.value);
+                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                } catch(err) {
+                    document.getElementById('returnReasonGroup').style.display = 'none';
+                }
+            });
+        });
+
         function generateProposal() {
-            const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
+            const merchantName   = document.getElementById('merchantName').value || '[Merchant Name]';
             const calculatorLink = document.getElementById('calculatorLink').value;
-            const coverageType = document.getElementById('coverageType').value || '[ ]';
-            const deliveryIssue = document.getElementById('deliveryIssue').value || '[ ]';
+            const coverageType   = document.getElementById('coverageType').value || '[ ]';
+            const deliveryIssue  = document.getElementById('deliveryIssue').value || '[ ]';
+            const returnReason   = document.getElementById('returnReason').value || '';
             const deploymentPlan = document.getElementById('deploymentPlan').value || '[ ]';
-            const meetingNotes = document.getElementById('meetingNotes').value || '';
-            const logoFile = document.getElementById('logoUpload').files[0];
+            const meetingNotes   = document.getElementById('meetingNotes').value || '';
+            const logoFile       = document.getElementById('logoUpload').files[0];
 
             if (!calculatorLink) {
                 alert('Please enter a calculator link');
@@ -373,32 +426,77 @@
             try {
                 const data = parseCalculatorLink(calculatorLink);
                 
-                const annualOrders = data.orders * 12;
-                const avgPremium = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
+                const annualOrders    = data.orders * 12;
+                const avgPremium      = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
                 const protectedOrders = annualOrders * (data.attach / 100);
                 const protectedClaims = protectedOrders * (data.claims / 100);
-                const premiumPool = protectedOrders * avgPremium;
-                const reshipRevenue = protectedClaims * data.aov;
+                const premiumPool     = protectedOrders * avgPremium;
+                const reshipRevenue   = protectedClaims * data.aov;
                 const postClaimBalance = premiumPool - reshipRevenue;
-                const revenueShare = postClaimBalance * (data.share / 100);
-                const totalNewRevenue = reshipRevenue + revenueShare;
-                const keepPercent = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
-                
-                document.getElementById('propMerchantName').textContent = merchantName;
-                document.getElementById('propCoverageType').textContent = coverageType;
-                document.getElementById('propDeliveryIssue').textContent = deliveryIssue;
-                document.getElementById('propDeploymentPlan').textContent = deploymentPlan;
-                document.getElementById('propPremiumPct').textContent = formatPercent(data.premium);
-                document.getElementById('propAvgPremium').textContent = formatCurrencyWithCents(avgPremium);
-                document.getElementById('propPremiumsFunded').textContent = formatCurrency(premiumPool);
-                document.getElementById('propReshipRevenue').textContent = formatCurrency(reshipRevenue);
-                document.getElementById('propRevSharePct2').textContent = formatPercent(data.share);
-                document.getElementById('propRevShare').textContent = formatCurrency(revenueShare);
-                document.getElementById('propKeepPct').textContent = formatPercent(keepPercent);
-                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
-                document.getElementById('propAttachRate').textContent = formatPercent(data.attach);
+                const revenueShare    = postClaimBalance * (data.share / 100);
+
+                // Returns Offset calculations
+                let coveredLabelCost    = 0;
+                let coveredPlatformCost = 0;
+                let totalReturnsOffset  = 0;
+
+                if (data.returnsEnabled) {
+                    const annualReturns  = annualOrders * (data.rr / 100);
+                    coveredLabelCost     = annualReturns * data.rlc;
+                    coveredPlatformCost  = data.rpc * 12;
+                    totalReturnsOffset   = coveredLabelCost + coveredPlatformCost;
+                }
+
+                const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
+
+                // % of premiums: shipping protection portion only (reships + rev share)
+                const shippingKeepPct = premiumPool > 0 ? ((reshipRevenue + revenueShare) / premiumPool) * 100 : 0;
+                // % of premiums including returns offset
+                const totalKeepPct    = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
+                const returnsOffsetPct = premiumPool > 0 ? (totalReturnsOffset / premiumPool) * 100 : 0;
+
+                // Populate standard fields
+                document.getElementById('propMerchantName').textContent    = merchantName;
+                document.getElementById('propCoverageType').textContent    = coverageType;
+                document.getElementById('propDeliveryIssue').textContent   = deliveryIssue;
+                document.getElementById('propDeploymentPlan').textContent  = deploymentPlan;
+                document.getElementById('propPremiumPct').textContent      = formatPercent(data.premium);
+                document.getElementById('propAvgPremium').textContent      = formatCurrencyWithCents(avgPremium);
+                document.getElementById('propPremiumsFunded').textContent  = formatCurrency(premiumPool);
+                document.getElementById('propReshipRevenue').textContent   = formatCurrency(reshipRevenue);
+                document.getElementById('propRevSharePct2').textContent    = formatPercent(data.share);
+                document.getElementById('propRevShare').textContent        = formatCurrency(revenueShare);
+                document.getElementById('propAttachRate').textContent      = formatPercent(data.attach);
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
-                document.getElementById('propNotes').textContent = meetingNotes;
+                document.getElementById('propNotes').textContent           = meetingNotes;
+                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
+
+                // Returns Offset block
+                if (data.returnsEnabled) {
+                    document.getElementById('propReturnsOffsetBlock').style.display = 'block';
+                    document.getElementById('propCoveredLabelCost').textContent    = formatCurrency(coveredLabelCost);
+                    document.getElementById('propCoveredPlatformCost').textContent = formatCurrency(coveredPlatformCost);
+                    document.getElementById('propTotalReturnsOffset').textContent  = formatCurrency(totalReturnsOffset);
+                    document.getElementById('propReturnsOffsetPct').textContent    = `+${formatPercent(returnsOffsetPct)} of premiums`;
+
+                    // keepPct shows shipping-only %, with note showing total including returns
+                    document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
+                    document.getElementById('propKeepPctNote').textContent = `(${formatPercent(totalKeepPct)} of premiums including Returns Offset)`;
+
+                    // Return reason row
+                    if (returnReason) {
+                        document.getElementById('propReturnReasonRow').style.display = 'block';
+                        document.getElementById('propReturnReason').textContent = returnReason;
+                    } else {
+                        document.getElementById('propReturnReasonRow').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('propReturnsOffsetBlock').style.display = 'none';
+                    document.getElementById('propReturnReasonRow').style.display    = 'none';
+                    // Standard keepPct with no note
+                    document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
+                    document.getElementById('propKeepPctNote').textContent = '';
+                }
 
                 const percentageTemplates = ['1.5_accurate', '2_accurate', '2_round_50', '2.5_accurate', '3_accurate', '3.5_accurate'];
                 const isPercentageBased = !data.template || data.template === '' || percentageTemplates.includes(data.template);
@@ -420,31 +518,50 @@
         }
 
         window.addEventListener('load', function() {
-            const savedMerchant = localStorage.getItem('si_proposal_merchant');
-            const savedLink = localStorage.getItem('si_proposal_link');
+            const savedMerchant    = localStorage.getItem('si_proposal_merchant');
+            const savedLink        = localStorage.getItem('si_proposal_link');
             const savedCoverageType = localStorage.getItem('si_proposal_coverage_type');
-            const savedIssue = localStorage.getItem('si_proposal_issue');
-            const savedDeployment = localStorage.getItem('si_proposal_deployment');
-            const savedNotes = localStorage.getItem('si_proposal_notes');
+            const savedIssue       = localStorage.getItem('si_proposal_issue');
+            const savedReturnReason = localStorage.getItem('si_proposal_return_reason');
+            const savedDeployment  = localStorage.getItem('si_proposal_deployment');
+            const savedNotes       = localStorage.getItem('si_proposal_notes');
 
-            if (savedMerchant) document.getElementById('merchantName').value = savedMerchant;
-            if (savedLink) document.getElementById('calculatorLink').value = savedLink;
-            if (savedCoverageType) document.getElementById('coverageType').value = savedCoverageType;
-            if (savedIssue) document.getElementById('deliveryIssue').value = savedIssue;
-            if (savedDeployment) document.getElementById('deploymentPlan').value = savedDeployment;
-            if (savedNotes) document.getElementById('meetingNotes').value = savedNotes;
+            if (savedMerchant)     document.getElementById('merchantName').value    = savedMerchant;
+            if (savedLink)         document.getElementById('calculatorLink').value  = savedLink;
+            if (savedCoverageType) document.getElementById('coverageType').value    = savedCoverageType;
+            if (savedIssue)        document.getElementById('deliveryIssue').value   = savedIssue;
+            if (savedReturnReason) document.getElementById('returnReason').value    = savedReturnReason;
+            if (savedDeployment)   document.getElementById('deploymentPlan').value  = savedDeployment;
+            if (savedNotes)        document.getElementById('meetingNotes').value    = savedNotes;
+
+            // If saved link has returns params, show return reason field
+            if (savedLink) {
+                try {
+                    const data = parseCalculatorLink(savedLink);
+                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                } catch(e) {}
+            }
 
             document.getElementById('merchantName').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_merchant', e.target.value);
             });
             document.getElementById('calculatorLink').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_link', e.target.value);
+                try {
+                    const data = parseCalculatorLink(e.target.value);
+                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                } catch(err) {
+                    document.getElementById('returnReasonGroup').style.display = 'none';
+                }
             });
             document.getElementById('coverageType').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_coverage_type', e.target.value);
             });
             document.getElementById('deliveryIssue').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_issue', e.target.value);
+            });
+            document.getElementById('returnReason').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_return_reason', e.target.value);
             });
             document.getElementById('deploymentPlan').addEventListener('change', (e) => {
                 localStorage.setItem('si_proposal_deployment', e.target.value);
