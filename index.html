@@ -243,6 +243,11 @@
         </div>
 
         <div class="input-group">
+            <label>Disclaimer (optional — only appears if filled in)</label>
+            <input type="text" id="disclaimerText" placeholder="e.g., *Returns platform savings based on assumed $8k/mo Loop cost">
+        </div>
+
+        <div class="input-group">
             <label>Proposal Notes (optional)</label>
             <textarea id="meetingNotes" placeholder="Add any relevant notes from your meeting..."></textarea>
         </div>
@@ -258,10 +263,10 @@
         </div>
 
         <div class="proposal-section">
-            <p><strong>Coverage Type:</strong> <span id="propCoverageType">[ ]</span></p>
-            <p><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue">[ ]</span></p>
-            <p id="propReturnReasonRow" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason">[ ]</span></p>
-            <p><strong>Deployment Option:</strong> <span id="propDeploymentPlan">[ ]</span></p>
+            <p id="propCoverageSection"><strong>Coverage Type:</strong> <span id="propCoverageType"></span></p>
+            <p id="propDeliverySection"><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue"></span></p>
+            <p id="propReturnReasonRow" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason"></span></p>
+            <p id="propDeploySection"><strong>Deployment Option:</strong> <span id="propDeploymentPlan"></span></p>
         </div>
 
         <div class="proposal-section">
@@ -276,6 +281,11 @@
                         <span id="propAvgPremium"></span><br><br>
                         <strong>Expected Protected Attach Rate:</strong><br>
                         <span id="propAttachRate"></span>
+
+                        <div id="propReturnsValueProp" style="display:none; margin-top: 18px; padding-top: 14px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #444; line-height: 1.6;">
+                            <strong style="font-size:13px;">There's no fee to use ShipInsure.</strong> Customers opt-in at checkout for <strong>Free Returns + Package Protection</strong> — and because returns anxiety is universal, more customers opt in. Their premiums fund everything: your claims, your return labels, and your AfterShip returns platform.<br><br>
+                            The only real cost is doing nothing: <strong><span id="propTotalCostWithout"></span></strong> in annual losses your business absorbs today. ShipInsure converts that into <strong><span id="propTotalNewRevenueCopy"></span></strong> in net upside — likely the highest-ROI move available to your margins this quarter.
+                        </div>
                     </td>
                     <td style="width: 50%;">
                         <strong>Annual Estimate</strong><br><br>
@@ -314,7 +324,11 @@
             </table>
         </div>
 
-        <div class="proposal-section">
+        <div id="propDisclaimerSection" style="display:none; margin-bottom: 12px;">
+            <p id="propDisclaimer" style="font-size: 11px; color: #999; font-style: italic;"></p>
+        </div>
+
+        <div class="proposal-section" id="propNotesSection">
             <h3>Proposal Notes:</h3>
             <div class="notes-box" id="propNotes"></div>
         </div>
@@ -398,6 +412,7 @@
             const returnReason   = document.getElementById('returnReason').value || '';
             const deploymentPlan = document.getElementById('deploymentPlan').value || '[ ]';
             const meetingNotes   = document.getElementById('meetingNotes').value || '';
+            const disclaimerText = document.getElementById('disclaimerText').value || '';
             const logoFile       = document.getElementById('logoUpload').files[0];
 
             if (!calculatorLink) {
@@ -439,12 +454,20 @@
                 let coveredLabelCost    = 0;
                 let coveredPlatformCost = 0;
                 let totalReturnsOffset  = 0;
+                let totalCostWithout    = 0;
+
+                // Lost revenue base (matches calculator): CS + COGS on ALL claims, returns on ALL orders
+                const totalClaims    = annualOrders * (data.claims / 100);
+                const csCost         = totalClaims * data.cs;
+                const cogsAmt        = totalClaims * (data.aov * (data.cogs / 100));
 
                 if (data.returnsEnabled) {
-                    const annualReturns  = protectedOrders * (data.rr / 100);
-                    coveredLabelCost     = annualReturns * data.rlc;
-                    coveredPlatformCost  = data.rpc * 12;
-                    totalReturnsOffset   = coveredLabelCost + coveredPlatformCost;
+                    const protectedReturns = protectedOrders * (data.rr / 100);
+                    const allReturns       = annualOrders * (data.rr / 100);
+                    coveredLabelCost       = protectedReturns * data.rlc;   // SI covers protected portion
+                    coveredPlatformCost    = data.rpc * 12;
+                    totalReturnsOffset     = coveredLabelCost + coveredPlatformCost;
+                    totalCostWithout       = csCost + cogsAmt + (allReturns * data.rlc) + coveredPlatformCost;
                 }
 
                 const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
@@ -457,9 +480,26 @@
 
                 // Populate standard fields
                 document.getElementById('propMerchantName').textContent    = merchantName;
-                document.getElementById('propCoverageType').textContent    = coverageType;
-                document.getElementById('propDeliveryIssue').textContent   = deliveryIssue;
-                document.getElementById('propDeploymentPlan').textContent  = deploymentPlan;
+
+                // Optional top fields — only show if filled
+                const coverageEl = document.getElementById('propCoverageSection');
+                const deliveryEl = document.getElementById('propDeliverySection');
+                const deployEl   = document.getElementById('propDeploySection');
+
+                if (coverageType && coverageType !== '[ ]') {
+                    document.getElementById('propCoverageType').textContent = coverageType;
+                    coverageEl.style.display = 'block';
+                } else { coverageEl.style.display = 'none'; }
+
+                if (deliveryIssue && deliveryIssue !== '[ ]') {
+                    document.getElementById('propDeliveryIssue').textContent = deliveryIssue;
+                    deliveryEl.style.display = 'block';
+                } else { deliveryEl.style.display = 'none'; }
+
+                if (deploymentPlan && deploymentPlan !== '[ ]') {
+                    document.getElementById('propDeploymentPlan').textContent = deploymentPlan;
+                    deployEl.style.display = 'block';
+                } else { deployEl.style.display = 'none'; }
                 document.getElementById('propPremiumPct').textContent      = formatPercent(data.premium);
                 document.getElementById('propAvgPremium').textContent      = formatCurrencyWithCents(avgPremium);
                 document.getElementById('propPremiumsFunded').textContent  = formatCurrency(premiumPool);
@@ -468,16 +508,27 @@
                 document.getElementById('propRevShare').textContent        = formatCurrency(revenueShare);
                 document.getElementById('propAttachRate').textContent      = formatPercent(data.attach);
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
-                document.getElementById('propNotes').textContent           = meetingNotes;
+                document.getElementById('propNotes').textContent = meetingNotes;
+                document.getElementById('propNotesSection').style.display = meetingNotes ? 'block' : 'none';
+
+                if (disclaimerText) {
+                    document.getElementById('propDisclaimer').textContent = disclaimerText;
+                    document.getElementById('propDisclaimerSection').style.display = 'block';
+                } else {
+                    document.getElementById('propDisclaimerSection').style.display = 'none';
+                }
                 document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
 
                 // Returns Offset block
                 if (data.returnsEnabled) {
                     document.getElementById('propReturnsOffsetBlock').style.display = 'block';
-                    document.getElementById('propCoveredLabelCost').textContent    = formatCurrency(coveredLabelCost);
-                    document.getElementById('propCoveredPlatformCost').textContent = formatCurrency(coveredPlatformCost);
-                    document.getElementById('propTotalReturnsOffset').textContent  = formatCurrency(totalReturnsOffset);
-                    document.getElementById('propReturnsOffsetPct').textContent    = `+${formatPercent(returnsOffsetPct)} of premiums`;
+                    document.getElementById('propReturnsValueProp').style.display   = 'block';
+                    document.getElementById('propCoveredLabelCost').textContent     = formatCurrency(coveredLabelCost);
+                    document.getElementById('propCoveredPlatformCost').textContent  = formatCurrency(coveredPlatformCost);
+                    document.getElementById('propTotalReturnsOffset').textContent   = formatCurrency(totalReturnsOffset);
+                    document.getElementById('propReturnsOffsetPct').textContent     = `+${formatPercent(returnsOffsetPct)} of premiums`;
+                    document.getElementById('propTotalCostWithout').textContent     = formatCurrency(totalCostWithout);
+                    document.getElementById('propTotalNewRevenueCopy').textContent  = formatCurrency(totalNewRevenue);
 
                     // keepPct shows shipping-only %, with note showing total including returns
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
@@ -492,6 +543,7 @@
                     }
                 } else {
                     document.getElementById('propReturnsOffsetBlock').style.display = 'none';
+                    document.getElementById('propReturnsValueProp').style.display   = 'none';
                     document.getElementById('propReturnReasonRow').style.display    = 'none';
                     // Standard keepPct with no note
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
@@ -523,6 +575,7 @@
             const savedCoverageType = localStorage.getItem('si_proposal_coverage_type');
             const savedIssue       = localStorage.getItem('si_proposal_issue');
             const savedReturnReason = localStorage.getItem('si_proposal_return_reason');
+            const savedDisclaimer  = localStorage.getItem('si_proposal_disclaimer');
             const savedDeployment  = localStorage.getItem('si_proposal_deployment');
             const savedNotes       = localStorage.getItem('si_proposal_notes');
 
@@ -531,6 +584,7 @@
             if (savedCoverageType) document.getElementById('coverageType').value    = savedCoverageType;
             if (savedIssue)        document.getElementById('deliveryIssue').value   = savedIssue;
             if (savedReturnReason) document.getElementById('returnReason').value    = savedReturnReason;
+            if (savedDisclaimer)   document.getElementById('disclaimerText').value  = savedDisclaimer;
             if (savedDeployment)   document.getElementById('deploymentPlan').value  = savedDeployment;
             if (savedNotes)        document.getElementById('meetingNotes').value    = savedNotes;
 
@@ -562,6 +616,9 @@
             });
             document.getElementById('returnReason').addEventListener('input', (e) => {
                 localStorage.setItem('si_proposal_return_reason', e.target.value);
+            });
+            document.getElementById('disclaimerText').addEventListener('input', (e) => {
+                localStorage.setItem('si_proposal_disclaimer', e.target.value);
             });
             document.getElementById('deploymentPlan').addEventListener('change', (e) => {
                 localStorage.setItem('si_proposal_deployment', e.target.value);
