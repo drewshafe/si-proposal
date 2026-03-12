@@ -286,14 +286,15 @@
         <!-- Proposals logo: top-left -->
         <!-- Merchant logo: top-right -->
         <div class="proposal-header-top">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png" alt="ShipInsure Proposals" style="height: 36px;">
-            <img id="merchantLogo" src="" alt="" style="height: 50px; display: none; border-radius: 6px;">
+            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png" alt="ShipInsure Proposals" style="height: 72px;">
+            <img id="merchantLogo" src="" alt="" style="height: 100px; display: none; border-radius: 6px;">
         </div>
         <span id="propMerchantName" style="display:none;"></span>
 
         <!-- SI logo inline above coverage fields -->
         <div class="proposal-si-inline">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 22px; filter: brightness(0) invert(1);">
+            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 44px; filter: brightness(0) invert(1);">
+            <img id="propAfterShipLogoHeader" src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height: 44px; display: none; margin-left: 8px;">
         </div>
 
         <div class="proposal-section">
@@ -335,7 +336,7 @@
                         <!-- Returns Offset block — only shown when returns params present -->
                         <div id="propReturnsOffsetBlock" style="display:none;">
                             <div class="returns-divider"></div>
-                            <strong>Returns Offset (via AfterShip):</strong><br><br>
+                            <strong>Returns Offset (via <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height: 1em; vertical-align: middle; display: inline;">):</strong><br><br>
                             <strong>Covered Return Label Cost:</strong><br>
                             <span id="propCoveredLabelCost"></span><br><br>
                             <strong>Covered Platform Cost:</strong><br>
@@ -555,14 +556,15 @@
 
                 // Returns Offset block
                 if (data.returnsEnabled) {
-                    document.getElementById('propReturnsOffsetBlock').style.display = 'block';
-                    document.getElementById('propReturnsValueProp').style.display   = 'block';
-                    document.getElementById('propCoveredLabelCost').textContent     = formatCurrency(coveredLabelCost);
-                    document.getElementById('propCoveredPlatformCost').textContent  = formatCurrency(coveredPlatformCost);
-                    document.getElementById('propTotalReturnsOffset').textContent   = formatCurrency(totalReturnsOffset);
-                    document.getElementById('propReturnsOffsetPct').textContent     = `+${formatPercent(returnsOffsetPct)} of premiums`;
-                    document.getElementById('propTotalCostWithout').textContent     = formatCurrency(totalCostWithout);
-                    document.getElementById('propTotalNewRevenueCopy').textContent  = formatCurrency(totalNewRevenue);
+                    document.getElementById('propReturnsOffsetBlock').style.display  = 'block';
+                    document.getElementById('propReturnsValueProp').style.display    = 'block';
+                    document.getElementById('propAfterShipLogoHeader').style.display = 'inline';
+                    document.getElementById('propCoveredLabelCost').textContent      = formatCurrency(coveredLabelCost);
+                    document.getElementById('propCoveredPlatformCost').textContent   = formatCurrency(coveredPlatformCost);
+                    document.getElementById('propTotalReturnsOffset').textContent    = formatCurrency(totalReturnsOffset);
+                    document.getElementById('propReturnsOffsetPct').textContent      = `+${formatPercent(returnsOffsetPct)} of premiums`;
+                    document.getElementById('propTotalCostWithout').textContent      = formatCurrency(totalCostWithout);
+                    document.getElementById('propTotalNewRevenueCopy').textContent   = formatCurrency(totalNewRevenue);
 
                     // keepPct shows shipping-only %, with note showing total including returns
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
@@ -576,9 +578,10 @@
                         document.getElementById('propReturnReasonRow').style.display = 'none';
                     }
                 } else {
-                    document.getElementById('propReturnsOffsetBlock').style.display = 'none';
-                    document.getElementById('propReturnsValueProp').style.display   = 'none';
-                    document.getElementById('propReturnReasonRow').style.display    = 'none';
+                    document.getElementById('propReturnsOffsetBlock').style.display  = 'none';
+                    document.getElementById('propReturnsValueProp').style.display    = 'none';
+                    document.getElementById('propAfterShipLogoHeader').style.display = 'none';
+                    document.getElementById('propReturnReasonRow').style.display     = 'none';
                     // Standard keepPct with no note
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
                     document.getElementById('propKeepPctNote').textContent = '';
