@@ -294,7 +294,6 @@
         <!-- SI logo inline above coverage fields -->
         <div class="proposal-si-inline">
             <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 44px; filter: brightness(0) invert(1);">
-            <img id="propAfterShipLogoHeader" src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height: 44px; display: none; margin-left: 8px;">
         </div>
 
         <div class="proposal-section">
@@ -558,7 +557,6 @@
                 if (data.returnsEnabled) {
                     document.getElementById('propReturnsOffsetBlock').style.display  = 'block';
                     document.getElementById('propReturnsValueProp').style.display    = 'block';
-                    document.getElementById('propAfterShipLogoHeader').style.display = 'inline';
                     document.getElementById('propCoveredLabelCost').textContent      = formatCurrency(coveredLabelCost);
                     document.getElementById('propCoveredPlatformCost').textContent   = formatCurrency(coveredPlatformCost);
                     document.getElementById('propTotalReturnsOffset').textContent    = formatCurrency(totalReturnsOffset);
@@ -580,7 +578,6 @@
                 } else {
                     document.getElementById('propReturnsOffsetBlock').style.display  = 'none';
                     document.getElementById('propReturnsValueProp').style.display    = 'none';
-                    document.getElementById('propAfterShipLogoHeader').style.display = 'none';
                     document.getElementById('propReturnReasonRow').style.display     = 'none';
                     // Standard keepPct with no note
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
