@@ -123,52 +123,142 @@
             margin-bottom: 10px;
         }
 
-        table td {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            font-size: 13px;
-            color: #333;
-            background: white;
+        /* Col 1: Gray context column */
+        td.col-gray {
+            width: 28%;
+            background: #f0f0f0;
+            border: none;
+            padding: 16px 18px;
             vertical-align: top;
+            border-radius: 6px 0 0 6px;
         }
 
-        table td:first-child {
-            font-weight: 600;
-            background: #f9f9f9;
-            color: #333;
-            width: 30%;
-        }
-
-        table td:nth-child(2) {
-            width: 20%;
-        }
-
-        table td:nth-child(3) {
-            width: 50%;
-        }
-
-        .metrics-table {
-            margin-bottom: 10px;
-        }
-
-        .notes-box {
-            background: rgba(255,255,255,0.9);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            min-height: 60px;
-            margin-bottom: 10px;
-            white-space: pre-wrap;
-            color: #333;
-            font-size: 13px;
-        }
-
-        .proposal-section h3 {
+        .col-gray-header {
             font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: white;
+            font-weight: 700;
+            color: #1b1b1b;
+            margin-bottom: 14px;
         }
+
+        .col-gray-body {
+            font-size: 12px;
+            color: #444;
+            line-height: 1.65;
+        }
+
+        .col-gray-body strong { color: #1b1b1b; }
+
+        /* Col 2: White metrics column */
+        td.col-white {
+            width: 34%;
+            background: white;
+            border: none;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-left: 1px solid #e8e8e8;
+        }
+
+        .metric-row { margin-bottom: 12px; }
+
+        .metric-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .metric-value {
+            font-size: 13px;
+            color: #1b1b1b;
+        }
+
+        .metric-value-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #1b1b1b;
+            flex-wrap: wrap;
+        }
+
+        .pct-pill {
+            display: inline-block;
+            background: #6675ff;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .pct-pill:empty { display: none; }
+
+        .returns-divider-col2 {
+            border-top: 1px solid #e0e0e0;
+            margin: 10px 0;
+        }
+
+        /* Col 3: Totals column */
+        td.col-totals {
+            width: 38%;
+            background: white;
+            border: none;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-left: 1px solid #e8e8e8;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .col-totals-logo {
+            text-align: right;
+            margin-bottom: 16px;
+        }
+
+        .totals-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .accent-card {
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .accent-card-sm { background: #6675ff; }
+        .accent-card-lg { background: #4a54d4; }
+
+        .accent-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .accent-card-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.82);
+            margin-top: 3px;
+        }
+
+        .accent-card-sub:empty { display: none; }
+
+        .accent-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 4px;
+        }
+
+        .accent-card-total {
+            font-size: 20px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .metrics-table { margin-bottom: 10px; }
 
         .actions {
             margin-top: 20px;
@@ -176,29 +266,9 @@
             gap: 15px;
         }
 
-        .actions button {
-            flex: 1;
-        }
-
-        .print-btn {
-            background: #28a745;
-        }
-
-        .edit-btn {
-            background: #6c757d;
-        }
-
-        .returns-divider {
-            border-top: 1px solid #e0e0e0;
-            margin: 6px 0;
-            padding-top: 6px;
-        }
-
-        .grand-total-row {
-            border-top: 2px solid #333;
-            margin-top: 8px;
-            padding-top: 8px;
-        }
+        .actions button { flex: 1; }
+        .print-btn { background: #28a745; }
+        .edit-btn { background: #6c757d; }
 
         @media print {
             @page { size: landscape; margin: 10mm; }
@@ -289,10 +359,6 @@
         <span id="propMerchantName" style="display:none;"></span>
 
         <!-- SI logo inline above coverage fields -->
-        <div class="proposal-si-inline">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 44px;">
-        </div>
-
         <div class="proposal-section">
             <p id="propCoverageSection" class="white-text"><strong>Coverage Type:</strong> <span id="propCoverageType"></span></p>
             <p id="propDeliverySection" class="white-text"><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue"></span></p>
@@ -303,51 +369,66 @@
         <div class="proposal-section">
             <table class="metrics-table">
                 <tr>
-                    <!-- Col 1: Value prop (gray bg) -->
-                    <td style="width: 30%;">
-                        <div id="propValueProp" style="font-size: 12px; color: #444; line-height: 1.6;"></div>
+                    <!-- Col 1: Gray - Annual Projections header + value prop -->
+                    <td class="col-gray">
+                        <div class="col-gray-header">Annual Projections</div>
+                        <div id="propValueProp" class="col-gray-body"></div>
                     </td>
 
-                    <!-- Col 2: Core shipping protection numbers (white bg) -->
-                    <td style="width: 25%; background: white;">
-                        <strong style="display:flex; align-items:center; gap:5px;">
-                            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height:1em; vertical-align:middle;">
-                            Annual Estimate
-                        </strong><br>
-                        <strong>Protected Orders:</strong><br>
-                        <span id="propProtectedOrders"></span><br><br>
-                        <strong>Premiums Funded by Customers:</strong><br>
-                        <span id="propPremiumsFunded"></span><br><br>
-                        <strong>Reship/Refund Revenue:</strong><br>
-                        <span id="propReshipRevenue"></span><br><br>
-                        <strong>Revenue Share at <span id="propRevSharePct2"></span>:</strong><br>
-                        <span id="propRevShare"></span>
-                    </td>
-
-                    <!-- Col 3: Returns offset + totals (white bg) -->
-                    <td style="width: 45%; background: white;">
-                        <!-- Returns Offset block — only shown when returns params present -->
-                        <div id="propReturnsOffsetBlock" style="display:none;">
-                            <strong style="display:flex; align-items:center; gap:5px;">
-                                <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height:1em; vertical-align:middle; display:inline;">
-                                Returns Offset
-                            </strong><br>
-                            <strong>Covered Return Label Cost:</strong><br>
-                            <span id="propCoveredLabelCost"></span><br><br>
-                            <strong>Covered Platform Cost:</strong><br>
-                            <span id="propCoveredPlatformCost"></span><br><br>
-                            <strong>Total Returns Offset:</strong><br>
-                            <span id="propTotalReturnsOffset"></span><br>
-                            <span id="propReturnsOffsetPct" style="font-size:12px; color:#555;"></span><br><br>
-                            <div class="returns-divider"></div>
+                    <!-- Col 2: White - stacked metric rows with % pills -->
+                    <td class="col-white">
+                        <div class="metric-row">
+                            <div class="metric-label">Protected Orders:</div>
+                            <div class="metric-value" id="propProtectedOrders"></div>
                         </div>
+                        <div class="metric-row">
+                            <div class="metric-label">Premiums Funded by Customers:</div>
+                            <div class="metric-value" id="propPremiumsFunded"></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label">Reship/Refund Revenue:</div>
+                            <div class="metric-value-row">
+                                <span id="propReshipRevenue"></span>
+                                <span class="pct-pill" id="propReshipPct"></span>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label">Revenue Share at <span id="propRevSharePct2"></span>:</div>
+                            <div class="metric-value-row">
+                                <span id="propRevShare"></span>
+                                <span class="pct-pill" id="propRevSharePill"></span>
+                            </div>
+                        </div>
+                        <!-- Returns Offset section -->
+                        <div id="propReturnsOffsetBlock" style="display:none;">
+                            <div class="returns-divider-col2"></div>
+                            <div class="metric-row">
+                                <div class="metric-label" style="display:flex; align-items:center; gap:5px;">
+                                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height:1em; vertical-align:middle;">
+                                    Returns Offset:
+                                </div>
+                                <div class="metric-value-row">
+                                    <span id="propTotalReturnsOffset"></span>
+                                    <span class="pct-pill" id="propReturnsOffsetPct"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
 
-                        <strong>You Keep <span id="propKeepPct"></span> of Premiums</strong><br>
-                        <span style="font-size:12px; color:#555;" id="propKeepPctNote"></span><br><br>
-
-                        <div class="grand-total-row">
-                            <strong>Extra Revenue with ShipInsure:</strong><br>
-                            <span id="propTotalNewRevenue" style="font-size:16px; font-weight:700;"></span>
+                    <!-- Col 3: White - SI logo top-right, purple accent cards -->
+                    <td class="col-totals">
+                        <div class="col-totals-logo">
+                            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height:28px;">
+                        </div>
+                        <div class="totals-inner">
+                            <div class="accent-card accent-card-sm">
+                                <div class="accent-card-title">You Keep <span id="propKeepPct"></span> of Premiums</div>
+                                <div class="accent-card-sub" id="propKeepPctNote"></div>
+                            </div>
+                            <div class="accent-card accent-card-lg">
+                                <div class="accent-card-label">Extra Revenue with ShipInsure:</div>
+                                <div class="accent-card-total" id="propTotalNewRevenue"></div>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -535,6 +616,12 @@
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
                 document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
 
+                // % pills for col 2
+                const reshipPct   = premiumPool > 0 ? (reshipRevenue / premiumPool) * 100 : 0;
+                const revSharePct = premiumPool > 0 ? (revenueShare / premiumPool) * 100 : 0;
+                document.getElementById('propReshipPct').textContent    = `${Math.round(reshipPct)}% of premiums`;
+                document.getElementById('propRevSharePill').textContent = `${Math.round(revSharePct)}% of premiums`;
+
                 // Dynamic value prop text in col 1
                 const attachStr    = formatPercent(data.attach);
                 const avgPremStr   = formatCurrencyWithCents(avgPremium);
@@ -559,10 +646,8 @@
                 // Returns Offset block
                 if (data.returnsEnabled) {
                     document.getElementById('propReturnsOffsetBlock').style.display  = 'block';
-                    document.getElementById('propCoveredLabelCost').textContent      = formatCurrency(coveredLabelCost);
-                    document.getElementById('propCoveredPlatformCost').textContent   = formatCurrency(coveredPlatformCost);
                     document.getElementById('propTotalReturnsOffset').textContent    = formatCurrency(totalReturnsOffset);
-                    document.getElementById('propReturnsOffsetPct').textContent      = `+${formatPercent(returnsOffsetPct)} of premiums`;
+                    document.getElementById('propReturnsOffsetPct').textContent      = `+${Math.round(returnsOffsetPct)}% of premiums`;
 
                     // keepPct shows shipping-only %, with note showing total including returns
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
