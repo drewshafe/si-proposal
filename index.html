@@ -75,10 +75,10 @@
         }
 
         .proposal-container {
-            max-width: 800px;
+            max-width: 1100px;
             margin: 0 auto;
             background: linear-gradient(to right, #1b1b1b, #6675ff, #b7bfff);
-            padding: 40px;
+            padding: 28px 36px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             display: none;
@@ -86,17 +86,11 @@
             position: relative;
         }
 
-        .proposal-header {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 18px;
-        }
-
         .proposal-header-top {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
 
         .proposal-si-inline {
@@ -106,18 +100,15 @@
             margin-bottom: 6px;
         }
 
-        .proposal-si-inline img {
-            height: 28px;
-        }
-
         .proposal-section {
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         /* Only the outside-table label rows get white text */
         .proposal-section p.white-text {
             color: white;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
+            font-size: 13px;
         }
 
         .proposal-section p.white-text strong {
@@ -127,52 +118,58 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         table td {
-            padding: 8px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
-            font-size: 14px;
+            font-size: 13px;
             color: #333;
             background: white;
+            vertical-align: top;
         }
 
         table td:first-child {
             font-weight: 600;
             background: #f9f9f9;
             color: #333;
+            width: 30%;
+        }
+
+        table td:nth-child(2) {
+            width: 20%;
+        }
+
+        table td:nth-child(3) {
             width: 50%;
         }
 
         .metrics-table {
-            margin-bottom: 20px;
-        }
-
-        .metrics-table td {
-            vertical-align: top;
+            margin-bottom: 10px;
         }
 
         .notes-box {
             background: rgba(255,255,255,0.9);
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #e0e0e0;
-            min-height: 80px;
-            margin-bottom: 15px;
+            min-height: 60px;
+            margin-bottom: 10px;
             white-space: pre-wrap;
             color: #333;
+            font-size: 13px;
         }
 
         .proposal-section h3 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: white;
         }
 
         .actions {
-            margin-top: 30px;
+            margin-top: 20px;
             display: flex;
             gap: 15px;
         }
@@ -191,17 +188,18 @@
 
         .returns-divider {
             border-top: 1px solid #e0e0e0;
-            margin: 8px 0;
-            padding-top: 8px;
+            margin: 6px 0;
+            padding-top: 6px;
         }
 
         .grand-total-row {
             border-top: 2px solid #333;
-            margin-top: 10px;
+            margin-top: 8px;
             padding-top: 8px;
         }
 
         @media print {
+            @page { size: landscape; margin: 10mm; }
             body {
                 background: white;
                 padding: 0;
@@ -212,8 +210,10 @@
             }
             .proposal-container {
                 box-shadow: none;
-                padding: 40px;
+                padding: 20px 28px;
                 display: block !important;
+                max-width: 100%;
+                border-radius: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -273,11 +273,6 @@
             <input type="text" id="disclaimerText" placeholder="e.g., *Returns platform savings based on assumed $8k/mo Loop cost">
         </div>
 
-        <div class="input-group">
-            <label>Proposal Notes (optional)</label>
-            <textarea id="meetingNotes" placeholder="Add any relevant notes from your meeting..."></textarea>
-        </div>
-
         <button onclick="generateProposal()">Generate Proposal</button>
     </div>
 
@@ -306,7 +301,8 @@
         <div class="proposal-section">
             <table class="metrics-table">
                 <tr>
-                    <td style="width: 50%;">
+                    <!-- Col 1: Value prop / context (gray bg) -->
+                    <td style="width: 30%;">
                         <div id="customerPremiumRow">
                             <strong>Customer Premium %:</strong><br>
                             <span id="propPremiumPct"></span><br><br>
@@ -316,12 +312,14 @@
                         <strong>Expected Protected Attach Rate:</strong><br>
                         <span id="propAttachRate"></span>
 
-                        <div id="propReturnsValueProp" style="display:none; margin-top: 18px; padding-top: 14px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #444; line-height: 1.6;">
-                            <strong style="font-size:13px;">There's no fee to use ShipInsure.</strong> Customers opt-in at checkout for <strong>Free Returns + Package Protection</strong> — and because returns anxiety is universal, more customers opt in. Their premiums fund everything: your claims, your return labels, and your AfterShip returns platform.<br><br>
+                        <div id="propReturnsValueProp" style="display:none; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #444; line-height: 1.55;">
+                            <strong style="font-size:12px;">There's no fee to use ShipInsure.</strong> Customers opt-in at checkout for <strong>Free Returns + Package Protection</strong> — and because returns anxiety is universal, more customers opt in. Their premiums fund everything: your claims, your return labels, and your AfterShip returns platform.<br><br>
                             The only real cost is doing nothing: <strong><span id="propTotalCostWithout"></span></strong> in annual losses your business absorbs today. ShipInsure converts that into <strong><span id="propTotalNewRevenueCopy"></span></strong> in net upside — likely the highest-ROI move available to your margins this quarter.
                         </div>
                     </td>
-                    <td style="width: 50%;">
+
+                    <!-- Col 2: Core shipping protection numbers (white bg) -->
+                    <td style="width: 25%; background: white;">
                         <strong>Annual Estimate</strong><br><br>
                         <strong>Protected Orders:</strong><br>
                         <span id="propProtectedOrders"></span><br><br>
@@ -330,11 +328,13 @@
                         <strong>Reship/Refund Revenue:</strong><br>
                         <span id="propReshipRevenue"></span><br><br>
                         <strong>Revenue Share at <span id="propRevSharePct2"></span>:</strong><br>
-                        <span id="propRevShare"></span><br><br>
+                        <span id="propRevShare"></span>
+                    </td>
 
+                    <!-- Col 3: Returns offset + totals (white bg) -->
+                    <td style="width: 45%; background: white;">
                         <!-- Returns Offset block — only shown when returns params present -->
                         <div id="propReturnsOffsetBlock" style="display:none;">
-                            <div class="returns-divider"></div>
                             <strong>Returns Offset (via <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height: 1em; vertical-align: middle; display: inline;">):</strong><br><br>
                             <strong>Covered Return Label Cost:</strong><br>
                             <span id="propCoveredLabelCost"></span><br><br>
@@ -358,13 +358,8 @@
             </table>
         </div>
 
-        <div id="propDisclaimerSection" style="display:none; margin-bottom: 12px;">
+        <div id="propDisclaimerSection" style="display:none; margin-bottom: 8px;">
             <p id="propDisclaimer" style="font-size: 11px; color: rgba(255,255,255,0.7); font-style: italic;"></p>
-        </div>
-
-        <div class="proposal-section" id="propNotesSection">
-            <h3>Proposal Notes:</h3>
-            <div class="notes-box" id="propNotes"></div>
         </div>
 
         <div class="actions">
@@ -445,7 +440,6 @@
             const deliveryIssue  = document.getElementById('deliveryIssue').value || '[ ]';
             const returnReason   = document.getElementById('returnReason').value || '';
             const deploymentPlan = document.getElementById('deploymentPlan').value || '[ ]';
-            const meetingNotes   = document.getElementById('meetingNotes').value || '';
             const disclaimerText = document.getElementById('disclaimerText').value || '';
             const logoFile       = document.getElementById('logoUpload').files[0];
 
@@ -542,8 +536,6 @@
                 document.getElementById('propRevShare').textContent        = formatCurrency(revenueShare);
                 document.getElementById('propAttachRate').textContent      = formatPercent(data.attach);
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
-                document.getElementById('propNotes').textContent = meetingNotes;
-                document.getElementById('propNotesSection').style.display = meetingNotes ? 'block' : 'none';
 
                 if (disclaimerText) {
                     document.getElementById('propDisclaimer').textContent = disclaimerText;
@@ -611,7 +603,6 @@
             const savedReturnReason = localStorage.getItem('si_proposal_return_reason');
             const savedDisclaimer  = localStorage.getItem('si_proposal_disclaimer');
             const savedDeployment  = localStorage.getItem('si_proposal_deployment');
-            const savedNotes       = localStorage.getItem('si_proposal_notes');
 
             if (savedMerchant)     document.getElementById('merchantName').value    = savedMerchant;
             if (savedLink)         document.getElementById('calculatorLink').value  = savedLink;
@@ -620,7 +611,6 @@
             if (savedReturnReason) document.getElementById('returnReason').value    = savedReturnReason;
             if (savedDisclaimer)   document.getElementById('disclaimerText').value  = savedDisclaimer;
             if (savedDeployment)   document.getElementById('deploymentPlan').value  = savedDeployment;
-            if (savedNotes)        document.getElementById('meetingNotes').value    = savedNotes;
 
             // If saved link has returns params, show return reason field
             if (savedLink) {
@@ -656,9 +646,6 @@
             });
             document.getElementById('deploymentPlan').addEventListener('change', (e) => {
                 localStorage.setItem('si_proposal_deployment', e.target.value);
-            });
-            document.getElementById('meetingNotes').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_notes', e.target.value);
             });
             document.getElementById('logoUpload').addEventListener('change', (e) => {
                 const file = e.target.files[0];
