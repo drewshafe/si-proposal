@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShipInsure Proposal Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -288,7 +290,7 @@
 
         <!-- SI logo inline above coverage fields -->
         <div class="proposal-si-inline">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 44px; filter: brightness(0) invert(1);">
+            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height: 44px;">
         </div>
 
         <div class="proposal-section">
@@ -301,26 +303,17 @@
         <div class="proposal-section">
             <table class="metrics-table">
                 <tr>
-                    <!-- Col 1: Value prop / context (gray bg) -->
+                    <!-- Col 1: Value prop (gray bg) -->
                     <td style="width: 30%;">
-                        <div id="customerPremiumRow">
-                            <strong>Customer Premium %:</strong><br>
-                            <span id="propPremiumPct"></span><br><br>
-                        </div>
-                        <strong>Average ShipInsure Premium:</strong><br>
-                        <span id="propAvgPremium"></span><br><br>
-                        <strong>Expected Protected Attach Rate:</strong><br>
-                        <span id="propAttachRate"></span>
-
-                        <div id="propReturnsValueProp" style="display:none; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #444; line-height: 1.55;">
-                            <strong style="font-size:12px;">There's no fee to use ShipInsure.</strong> Customers opt-in at checkout for <strong>Free Returns + Package Protection</strong> — and because returns anxiety is universal, more customers opt in. Their premiums fund everything: your claims, your return labels, and your AfterShip returns platform.<br><br>
-                            The only real cost is doing nothing: <strong><span id="propTotalCostWithout"></span></strong> in annual losses your business absorbs today. ShipInsure converts that into <strong><span id="propTotalNewRevenueCopy"></span></strong> in net upside — likely the highest-ROI move available to your margins this quarter.
-                        </div>
+                        <div id="propValueProp" style="font-size: 12px; color: #444; line-height: 1.6;"></div>
                     </td>
 
                     <!-- Col 2: Core shipping protection numbers (white bg) -->
                     <td style="width: 25%; background: white;">
-                        <strong>Annual Estimate</strong><br><br>
+                        <strong style="display:flex; align-items:center; gap:5px;">
+                            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height:1em; vertical-align:middle;">
+                            Annual Estimate
+                        </strong><br>
                         <strong>Protected Orders:</strong><br>
                         <span id="propProtectedOrders"></span><br><br>
                         <strong>Premiums Funded by Customers:</strong><br>
@@ -335,7 +328,10 @@
                     <td style="width: 45%; background: white;">
                         <!-- Returns Offset block — only shown when returns params present -->
                         <div id="propReturnsOffsetBlock" style="display:none;">
-                            <strong>Returns Offset (via <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height: 1em; vertical-align: middle; display: inline;">):</strong><br><br>
+                            <strong style="display:flex; align-items:center; gap:5px;">
+                                <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height:1em; vertical-align:middle; display:inline;">
+                                Returns Offset
+                            </strong><br>
                             <strong>Covered Return Label Cost:</strong><br>
                             <span id="propCoveredLabelCost"></span><br><br>
                             <strong>Covered Platform Cost:</strong><br>
@@ -364,7 +360,7 @@
 
         <div class="actions">
             <button class="edit-btn" onclick="editProposal()">Edit</button>
-            <button class="print-btn" onclick="window.print()">Print/Save PDF</button>
+            <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
         </div>
     </div>
 
@@ -433,8 +429,11 @@
             });
         });
 
+        let _lastMerchantName = '';
+
         function generateProposal() {
             const merchantName   = document.getElementById('merchantName').value || '[Merchant Name]';
+            _lastMerchantName = merchantName;
             const calculatorLink = document.getElementById('calculatorLink').value;
             const coverageType   = document.getElementById('coverageType').value || '[ ]';
             const deliveryIssue  = document.getElementById('deliveryIssue').value || '[ ]';
@@ -528,14 +527,27 @@
                     document.getElementById('propDeploymentPlan').textContent = deploymentPlan;
                     deployEl.style.display = 'block';
                 } else { deployEl.style.display = 'none'; }
-                document.getElementById('propPremiumPct').textContent      = formatPercent(data.premium);
-                document.getElementById('propAvgPremium').textContent      = formatCurrencyWithCents(avgPremium);
+
                 document.getElementById('propPremiumsFunded').textContent  = formatCurrency(premiumPool);
                 document.getElementById('propReshipRevenue').textContent   = formatCurrency(reshipRevenue);
                 document.getElementById('propRevSharePct2').textContent    = formatPercent(data.share);
                 document.getElementById('propRevShare').textContent        = formatCurrency(revenueShare);
-                document.getElementById('propAttachRate').textContent      = formatPercent(data.attach);
                 document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
+                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
+
+                // Dynamic value prop text in col 1
+                const attachStr    = formatPercent(data.attach);
+                const avgPremStr   = formatCurrencyWithCents(avgPremium);
+                const costWithoutStr = formatCurrency(totalCostWithout || (csCost + cogsAmt));
+                const totalUpside  = formatCurrency(totalNewRevenue);
+
+                let valuePropHTML;
+                if (data.returnsEnabled) {
+                    valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Because returns anxiety is universal, expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+                } else {
+                    valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+                }
+                document.getElementById('propValueProp').innerHTML = valuePropHTML;
 
                 if (disclaimerText) {
                     document.getElementById('propDisclaimer').textContent = disclaimerText;
@@ -543,18 +555,14 @@
                 } else {
                     document.getElementById('propDisclaimerSection').style.display = 'none';
                 }
-                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
 
                 // Returns Offset block
                 if (data.returnsEnabled) {
                     document.getElementById('propReturnsOffsetBlock').style.display  = 'block';
-                    document.getElementById('propReturnsValueProp').style.display    = 'block';
                     document.getElementById('propCoveredLabelCost').textContent      = formatCurrency(coveredLabelCost);
                     document.getElementById('propCoveredPlatformCost').textContent   = formatCurrency(coveredPlatformCost);
                     document.getElementById('propTotalReturnsOffset').textContent    = formatCurrency(totalReturnsOffset);
                     document.getElementById('propReturnsOffsetPct').textContent      = `+${formatPercent(returnsOffsetPct)} of premiums`;
-                    document.getElementById('propTotalCostWithout').textContent      = formatCurrency(totalCostWithout);
-                    document.getElementById('propTotalNewRevenueCopy').textContent   = formatCurrency(totalNewRevenue);
 
                     // keepPct shows shipping-only %, with note showing total including returns
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
@@ -569,16 +577,10 @@
                     }
                 } else {
                     document.getElementById('propReturnsOffsetBlock').style.display  = 'none';
-                    document.getElementById('propReturnsValueProp').style.display    = 'none';
                     document.getElementById('propReturnReasonRow').style.display     = 'none';
-                    // Standard keepPct with no note
                     document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
                     document.getElementById('propKeepPctNote').textContent = '';
                 }
-
-                const percentageTemplates = ['1.5_accurate', '2_accurate', '2_round_50', '2.5_accurate', '3_accurate', '3.5_accurate'];
-                const isPercentageBased = !data.template || data.template === '' || percentageTemplates.includes(data.template);
-                document.getElementById('customerPremiumRow').style.display = isPercentageBased ? 'block' : 'none';
 
                 document.querySelector('.input-container').style.display = 'none';
                 document.getElementById('proposalContainer').style.display = 'block';
@@ -593,6 +595,31 @@
             document.querySelector('.input-container').style.display = 'block';
             document.getElementById('proposalContainer').style.display = 'none';
             window.scrollTo(0, 0);
+        }
+
+        async function downloadProposalPDF() {
+            const el = document.getElementById('proposalContainer');
+            const actions = el.querySelector('.actions');
+            actions.style.display = 'none';
+
+            try {
+                const canvas = await html2canvas(el, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null,
+                    logging: false
+                });
+
+                // Convert canvas to PDF-sized image via jsPDF
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+
+                pdf.save(`ShipInsure_Proposal_${_lastMerchantName.replace(/\s+/g, '_') || 'proposal'}.pdf`);
+            } finally {
+                actions.style.display = 'flex';
+            }
         }
 
         window.addEventListener('load', function() {
