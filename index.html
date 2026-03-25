@@ -4,14 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShipInsure Proposal Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -28,14 +22,9 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .input-container h1 {
-            margin-bottom: 20px;
-            color: #333;
-        }
+        .input-container h1 { margin-bottom: 20px; color: #333; }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+        .input-group { margin-bottom: 20px; }
 
         .input-group label {
             display: block;
@@ -60,6 +49,30 @@
             font-family: inherit;
         }
 
+        /* Calc type detector badge */
+        .calc-type-badge {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .calc-type-badge.roi {
+            background: #eef0ff;
+            color: #4a5fc1;
+            border: 1px solid #c5cbf0;
+        }
+
+        .calc-type-badge.self-insure {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -72,10 +85,11 @@
             width: 100%;
         }
 
-        button:hover {
-            opacity: 0.9;
-        }
+        button:hover { opacity: 0.9; }
 
+        /* ═══════════════════════════════════════════════
+           STANDARD PROPOSAL (ROI Calc)
+        ═══════════════════════════════════════════════ */
         .proposal-container {
             max-width: 1100px;
             margin: 0 auto;
@@ -102,28 +116,18 @@
             margin-bottom: 6px;
         }
 
-        .proposal-section {
-            margin-bottom: 10px;
-        }
+        .proposal-section { margin-bottom: 10px; }
 
-        /* Only the outside-table label rows get white text */
         .proposal-section p.white-text {
             color: white;
             margin-bottom: 2px;
             font-size: 13px;
         }
 
-        .proposal-section p.white-text strong {
-            color: white;
-        }
+        .proposal-section p.white-text strong { color: white; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
 
-        /* Col 1: Gray context column */
         td.col-gray {
             width: 28%;
             background: #f0f0f0;
@@ -140,15 +144,9 @@
             margin-bottom: 14px;
         }
 
-        .col-gray-body {
-            font-size: 12px;
-            color: #444;
-            line-height: 1.65;
-        }
-
+        .col-gray-body { font-size: 12px; color: #444; line-height: 1.65; }
         .col-gray-body strong { color: #1b1b1b; }
 
-        /* Col 2: White metrics column */
         td.col-white {
             width: 34%;
             background: white;
@@ -167,10 +165,7 @@
             margin-bottom: 2px;
         }
 
-        .metric-value {
-            font-size: 13px;
-            color: #1b1b1b;
-        }
+        .metric-value { font-size: 13px; color: #1b1b1b; }
 
         .metric-value-row {
             display: flex;
@@ -194,12 +189,8 @@
 
         .pct-pill:empty { display: none; }
 
-        .returns-divider-col2 {
-            border-top: 1px solid #e0e0e0;
-            margin: 10px 0;
-        }
+        .returns-divider-col2 { border-top: 1px solid #e0e0e0; margin: 10px 0; }
 
-        /* Col 3: Totals column */
         td.col-totals {
             width: 38%;
             background: white;
@@ -210,22 +201,11 @@
             border-radius: 0 6px 6px 0;
         }
 
-        .col-totals-logo {
-            text-align: right;
-            margin-bottom: 16px;
-        }
+        .col-totals-logo { text-align: right; margin-bottom: 16px; }
 
-        .totals-inner {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .totals-inner { display: flex; flex-direction: column; gap: 12px; }
 
-        .accent-card {
-            border-radius: 8px;
-            padding: 12px 16px;
-        }
-
+        .accent-card { border-radius: 8px; padding: 12px 16px; }
         .accent-card-sm { background: #6675ff; }
         .accent-card-lg { background: #4a54d4; }
 
@@ -260,6 +240,165 @@
 
         .metrics-table { margin-bottom: 10px; }
 
+        /* ═══════════════════════════════════════════════
+           SELF-INSURE COMPARISON PROPOSAL
+        ═══════════════════════════════════════════════ */
+        .proposal-comparison {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(to right, #1b1b1b, #6675ff, #b7bfff);
+            padding: 28px 36px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            color: white;
+        }
+
+        .comp-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .comp-si-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        /* Comparison table: 4 columns */
+        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+
+        td.comp-col-context {
+            width: 24%;
+            background: #f0f0f0;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-radius: 6px 0 0 6px;
+        }
+
+        td.comp-col-diy {
+            width: 28%;
+            background: #fff8f3;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-left: 1px solid #e8e8e8;
+        }
+
+        td.comp-col-si {
+            width: 28%;
+            background: white;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-left: 1px solid #e8e8e8;
+        }
+
+        td.comp-col-advantage {
+            width: 20%;
+            background: white;
+            padding: 16px 18px;
+            vertical-align: top;
+            border-left: 1px solid #e8e8e8;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .comp-col-header {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid currentColor;
+        }
+
+        .comp-col-context .comp-col-header { color: #1b1b1b; border-color: #ccc; }
+        .comp-col-diy .comp-col-header { color: #c0620a; border-color: #f97316; }
+        .comp-col-si .comp-col-header { color: #4a5fc1; border-color: #6675ff; }
+        .comp-col-advantage .comp-col-header { color: #1a7a3f; border-color: #28a745; }
+
+        .comp-metric { margin-bottom: 11px; }
+
+        .comp-metric-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+        }
+
+        .comp-metric-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1b1b1b;
+        }
+
+        .comp-metric-value.negative { color: #c0392b; }
+        .comp-metric-value.positive { color: #1a7a3f; }
+        .comp-metric-value.neutral { color: #555; }
+
+        .comp-divider { border-top: 1px dashed #ddd; margin: 10px 0; }
+
+        /* Net P&L rows */
+        .comp-net-row {
+            background: #f8f9ff;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-top: 10px;
+        }
+
+        .comp-net-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.4px; }
+        .comp-net-value { font-size: 17px; font-weight: 800; margin-top: 2px; }
+
+        .comp-col-diy .comp-net-row { background: #fff3e8; }
+        .comp-col-diy .comp-net-value { color: #c0620a; }
+
+        .comp-col-si .comp-net-row { background: #eef0ff; }
+        .comp-col-si .comp-net-value { color: #4a5fc1; }
+
+        /* Advantage column */
+        .adv-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .adv-badge-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; }
+        .adv-badge-value { font-size: 20px; font-weight: 800; color: white; margin-top: 2px; }
+        .adv-badge-sub { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+        .attach-lift-badge {
+            background: #eef0ff;
+            border: 1px solid #c5cbf0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+        }
+
+        .attach-lift-label { font-size: 10px; font-weight: 700; color: #6675ff; text-transform: uppercase; letter-spacing: 0.4px; }
+        .attach-lift-value { font-size: 16px; font-weight: 800; color: #4a5fc1; margin-top: 2px; }
+        .attach-lift-sub { font-size: 10px; color: #888; margin-top: 2px; }
+
+        .comp-context-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1b1b1b;
+            margin-bottom: 12px;
+        }
+
+        .comp-context-body { font-size: 11.5px; color: #444; line-height: 1.65; }
+        .comp-context-body strong { color: #1b1b1b; }
+
+        .comp-context-field { margin-bottom: 10px; }
+        .comp-context-field-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+        .comp-context-field-value { font-size: 12px; font-weight: 600; color: #6675ff; }
+
+        /* Shared action buttons */
         .actions {
             margin-top: 20px;
             display: flex;
@@ -272,15 +411,9 @@
 
         @media print {
             @page { size: landscape; margin: 10mm; }
-            body {
-                background: white;
-                padding: 0;
-            }
-            .input-container,
-            .actions {
-                display: none !important;
-            }
-            .proposal-container {
+            body { background: white; padding: 0; }
+            .input-container, .actions { display: none !important; }
+            .proposal-container, .proposal-comparison {
                 box-shadow: none;
                 padding: 20px 28px;
                 display: block !important;
@@ -295,88 +428,103 @@
 <body>
     <div class="input-container">
         <h1>ShipInsure Proposal Generator</h1>
-        
+
         <div class="input-group">
-            <label>Merchant Name</label>
-            <input type="text" id="merchantName" placeholder="Acme Co">
+            <label for="merchantName">Merchant Name</label>
+            <input type="text" id="merchantName" placeholder="Enter merchant name">
         </div>
 
         <div class="input-group">
-            <label>Merchant Logo (optional)</label>
-            <input type="file" id="logoUpload" accept="image/*" style="padding: 10px;">
+            <label for="logoUpload">Merchant Logo (optional)</label>
+            <input type="file" id="logoUpload" accept="image/*">
         </div>
 
         <div class="input-group">
-            <label>Calculator Link</label>
-            <input type="text" id="calculatorLink" placeholder="https://drewshafe.github.io/si-roi-calculator?orders=25000&aov=60...">
+            <label for="calculatorLink">Calculator Link</label>
+            <input type="text" id="calculatorLink" placeholder="Paste ROI calculator or Self-Insure vs ShipInsure calculator link">
+            <div class="calc-type-badge roi" id="calcTypeBadge"></div>
         </div>
 
         <div class="input-group">
-            <label>Coverage Type (optional)</label>
-            <input type="text" id="coverageType" placeholder="e.g., Full Coverage, Basic Protection">
+            <label for="coverageType">Coverage Type (optional)</label>
+            <input type="text" id="coverageType" placeholder="e.g., Full Protection, Shipping Only">
         </div>
 
         <div class="input-group">
-            <label>Most Common Delivery Issue (optional)</label>
-            <input type="text" id="deliveryIssue" placeholder="e.g., Porch theft, Lost in transit">
+            <label for="deliveryIssue">Most Common Delivery Issue (optional)</label>
+            <input type="text" id="deliveryIssue" placeholder="e.g., Lost in transit, Delayed delivery">
         </div>
 
-        <div class="input-group" id="returnReasonGroup" style="display:none;">
-            <label>Most Common Return Reason (optional)</label>
-            <input type="text" id="returnReason" placeholder="e.g., Wrong size, Changed mind">
+        <div class="input-group" id="returnReasonGroup" style="display: none;">
+            <label for="returnReason">Most Common Return Reason (optional)</label>
+            <input type="text" id="returnReason" placeholder="e.g., Size issues, Changed mind">
         </div>
 
         <div class="input-group">
-            <label>Deployment Option (optional)</label>
+            <label for="deploymentPlan">Deployment Option (optional)</label>
             <select id="deploymentPlan">
                 <option value="">Select deployment option...</option>
                 <option value="Cart: Dual Checkout">Cart: Dual Checkout</option>
                 <option value="Cart: Toggle Switch">Cart: Toggle Switch</option>
                 <option value="Cart: Dual Checkout + Checkbox at Checkout">Cart: Dual Checkout + Checkbox at Checkout</option>
                 <option value="Cart: Toggle Switch + Checkbox at Checkout">Cart: Toggle Switch + Checkbox at Checkout</option>
-                <option value="Checkout: Checkbox">Checkout: Checkbox</option>
-                <option value="Included in Shipping Fees">Included in Shipping Fees</option>
+                <option value="Checkout: Checkbox Included in Shipping Fees">Checkout: Checkbox Included in Shipping Fees</option>
                 <option value="Custom">Custom</option>
             </select>
         </div>
 
         <div class="input-group">
-            <label>Disclaimer (optional — only appears if filled in)</label>
-            <input type="text" id="disclaimerText" placeholder="e.g., *Returns platform savings based on assumed $8k/mo Loop cost">
+            <label for="disclaimerText">Disclaimer (optional — only appears if filled in)</label>
+            <textarea id="disclaimerText" placeholder="Enter disclaimer text"></textarea>
         </div>
 
         <button onclick="generateProposal()">Generate Proposal</button>
     </div>
 
-    <div class="proposal-container" id="proposalContainer">
-
-        <!-- Proposals logo: top-left -->
-        <!-- Merchant logo: top-right -->
+    <!-- ── STANDARD PROPOSAL (ROI calc) ── -->
+    <div id="proposalContainer" class="proposal-container">
         <div class="proposal-header-top">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png" alt="ShipInsure Proposals" style="height: 96px;">
-            <img id="merchantLogo" src="" alt="" style="height: 100px; display: none; border-radius: 6px;">
-        </div>
-        <span id="propMerchantName" style="display:none;"></span>
-
-        <!-- SI logo inline above coverage fields -->
-        <div class="proposal-section">
-            <p id="propCoverageSection" class="white-text"><strong>Coverage Type:</strong> <span id="propCoverageType"></span></p>
-            <p id="propDeliverySection" class="white-text"><strong>Most common delivery issue:</strong> <span id="propDeliveryIssue"></span></p>
-            <p id="propReturnReasonRow" class="white-text" style="display:none;"><strong>Most common return reason:</strong> <span id="propReturnReason"></span></p>
-            <p id="propDeploySection" class="white-text"><strong>Deployment Option:</strong> <span id="propDeploymentPlan"></span></p>
+            <div>
+                <div class="proposal-si-inline">
+                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png"
+                        alt="ShipInsure Proposals" style="height: 24px;">
+                </div>
+                <h2 id="propMerchantName" style="color: white; font-size: 28px; margin-top: 8px;"></h2>
+            </div>
+            <img id="merchantLogo" alt="Merchant Logo" style="height: 40px; display: none;">
         </div>
 
-        <div class="proposal-section">
-            <table class="metrics-table">
-                <tr>
-                    <!-- Col 1: Gray - Annual Projections header + value prop -->
-                    <td class="col-gray">
-                        <div class="col-gray-header">Annual Projections</div>
-                        <div id="propValueProp" class="col-gray-body"></div>
-                    </td>
+        <table>
+            <tr>
+                <td class="col-gray">
+                    <div id="propCoverageSection" style="display: none;">
+                        <p class="white-text"><strong>Coverage Type:</strong></p>
+                        <p id="propCoverageType" style="color: #6675ff; margin-bottom: 14px;"></p>
+                    </div>
 
-                    <!-- Col 2: White - stacked metric rows with % pills -->
-                    <td class="col-white">
+                    <div id="propDeliverySection" style="display: none;">
+                        <p class="white-text"><strong>Most common delivery issue:</strong></p>
+                        <p id="propDeliveryIssue" style="color: #6675ff; margin-bottom: 14px;"></p>
+                    </div>
+
+                    <div id="propReturnReasonRow" style="display: none;">
+                        <p class="white-text"><strong>Most common return reason:</strong></p>
+                        <p id="propReturnReason" style="color: #6675ff; margin-bottom: 14px;"></p>
+                    </div>
+
+                    <div id="propDeploySection" style="display: none;">
+                        <p class="white-text"><strong>Deployment Option:</strong></p>
+                        <p id="propDeploymentPlan" style="color: #6675ff; margin-bottom: 14px;"></p>
+                    </div>
+
+                    <div class="col-gray-header">Annual Projections</div>
+                    <div class="col-gray-body">
+                        <p id="propValueProp"></p>
+                    </div>
+                </td>
+
+                <td class="col-white">
+                    <div class="metrics-table">
                         <div class="metric-row">
                             <div class="metric-label">Protected Orders:</div>
                             <div class="metric-value" id="propProtectedOrders"></div>
@@ -399,12 +547,14 @@
                                 <span class="pct-pill" id="propRevSharePill"></span>
                             </div>
                         </div>
-                        <!-- Returns Offset section -->
-                        <div id="propReturnsOffsetBlock" style="display:none;">
-                            <div class="returns-divider-col2"></div>
+
+                        <div class="returns-divider-col2"></div>
+
+                        <div id="propReturnsOffsetBlock" style="display: none;">
                             <div class="metric-row">
-                                <div class="metric-label" style="display:flex; align-items:center; gap:5px;">
-                                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png" alt="AfterShip" style="height:1em; vertical-align:middle;">
+                                <div class="metric-label">
+                                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/aftershiplogo.png"
+                                        alt="AfterShip" style="height: 12px; margin-right: 4px;">
                                     Returns Offset:
                                 </div>
                                 <div class="metric-value-row">
@@ -413,30 +563,35 @@
                                 </div>
                             </div>
                         </div>
-                    </td>
+                    </div>
+                </td>
 
-                    <!-- Col 3: White - SI logo top-right, purple accent cards -->
-                    <td class="col-totals">
-                        <div class="col-totals-logo">
-                            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" alt="ShipInsure" style="height:42px;">
-                        </div>
-                        <div class="totals-inner">
-                            <div class="accent-card accent-card-sm">
-                                <div class="accent-card-title">You Keep <span id="propKeepPct"></span> of Premiums</div>
-                                <div class="accent-card-sub" id="propKeepPctNote"></div>
-                            </div>
-                            <div class="accent-card accent-card-lg">
-                                <div class="accent-card-label">Extra Revenue with ShipInsure:</div>
-                                <div class="accent-card-total" id="propTotalNewRevenue"></div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
+                <td class="col-totals">
+                    <div class="col-totals-logo">
+                        <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
+                            alt="ShipInsure" style="height: 28px;">
+                    </div>
 
-        <div id="propDisclaimerSection" style="display:none; margin-bottom: 8px;">
-            <p id="propDisclaimer" style="font-size: 11px; color: rgba(255,255,255,0.7); font-style: italic;"></p>
+                    <div class="totals-inner">
+                        <div class="accent-card accent-card-sm">
+                            <div class="accent-card-label">You Keep of Premiums</div>
+                            <div class="accent-card-total" id="propKeepPct"></div>
+                            <div class="accent-card-sub" id="propKeepPctNote"></div>
+                        </div>
+
+                        <div class="accent-card accent-card-lg">
+                            <div class="accent-card-title">Extra Revenue with ShipInsure:</div>
+                            <div class="accent-card-total" id="propTotalNewRevenue"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div id="propDisclaimerSection" style="display: none;">
+            <p style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 15px;">
+                <strong>Disclaimer:</strong> <span id="propDisclaimer"></span>
+            </p>
         </div>
 
         <div class="actions">
@@ -445,34 +600,309 @@
         </div>
     </div>
 
+    <!-- ── SELF-INSURE COMPARISON PROPOSAL ── -->
+    <div id="proposalComparison" class="proposal-comparison">
+        <div class="comp-header-top">
+            <div>
+                <div class="comp-si-inline">
+                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png"
+                        alt="ShipInsure Proposals" style="height: 24px;">
+                </div>
+                <h2 id="compMerchantName" style="color: white; font-size: 28px; margin-top: 8px;"></h2>
+            </div>
+            <img id="compMerchantLogo" alt="Merchant Logo" style="height: 40px; display: none;">
+        </div>
+
+        <table class="comp-table">
+            <tr>
+                <!-- Column 1: Context -->
+                <td class="comp-col-context">
+                    <div id="compCoverageSection" style="display: none;" class="comp-context-field">
+                        <div class="comp-context-field-label">Coverage Type</div>
+                        <div class="comp-context-field-value" id="compCoverageType"></div>
+                    </div>
+                    <div id="compDeliverySection" style="display: none;" class="comp-context-field">
+                        <div class="comp-context-field-label">Most Common Delivery Issue</div>
+                        <div class="comp-context-field-value" id="compDeliveryIssue"></div>
+                    </div>
+                    <div id="compDeploySection" style="display: none;" class="comp-context-field">
+                        <div class="comp-context-field-label">Deployment Option</div>
+                        <div class="comp-context-field-value" id="compDeploymentPlan"></div>
+                    </div>
+                    <div class="comp-context-header">Annual Comparison</div>
+                    <div class="comp-context-body" id="compValueProp"></div>
+                </td>
+
+                <!-- Column 2: DIY Program -->
+                <td class="comp-col-diy">
+                    <div class="comp-col-header">Self-Insurance Program</div>
+
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Attach Rate</div>
+                        <div class="comp-metric-value neutral" id="compDiyAttach">—</div>
+                    </div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Protected Orders</div>
+                        <div class="comp-metric-value neutral" id="compDiyProtectedOrders">—</div>
+                    </div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Premiums Collected</div>
+                        <div class="comp-metric-value neutral" id="compDiyPremiums">—</div>
+                    </div>
+                    <div class="comp-divider"></div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Total Claim Burden</div>
+                        <div class="comp-metric-value negative" id="compDiyClaimBurden">—</div>
+                    </div>
+                    <div class="comp-net-row">
+                        <div class="comp-net-label">Net Program P&L</div>
+                        <div class="comp-net-value" id="compDiyNetPL">—</div>
+                    </div>
+                </td>
+
+                <!-- Column 3: ShipInsure Program -->
+                <td class="comp-col-si">
+                    <div class="comp-col-header">ShipInsure Program</div>
+
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Attach Rate</div>
+                        <div class="comp-metric-value positive" id="compSiAttach">—</div>
+                    </div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Protected Orders</div>
+                        <div class="comp-metric-value positive" id="compSiProtectedOrders">—</div>
+                    </div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Premiums Collected</div>
+                        <div class="comp-metric-value positive" id="compSiPremiums">—</div>
+                    </div>
+                    <div class="comp-divider"></div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">SI-Funded Claims Value</div>
+                        <div class="comp-metric-value positive" id="compSiClaimsFunded">—</div>
+                    </div>
+                    <div class="comp-metric">
+                        <div class="comp-metric-label">Revenue Share</div>
+                        <div class="comp-metric-value positive" id="compSiRevShare">—</div>
+                    </div>
+                    <div class="comp-net-row">
+                        <div class="comp-net-label">Net Program Benefit</div>
+                        <div class="comp-net-value" id="compSiNetPL">—</div>
+                    </div>
+                </td>
+
+                <!-- Column 4: Advantage -->
+                <td class="comp-col-advantage">
+                    <div class="comp-col-header">SI Advantage</div>
+                    <div class="adv-badge">
+                        <div class="adv-badge-label">Annual Upside vs. DIY</div>
+                        <div class="adv-badge-value" id="compAdvantage">—</div>
+                        <div class="adv-badge-sub" id="compAdvantageSub"></div>
+                    </div>
+                    <div class="attach-lift-badge" style="margin-top: 10px;">
+                        <div class="attach-lift-label">Attach Rate Lift</div>
+                        <div class="attach-lift-value" id="compAttachLift">—</div>
+                        <div class="attach-lift-sub" id="compAttachLiftSub"></div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
+                            alt="ShipInsure" style="height: 22px; display: block; margin: 0 auto;">
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div id="compDisclaimerSection" style="display: none;">
+            <p style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 15px;">
+                <strong>Disclaimer:</strong> <span id="compDisclaimer"></span>
+            </p>
+        </div>
+
+        <div class="actions">
+            <button class="edit-btn" onclick="editProposal()">Edit</button>
+            <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script>
+        // ── Pricing templates (shared with both calcs) ──
+        const pricingTemplates = {
+            "1.5_accurate": [
+                {min:1,max:77,premium:0.98},{min:77,max:88,premium:1.23},{min:88,max:100,premium:1.40},
+                {min:100,max:114,premium:1.60},{min:115,max:131,premium:1.83},{min:131,max:150,premium:2.09},
+                {min:150,max:171,premium:2.39},{min:171,max:195,premium:2.74},{min:195,max:223,premium:3.13},
+                {min:223,max:255,premium:3.57},{min:255,max:292,premium:4.08},{min:292,max:333,premium:4.67},
+                {min:333,max:381,premium:5.33},{min:381,max:435,premium:6.10},{min:435,max:498,premium:6.97},
+                {min:498,max:569,premium:7.96},{min:569,max:650,premium:9.10},{min:650,max:743,premium:10.40},
+                {min:743,max:849,premium:11.89},{min:849,max:970,premium:13.59},{min:970,max:1109,premium:15.53},
+                {min:1109,max:1267,premium:17.74},{min:1267,max:1449,premium:20.28},{min:1449,max:1655,premium:23.18},
+                {min:1655,max:1892,premium:26.49},{min:1892,max:2162,premium:30.27},{min:2162,max:2471,premium:34.60},
+                {min:2471,max:2824,premium:39.54},{min:2824,max:3228,premium:45.19},{min:3228,max:3689,premium:51.64},
+                {min:3689,max:4216,premium:59.02},{min:4216,max:10000,premium:67.45}
+            ],
+            "2_accurate": [
+                {min:1,max:54,premium:0.98},{min:54,max:60,premium:1.14},{min:60,max:66,premium:1.26},
+                {min:66,max:73,premium:1.39},{min:73,max:81,premium:1.54},{min:81,max:89,premium:1.70},
+                {min:89,max:99,premium:1.88},{min:99,max:109,premium:2.08},{min:109,max:121,premium:2.29},
+                {min:121,max:133,premium:2.54},{min:133,max:148,premium:2.80},{min:148,max:163,premium:3.10},
+                {min:163,max:180,premium:3.43},{min:180,max:199,premium:3.79},{min:199,max:220,premium:4.18},
+                {min:220,max:243,premium:4.63},{min:243,max:269,premium:5.11},{min:269,max:297,premium:5.65},
+                {min:297,max:329,premium:6.25},{min:329,max:363,premium:6.90},{min:363,max:402,premium:7.63},
+                {min:402,max:444,premium:8.43},{min:444,max:491,premium:9.32},{min:491,max:542,premium:10.30},
+                {min:542,max:599,premium:11.39},{min:599,max:662,premium:12.59},{min:662,max:732,premium:13.91},
+                {min:732,max:809,premium:15.38},{min:809,max:894,premium:16.99},{min:894,max:989,premium:18.78},
+                {min:989,max:1093,premium:20.76},{min:1093,max:1208,premium:22.95},{min:1208,max:1335,premium:25.36},
+                {min:1335,max:1475,premium:28.03},{min:1475,max:1631,premium:30.98},{min:1631,max:1802,premium:34.25},
+                {min:1802,max:1992,premium:37.85},{min:1992,max:2202,premium:41.83},{min:2202,max:2434,premium:46.24},
+                {min:2434,max:2690,premium:51.11},{min:2690,max:2973,premium:56.49},{min:2973,max:3286,premium:62.43},
+                {min:3286,max:3632,premium:69.00},{min:3632,max:4014,premium:76.27},{min:4014,max:4437,premium:84.30},
+                {min:4437,max:10000,premium:93.17}
+            ],
+            "2_round_50": [
+                {min:1,max:50,premium:1.00},{min:50,max:80,premium:1.50},{min:80,max:110,premium:2.00},
+                {min:110,max:140,premium:2.50},{min:140,max:160,premium:3.00},{min:160,max:180,premium:3.50},
+                {min:180,max:210,premium:4.00},{min:210,max:300,premium:5.00},{min:300,max:400,premium:8.00},
+                {min:400,max:500,premium:10.00},{min:500,max:600,premium:12.00},{min:600,max:700,premium:14.00},
+                {min:700,max:800,premium:16.00},{min:800,max:900,premium:18.00},{min:900,max:10000,premium:20.00}
+            ],
+            "2.5_accurate": [
+                {min:1,max:41,premium:0.98},{min:41,max:44,premium:1.06},{min:44,max:48,premium:1.15},
+                {min:48,max:52,premium:1.25},{min:52,max:56,premium:1.35},{min:56,max:61,premium:1.47},
+                {min:61,max:66,premium:1.59},{min:66,max:72,premium:1.72},{min:72,max:78,premium:1.87},
+                {min:78,max:84,premium:2.02},{min:84,max:91,premium:2.19},{min:91,max:99,premium:2.37},
+                {min:99,max:107,premium:2.57},{min:107,max:116,premium:2.79},{min:116,max:126,premium:3.02},
+                {min:126,max:136,premium:3.27},{min:136,max:148,premium:3.54},{min:148,max:160,premium:3.84},
+                {min:160,max:173,premium:4.16},{min:173,max:188,premium:4.51},{min:188,max:203,premium:4.88},
+                {min:203,max:220,premium:5.29},{min:220,max:239,premium:5.73},{min:239,max:259,premium:6.21},
+                {min:259,max:280,premium:6.73},{min:280,max:304,premium:7.29},{min:304,max:329,premium:7.90},
+                {min:329,max:356,premium:8.55},{min:356,max:386,premium:9.27},{min:386,max:418,premium:10.04},
+                {min:418,max:453,premium:10.88},{min:453,max:491,premium:11.78},{min:491,max:532,premium:12.76},
+                {min:532,max:576,premium:13.83},{min:576,max:624,premium:14.98},{min:624,max:676,premium:16.23},
+                {min:676,max:733,premium:17.58},{min:733,max:794,premium:19.05},{min:794,max:860,premium:20.64},
+                {min:860,max:931,premium:22.36},{min:931,max:1009,premium:24.22},{min:1009,max:1093,premium:26.24},
+                {min:1093,max:1184,premium:28.42},{min:1184,max:1283,premium:30.79},{min:1283,max:1390,premium:33.36},
+                {min:1390,max:1506,premium:36.14},{min:1506,max:1631,premium:39.15},{min:1631,max:1767,premium:42.41},
+                {min:1767,max:1915,premium:45.95},{min:1915,max:2074,premium:49.78},{min:2074,max:2247,premium:53.93},
+                {min:2247,max:2434,premium:58.42},{min:2434,max:2637,premium:63.29},{min:2637,max:2857,premium:68.56},
+                {min:2857,max:3095,premium:74.28},{min:3095,max:3353,premium:80.47},{min:3353,max:3632,premium:87.17},
+                {min:3632,max:3935,premium:94.44},{min:3935,max:4263,premium:102.31},{min:4263,max:4618,premium:110.83},
+                {min:4618,max:10000,premium:120.07}
+            ],
+            "3_accurate": "USE_PERCENTAGE_3.0",
+            "3.5_accurate": "USE_PERCENTAGE_3.5",
+            "static_1.50_300_2.00": [{min:1,max:300,premium:1.50},{min:300,max:10000,premium:2.00}],
+            "flat_1.50": [{min:1,max:10000,premium:1.50}],
+            "flat_5.95": [{min:0,max:10000,premium:5.95}],
+            "2_flat_0.98": "USE_PERCENTAGE_2.0_MIN_0.98",
+            "3_accurate_100_1.95": "USE_PERCENTAGE_3.0_MIN_1.95",
+            "3.25_1.55": "USE_PERCENTAGE_3.25_MIN_1.55",
+            "2.5_1.95": "USE_PERCENTAGE_2.5_MIN_1.95",
+            "born_primitive": [
+                {min:1,max:50,premium:2.25},{min:50,max:100,premium:2.75},{min:100,max:150,premium:3.25},
+                {min:150,max:200,premium:3.75},{min:200,max:300,premium:4.95},{min:300,max:500,premium:5.95},
+                {min:500,max:10000,premium:6.95}
+            ],
+            "og_6.5_19.99_3": [
+                {min:0,max:310,pct:0.065},{min:310,max:670,premium:19.99},{min:670,max:10000,pct:0.03}
+            ]
+        };
+
+        function getTieredPremium(orderValue, template, pctOverride, flatOverride) {
+            if (template === 'percentage' || template === 'pct') {
+                return orderValue * ((pctOverride || 0) / 100);
+            }
+            if (template === 'flat') {
+                return flatOverride || 0;
+            }
+            const tiers = pricingTemplates[template];
+            if (!tiers) return orderValue * ((pctOverride || 0) / 100);
+            if (typeof tiers === 'string') {
+                if (tiers.startsWith('USE_PERCENTAGE_')) {
+                    const parts = tiers.replace('USE_PERCENTAGE_', '').split('_MIN_');
+                    const pct = parseFloat(parts[0]) / 100;
+                    const calc = orderValue * pct;
+                    if (parts.length > 1) return Math.max(calc, parseFloat(parts[1]));
+                    return calc;
+                }
+                return 0;
+            }
+            for (let tier of tiers) {
+                if (orderValue >= tier.min && orderValue < tier.max) {
+                    return tier.pct ? orderValue * tier.pct : tier.premium;
+                }
+            }
+            const last = tiers[tiers.length - 1];
+            return last.pct ? orderValue * last.pct : last.premium;
+        }
+
+        // ── Detect which calculator the link came from ──
+        function detectCalcType(url) {
+            try {
+                const params = new URLSearchParams(new URL(url).search);
+                // Self-insure calc uses 'sia' (SI attach) and 'sa' (DIY attach) and 'cr' (claims rate)
+                if (params.has('sia') || params.has('sa') || params.has('sitm')) return 'self-insure';
+                // ROI calc uses 'attach' and 'claims' and 'share'
+                if (params.has('attach') || params.has('claims')) return 'roi';
+                return null;
+            } catch(e) { return null; }
+        }
+
+        // ── Standard ROI calc parser (unchanged) ──
         function parseCalculatorLink(url) {
             const urlObj = new URL(url);
             const params = new URLSearchParams(urlObj.search);
-            
-            const rr  = params.get('rr');
+            const rr = params.get('rr');
             const rpc = params.get('rpc');
             const rlc = params.get('rlc');
             const returnsEnabled = rr !== null && rpc !== null && rlc !== null;
 
             return {
-                orders:      parseFloat(params.get('orders'))      || 0,
-                aov:         parseFloat(params.get('aov'))         || 0,
-                claims:      parseFloat(params.get('claims'))      || 0,
-                cogs:        parseFloat(params.get('cogs'))        || 0,
-                cs:          parseFloat(params.get('cs'))          || 0,
-                share:       parseFloat(params.get('share'))       || 0,
-                attach:      parseFloat(params.get('attach'))      || 0,
-                premium:     parseFloat(params.get('premium'))     || 0,
+                orders: parseFloat(params.get('orders')) || 0,
+                aov: parseFloat(params.get('aov')) || 0,
+                claims: parseFloat(params.get('claims')) || 0,
+                cogs: parseFloat(params.get('cogs')) || 0,
+                cs: parseFloat(params.get('cs')) || 0,
+                share: parseFloat(params.get('share')) || 0,
+                attach: parseFloat(params.get('attach')) || 0,
+                premium: parseFloat(params.get('premium')) || 0,
                 avg_premium: parseFloat(params.get('avg_premium')) || 0,
-                template:    params.get('template') || '',
+                template: params.get('template') || '',
                 returnsEnabled,
-                rr:          returnsEnabled ? parseFloat(rr)  : 0,
-                rpc:         returnsEnabled ? parseFloat(rpc) : 0,
-                rlc:         returnsEnabled ? parseFloat(rlc) : 0,
+                rr: returnsEnabled ? parseFloat(rr) : 0,
+                rpc: returnsEnabled ? parseFloat(rpc) : 0,
+                rlc: returnsEnabled ? parseFloat(rlc) : 0,
             };
         }
 
+        // ── Self-insure calc parser ──
+        function parseSelfInsureLink(url) {
+            const params = new URLSearchParams(new URL(url).search);
+            return {
+                orders: parseFloat(params.get('orders')) || 0,
+                aov: parseFloat(params.get('aov')) || 0,
+                cogs: parseFloat(params.get('cogs')) || 0,
+                cr: parseFloat(params.get('cr')) || 0,          // claims rate %
+                cs: parseFloat(params.get('cs')) || 0,
+                asc: parseFloat(params.get('asc')) || 0,        // avg shipping cost
+                // DIY params
+                stmpl: params.get('stmpl') || 'percentage',
+                spp: parseFloat(params.get('spp')) || 0,        // DIY premium pct
+                spf: parseFloat(params.get('spf')) || 0,        // DIY premium flat
+                sa: parseFloat(params.get('sa')) || 0,          // DIY attach rate %
+                // SI params
+                sitm: params.get('sitm') || 'percentage',
+                sipp: parseFloat(params.get('sipp')) || 0,      // SI premium pct
+                sia: parseFloat(params.get('sia')) || 0,        // SI attach rate %
+                rs: parseFloat(params.get('rs')) || 0,          // rev share %
+                rst: params.get('rst') || 'net',                // gross or net base
+                tf: params.get('tf') || 'monthly',
+            };
+        }
+
+        // ── Format helpers ──
         function formatCurrency(value) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency', currency: 'USD',
@@ -498,177 +928,90 @@
             return value.toFixed(2) + '%';
         }
 
-        // Show/hide return reason field based on whether calc link has returns params
+        // ── Detect calc type and show badge on link input ──
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('calculatorLink').addEventListener('input', function(e) {
-                try {
-                    const data = parseCalculatorLink(e.target.value);
-                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
-                } catch(err) {
+                const badge = document.getElementById('calcTypeBadge');
+                const type = detectCalcType(e.target.value);
+                if (type === 'roi') {
+                    badge.style.display = 'flex';
+                    badge.className = 'calc-type-badge roi';
+                    badge.textContent = '✓ ROI Calculator link detected';
+                    try {
+                        const data = parseCalculatorLink(e.target.value);
+                        document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                    } catch(err) {
+                        document.getElementById('returnReasonGroup').style.display = 'none';
+                    }
+                } else if (type === 'self-insure') {
+                    badge.style.display = 'flex';
+                    badge.className = 'calc-type-badge self-insure';
+                    badge.textContent = '✓ Self-Insure vs ShipInsure calculator link detected — comparison proposal will be generated';
+                    document.getElementById('returnReasonGroup').style.display = 'none';
+                } else {
+                    badge.style.display = 'none';
                     document.getElementById('returnReasonGroup').style.display = 'none';
                 }
             });
         });
 
         let _lastMerchantName = '';
+        let _activeProposalType = 'roi';
 
         function generateProposal() {
-            const merchantName   = document.getElementById('merchantName').value || '[Merchant Name]';
+            const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
             _lastMerchantName = merchantName;
             const calculatorLink = document.getElementById('calculatorLink').value;
-            const coverageType   = document.getElementById('coverageType').value || '[ ]';
-            const deliveryIssue  = document.getElementById('deliveryIssue').value || '[ ]';
-            const returnReason   = document.getElementById('returnReason').value || '';
-            const deploymentPlan = document.getElementById('deploymentPlan').value || '[ ]';
+            const coverageType = document.getElementById('coverageType').value || '';
+            const deliveryIssue = document.getElementById('deliveryIssue').value || '';
+            const deploymentPlan = document.getElementById('deploymentPlan').value || '';
             const disclaimerText = document.getElementById('disclaimerText').value || '';
-            const logoFile       = document.getElementById('logoUpload').files[0];
+            const logoFile = document.getElementById('logoUpload').files[0];
 
             if (!calculatorLink) {
                 alert('Please enter a calculator link');
                 return;
             }
 
-            if (logoFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const logoImg = document.getElementById('merchantLogo');
-                    logoImg.src = e.target.result;
-                    logoImg.style.display = 'block';
-                    localStorage.setItem('si_proposal_logo', e.target.result);
-                };
-                reader.readAsDataURL(logoFile);
-            } else {
-                const savedLogo = localStorage.getItem('si_proposal_logo');
-                if (savedLogo) {
-                    const logoImg = document.getElementById('merchantLogo');
-                    logoImg.src = savedLogo;
-                    logoImg.style.display = 'block';
+            const calcType = detectCalcType(calculatorLink);
+
+            // Handle logo upload
+            function applyLogoToEl(imgId) {
+                const logoImg = document.getElementById(imgId);
+                if (logoFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        logoImg.src = e.target.result;
+                        logoImg.style.display = 'block';
+                        localStorage.setItem('si_proposal_logo', e.target.result);
+                    };
+                    reader.readAsDataURL(logoFile);
+                } else {
+                    const savedLogo = localStorage.getItem('si_proposal_logo');
+                    if (savedLogo) {
+                        logoImg.src = savedLogo;
+                        logoImg.style.display = 'block';
+                    }
                 }
             }
 
             try {
-                const data = parseCalculatorLink(calculatorLink);
-                
-                const annualOrders    = data.orders * 12;
-                const avgPremium      = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
-                const protectedOrders = annualOrders * (data.attach / 100);
-                const protectedClaims = protectedOrders * (data.claims / 100);
-                const premiumPool     = protectedOrders * avgPremium;
-                const reshipRevenue   = protectedClaims * data.aov;
-                const postClaimBalance = premiumPool - reshipRevenue;
-                const revenueShare    = postClaimBalance * (data.share / 100);
-
-                // Returns Offset calculations
-                let coveredLabelCost    = 0;
-                let coveredPlatformCost = 0;
-                let totalReturnsOffset  = 0;
-                let totalCostWithout    = 0;
-
-                // Lost revenue base (matches calculator): CS + COGS on ALL claims, returns on ALL orders
-                const totalClaims    = annualOrders * (data.claims / 100);
-                const csCost         = totalClaims * data.cs;
-                const cogsAmt        = totalClaims * (data.aov * (data.cogs / 100));
-
-                if (data.returnsEnabled) {
-                    const protectedReturns = protectedOrders * (data.rr / 100);
-                    const allReturns       = annualOrders * (data.rr / 100);
-                    coveredLabelCost       = protectedReturns * data.rlc;   // SI covers protected portion
-                    coveredPlatformCost    = data.rpc * 12;
-                    totalReturnsOffset     = coveredLabelCost + coveredPlatformCost;
-                    totalCostWithout       = csCost + cogsAmt + (allReturns * data.rlc) + coveredPlatformCost;
-                }
-
-                const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
-
-                // % of premiums: shipping protection portion only (reships + rev share)
-                const shippingKeepPct = premiumPool > 0 ? ((reshipRevenue + revenueShare) / premiumPool) * 100 : 0;
-                // % of premiums including returns offset
-                const totalKeepPct    = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
-                const returnsOffsetPct = premiumPool > 0 ? (totalReturnsOffset / premiumPool) * 100 : 0;
-
-                // Populate standard fields
-                document.getElementById('propMerchantName').textContent    = merchantName;
-
-                // Optional top fields — only show if filled
-                const coverageEl = document.getElementById('propCoverageSection');
-                const deliveryEl = document.getElementById('propDeliverySection');
-                const deployEl   = document.getElementById('propDeploySection');
-
-                if (coverageType && coverageType !== '[ ]') {
-                    document.getElementById('propCoverageType').textContent = coverageType;
-                    coverageEl.style.display = 'block';
-                } else { coverageEl.style.display = 'none'; }
-
-                if (deliveryIssue && deliveryIssue !== '[ ]') {
-                    document.getElementById('propDeliveryIssue').textContent = deliveryIssue;
-                    deliveryEl.style.display = 'block';
-                } else { deliveryEl.style.display = 'none'; }
-
-                if (deploymentPlan && deploymentPlan !== '[ ]') {
-                    document.getElementById('propDeploymentPlan').textContent = deploymentPlan;
-                    deployEl.style.display = 'block';
-                } else { deployEl.style.display = 'none'; }
-
-                document.getElementById('propPremiumsFunded').textContent  = formatCurrency(premiumPool);
-                document.getElementById('propReshipRevenue').textContent   = formatCurrency(reshipRevenue);
-                document.getElementById('propRevSharePct2').textContent    = formatPercent(data.share);
-                document.getElementById('propRevShare').textContent        = formatCurrency(revenueShare);
-                document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
-                document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
-
-                // % pills for col 2
-                const reshipPct   = premiumPool > 0 ? (reshipRevenue / premiumPool) * 100 : 0;
-                const revSharePct = premiumPool > 0 ? (revenueShare / premiumPool) * 100 : 0;
-                document.getElementById('propReshipPct').textContent    = `${Math.round(reshipPct)}% of premiums`;
-                document.getElementById('propRevSharePill').textContent = `${Math.round(revSharePct)}% of premiums`;
-
-                // Dynamic value prop text in col 1
-                const attachStr    = formatPercent(data.attach);
-                const avgPremStr   = formatCurrencyWithCents(avgPremium);
-                const costWithoutStr = formatCurrency(totalCostWithout || (csCost + cogsAmt));
-                const totalUpside  = formatCurrency(totalNewRevenue);
-
-                let valuePropHTML;
-                if (data.returnsEnabled) {
-                    valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Because returns anxiety is universal, expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+                if (calcType === 'self-insure') {
+                    _activeProposalType = 'self-insure';
+                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText);
+                    applyLogoToEl('compMerchantLogo');
+                    document.querySelector('.input-container').style.display = 'none';
+                    document.getElementById('proposalContainer').style.display = 'none';
+                    document.getElementById('proposalComparison').style.display = 'block';
                 } else {
-                    valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+                    _activeProposalType = 'roi';
+                    const returnReason = document.getElementById('returnReason').value || '';
+                    generateROIProposal(merchantName, calculatorLink, coverageType, deliveryIssue, returnReason, deploymentPlan, disclaimerText);
+                    applyLogoToEl('merchantLogo');
+                    document.querySelector('.input-container').style.display = 'none';
+                    document.getElementById('proposalComparison').style.display = 'none';
+                    document.getElementById('proposalContainer').style.display = 'block';
                 }
-                document.getElementById('propValueProp').innerHTML = valuePropHTML;
-
-                if (disclaimerText) {
-                    document.getElementById('propDisclaimer').textContent = disclaimerText;
-                    document.getElementById('propDisclaimerSection').style.display = 'block';
-                } else {
-                    document.getElementById('propDisclaimerSection').style.display = 'none';
-                }
-
-                // Returns Offset block
-                if (data.returnsEnabled) {
-                    document.getElementById('propReturnsOffsetBlock').style.display  = 'block';
-                    document.getElementById('propTotalReturnsOffset').textContent    = formatCurrency(totalReturnsOffset);
-                    document.getElementById('propReturnsOffsetPct').textContent      = `+${Math.round(returnsOffsetPct)}% of premiums`;
-
-                    // keepPct shows shipping-only %, with note showing total including returns
-                    document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
-                    document.getElementById('propKeepPctNote').textContent = `(${formatPercent(totalKeepPct)} of premiums including Returns Offset)`;
-
-                    // Return reason row
-                    if (returnReason) {
-                        document.getElementById('propReturnReasonRow').style.display = 'block';
-                        document.getElementById('propReturnReason').textContent = returnReason;
-                    } else {
-                        document.getElementById('propReturnReasonRow').style.display = 'none';
-                    }
-                } else {
-                    document.getElementById('propReturnsOffsetBlock').style.display  = 'none';
-                    document.getElementById('propReturnReasonRow').style.display     = 'none';
-                    document.getElementById('propKeepPct').textContent     = formatPercent(shippingKeepPct);
-                    document.getElementById('propKeepPctNote').textContent = '';
-                }
-
-                document.querySelector('.input-container').style.display = 'none';
-                document.getElementById('proposalContainer').style.display = 'block';
                 window.scrollTo(0, 0);
             } catch (error) {
                 alert('Error parsing calculator link: ' + error.message);
@@ -676,96 +1019,308 @@
             }
         }
 
+        // ── Standard ROI Proposal (unchanged logic) ──
+        function generateROIProposal(merchantName, calculatorLink, coverageType, deliveryIssue, returnReason, deploymentPlan, disclaimerText) {
+            const data = parseCalculatorLink(calculatorLink);
+            const annualOrders = data.orders * 12;
+            const avgPremium = data.avg_premium > 0 ? data.avg_premium : (data.aov * (data.premium / 100));
+            const protectedOrders = annualOrders * (data.attach / 100);
+            const protectedClaims = protectedOrders * (data.claims / 100);
+            const premiumPool = protectedOrders * avgPremium;
+            const reshipRevenue = protectedClaims * data.aov;
+            const postClaimBalance = premiumPool - reshipRevenue;
+            const revenueShare = postClaimBalance * (data.share / 100);
+
+            let coveredLabelCost = 0, coveredPlatformCost = 0, totalReturnsOffset = 0, totalCostWithout = 0;
+            const totalClaims = annualOrders * (data.claims / 100);
+            const csCost = totalClaims * data.cs;
+            const cogsAmt = totalClaims * (data.aov * (data.cogs / 100));
+
+            if (data.returnsEnabled) {
+                const protectedReturns = protectedOrders * (data.rr / 100);
+                const allReturns = annualOrders * (data.rr / 100);
+                coveredLabelCost = protectedReturns * data.rlc;
+                coveredPlatformCost = data.rpc * 12;
+                totalReturnsOffset = coveredLabelCost + coveredPlatformCost;
+                totalCostWithout = csCost + cogsAmt + (allReturns * data.rlc) + coveredPlatformCost;
+            }
+
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
+            const shippingKeepPct = premiumPool > 0 ? ((reshipRevenue + revenueShare) / premiumPool) * 100 : 0;
+            const totalKeepPct = premiumPool > 0 ? (totalNewRevenue / premiumPool) * 100 : 0;
+            const returnsOffsetPct = premiumPool > 0 ? (totalReturnsOffset / premiumPool) * 100 : 0;
+
+            document.getElementById('propMerchantName').textContent = merchantName;
+
+            const coverageEl = document.getElementById('propCoverageSection');
+            const deliveryEl = document.getElementById('propDeliverySection');
+            const deployEl = document.getElementById('propDeploySection');
+
+            if (coverageType) { document.getElementById('propCoverageType').textContent = coverageType; coverageEl.style.display = 'block'; }
+            else { coverageEl.style.display = 'none'; }
+
+            if (deliveryIssue) { document.getElementById('propDeliveryIssue').textContent = deliveryIssue; deliveryEl.style.display = 'block'; }
+            else { deliveryEl.style.display = 'none'; }
+
+            if (deploymentPlan) { document.getElementById('propDeploymentPlan').textContent = deploymentPlan; deployEl.style.display = 'block'; }
+            else { deployEl.style.display = 'none'; }
+
+            document.getElementById('propPremiumsFunded').textContent = formatCurrency(premiumPool);
+            document.getElementById('propReshipRevenue').textContent = formatCurrency(reshipRevenue);
+            document.getElementById('propRevSharePct2').textContent = formatPercent(data.share);
+            document.getElementById('propRevShare').textContent = formatCurrency(revenueShare);
+            document.getElementById('propProtectedOrders').textContent = formatNumber(protectedOrders);
+            document.getElementById('propTotalNewRevenue').textContent = formatCurrency(totalNewRevenue);
+
+            const reshipPct = premiumPool > 0 ? (reshipRevenue / premiumPool) * 100 : 0;
+            const revSharePct = premiumPool > 0 ? (revenueShare / premiumPool) * 100 : 0;
+            document.getElementById('propReshipPct').textContent = `${Math.round(reshipPct)}% of premiums`;
+            document.getElementById('propRevSharePill').textContent = `${Math.round(revSharePct)}% of premiums`;
+
+            const attachStr = formatPercent(data.attach);
+            const avgPremStr = formatCurrencyWithCents(avgPremium);
+            const costWithoutStr = formatCurrency(totalCostWithout || (csCost + cogsAmt));
+            const totalUpside = formatCurrency(totalNewRevenue);
+
+            let valuePropHTML;
+            if (data.returnsEnabled) {
+                valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Because returns anxiety is universal, expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+            } else {
+                valuePropHTML = `<strong>ShipInsure is FREE to ${merchantName}.</strong> Expect <strong>${attachStr}</strong> of customers to opt-in for ~<strong>${avgPremStr}</strong> on average.<br><br>The only real cost is doing nothing: <strong>${costWithoutStr}</strong> in annual losses your business absorbs today. ShipInsure converts that into <strong>${totalUpside}</strong> in net upside — likely the highest-ROI move available to your margins this quarter.`;
+            }
+
+            document.getElementById('propValueProp').innerHTML = valuePropHTML;
+
+            if (disclaimerText) {
+                document.getElementById('propDisclaimer').textContent = disclaimerText;
+                document.getElementById('propDisclaimerSection').style.display = 'block';
+            } else {
+                document.getElementById('propDisclaimerSection').style.display = 'none';
+            }
+
+            if (data.returnsEnabled) {
+                document.getElementById('propReturnsOffsetBlock').style.display = 'block';
+                document.getElementById('propTotalReturnsOffset').textContent = formatCurrency(totalReturnsOffset);
+                document.getElementById('propReturnsOffsetPct').textContent = `+${Math.round(returnsOffsetPct)}% of premiums`;
+                document.getElementById('propKeepPct').textContent = formatPercent(shippingKeepPct);
+                document.getElementById('propKeepPctNote').textContent = `(${formatPercent(totalKeepPct)} of premiums including Returns Offset)`;
+                if (returnReason) {
+                    document.getElementById('propReturnReasonRow').style.display = 'block';
+                    document.getElementById('propReturnReason').textContent = returnReason;
+                } else {
+                    document.getElementById('propReturnReasonRow').style.display = 'none';
+                }
+            } else {
+                document.getElementById('propReturnsOffsetBlock').style.display = 'none';
+                document.getElementById('propReturnReasonRow').style.display = 'none';
+                document.getElementById('propKeepPct').textContent = formatPercent(shippingKeepPct);
+                document.getElementById('propKeepPctNote').textContent = '';
+            }
+        }
+
+        // ── Self-Insure Comparison Proposal ──
+        function generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText) {
+            const d = parseSelfInsureLink(calculatorLink);
+
+            // Period multiplier
+            const mult = d.tf === 'annual' ? 12 : 1;
+            const periodOrders = d.orders * mult;
+            const claimsRate = d.cr / 100;
+            const totalClaims = periodOrders * claimsRate;
+
+            // DIY calculations
+            const diyAttachRate = d.sa / 100;
+            const diyProtectedOrders = periodOrders * diyAttachRate;
+            const diyAvgPremium = getTieredPremium(d.aov, d.stmpl, d.spp, d.spf);
+            const diyPremiumsIn = diyProtectedOrders * diyAvgPremium;
+            const diyClaimCostPer = (d.aov * (d.cogs / 100)) + d.cs;  // merchant's cost per claim
+            const diyTotalClaimBurden = totalClaims * diyClaimCostPer;  // all claims, protected + unprotected
+            const diyNetPL = diyPremiumsIn - diyTotalClaimBurden;
+
+            // SI calculations
+            const siAttachRate = d.sia / 100;
+            const siProtectedOrders = periodOrders * siAttachRate;
+            const siAvgPremium = getTieredPremium(d.aov, d.sitm, d.sipp, 0);
+            const siPremiumsIn = siProtectedOrders * siAvgPremium;
+            const siProtectedClaims = siProtectedOrders * claimsRate;
+            const siClaimsFunded = siProtectedClaims * d.aov;  // SI funds at full AOV
+
+            let revShareBase;
+            if (d.rst === 'gross') {
+                revShareBase = siPremiumsIn;
+            } else {
+                revShareBase = Math.max(0, siPremiumsIn - siClaimsFunded);
+            }
+            const siRevShare = revShareBase * (d.rs / 100);
+
+            // Merchant's remaining claim burden (unprotected orders)
+            const siUnprotectedClaims = (periodOrders - siProtectedOrders) * claimsRate;
+            const siRemainingClaimBurden = siUnprotectedClaims * diyClaimCostPer;
+
+            // SI net benefit = claims funded + rev share (what the merchant gains vs. absorbing claims)
+            const siNetBenefit = siClaimsFunded + siRevShare;
+
+            // True advantage = SI net position vs DIY net position
+            // DIY position: diyNetPL (premiums in - all claim costs)
+            // SI position: (merchant keeps unprotected claim costs savings vs DIY) + siRevShare + siClaimsFunded offset
+            // Simpler: advantage = siNetBenefit - (diyNetPL if diyNetPL > 0 ? 0 : Math.abs(diyNetPL))
+            // Actually: advantage = (siPremiumsIn + siClaimsFunded + siRevShare - siRemainingClaimBurden) - (diyPremiumsIn - diyTotalClaimBurden)
+            const siFullPosition = siPremiumsIn + siClaimsFunded + siRevShare - siRemainingClaimBurden;
+            const diyFullPosition = diyNetPL;
+            const advantage = siFullPosition - diyFullPosition;
+
+            const attachLift = d.sia - d.sa;
+            const attachLiftPct = d.sa > 0 ? ((d.sia - d.sa) / d.sa) * 100 : 0;
+
+            const tf = d.tf === 'annual' ? 'Annual' : 'Monthly';
+            const timeLabel = d.tf === 'annual' ? 'year' : 'month';
+
+            // Populate comparison proposal
+            document.getElementById('compMerchantName').textContent = merchantName;
+
+            if (coverageType) {
+                document.getElementById('compCoverageType').textContent = coverageType;
+                document.getElementById('compCoverageSection').style.display = 'block';
+            } else {
+                document.getElementById('compCoverageSection').style.display = 'none';
+            }
+
+            if (deliveryIssue) {
+                document.getElementById('compDeliveryIssue').textContent = deliveryIssue;
+                document.getElementById('compDeliverySection').style.display = 'block';
+            } else {
+                document.getElementById('compDeliverySection').style.display = 'none';
+            }
+
+            if (deploymentPlan) {
+                document.getElementById('compDeploymentPlan').textContent = deploymentPlan;
+                document.getElementById('compDeploySection').style.display = 'block';
+            } else {
+                document.getElementById('compDeploySection').style.display = 'none';
+            }
+
+            // Value prop
+            const advantageStr = formatCurrency(Math.abs(advantage));
+            const diyNetStr = diyNetPL >= 0 ? formatCurrency(diyNetPL) : '-' + formatCurrency(Math.abs(diyNetPL));
+            document.getElementById('compValueProp').innerHTML =
+                `<strong>You're already collecting premiums.</strong> The question is whether you're getting the most out of them.<br><br>` +
+                `Your DIY program nets <strong>${diyNetStr}</strong> per ${timeLabel} after claim costs. ShipInsure funds your claims from the premium pool and shares the upside — putting <strong>${advantageStr}</strong> more per ${timeLabel} in your favor.<br><br>` +
+                `<strong>ShipInsure is free to ${merchantName}.</strong>`;
+
+            // DIY column
+            document.getElementById('compDiyAttach').textContent = formatPercent(d.sa);
+            document.getElementById('compDiyProtectedOrders').textContent = formatNumber(diyProtectedOrders);
+            document.getElementById('compDiyPremiums').textContent = formatCurrency(diyPremiumsIn);
+            document.getElementById('compDiyClaimBurden').textContent = '-' + formatCurrency(diyTotalClaimBurden);
+            const diyNetEl = document.getElementById('compDiyNetPL');
+            diyNetEl.textContent = diyNetPL >= 0 ? formatCurrency(diyNetPL) : '-' + formatCurrency(Math.abs(diyNetPL));
+            diyNetEl.style.color = diyNetPL >= 0 ? '#c0620a' : '#c0392b';
+
+            // SI column
+            document.getElementById('compSiAttach').textContent = formatPercent(d.sia);
+            document.getElementById('compSiProtectedOrders').textContent = formatNumber(siProtectedOrders);
+            document.getElementById('compSiPremiums').textContent = formatCurrency(siPremiumsIn);
+            document.getElementById('compSiClaimsFunded').textContent = formatCurrency(siClaimsFunded);
+            document.getElementById('compSiRevShare').textContent = formatCurrency(siRevShare) + ' (' + formatPercent(d.rs) + ' of ' + (d.rst === 'gross' ? 'premiums' : 'post-claims balance') + ')';
+            document.getElementById('compSiNetPL').textContent = formatCurrency(siNetBenefit);
+
+            // Advantage column
+            document.getElementById('compAdvantage').textContent = formatCurrency(advantage);
+            document.getElementById('compAdvantageSub').textContent = 'vs. self-insurance per ' + timeLabel;
+            document.getElementById('compAttachLift').textContent = '+' + attachLift.toFixed(1) + ' pts';
+            document.getElementById('compAttachLiftSub').textContent = formatPercent(d.sa) + ' → ' + formatPercent(d.sia) + ' attach rate';
+
+            // Disclaimer
+            if (disclaimerText) {
+                document.getElementById('compDisclaimer').textContent = disclaimerText;
+                document.getElementById('compDisclaimerSection').style.display = 'block';
+            } else {
+                document.getElementById('compDisclaimerSection').style.display = 'none';
+            }
+        }
+
         function editProposal() {
             document.querySelector('.input-container').style.display = 'block';
             document.getElementById('proposalContainer').style.display = 'none';
+            document.getElementById('proposalComparison').style.display = 'none';
             window.scrollTo(0, 0);
         }
 
         async function downloadProposalPDF() {
-            const el = document.getElementById('proposalContainer');
+            const el = _activeProposalType === 'self-insure'
+                ? document.getElementById('proposalComparison')
+                : document.getElementById('proposalContainer');
             const actions = el.querySelector('.actions');
             actions.style.display = 'none';
 
             try {
                 const canvas = await html2canvas(el, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: null,
-                    logging: false
+                    scale: 2, useCORS: true, backgroundColor: null, logging: false
                 });
-
-                // Convert canvas to PDF-sized image via jsPDF
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width / 2, canvas.height / 2]
+                });
                 pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-
                 pdf.save(`ShipInsure_Proposal_${_lastMerchantName.replace(/\s+/g, '_') || 'proposal'}.pdf`);
             } finally {
                 actions.style.display = 'flex';
             }
         }
 
+        // localStorage persistence
         window.addEventListener('load', function() {
-            const savedMerchant    = localStorage.getItem('si_proposal_merchant');
-            const savedLink        = localStorage.getItem('si_proposal_link');
+            const savedMerchant = localStorage.getItem('si_proposal_merchant');
+            const savedLink = localStorage.getItem('si_proposal_link');
             const savedCoverageType = localStorage.getItem('si_proposal_coverage_type');
-            const savedIssue       = localStorage.getItem('si_proposal_issue');
+            const savedIssue = localStorage.getItem('si_proposal_issue');
             const savedReturnReason = localStorage.getItem('si_proposal_return_reason');
-            const savedDisclaimer  = localStorage.getItem('si_proposal_disclaimer');
-            const savedDeployment  = localStorage.getItem('si_proposal_deployment');
+            const savedDisclaimer = localStorage.getItem('si_proposal_disclaimer');
+            const savedDeployment = localStorage.getItem('si_proposal_deployment');
 
-            if (savedMerchant)     document.getElementById('merchantName').value    = savedMerchant;
-            if (savedLink)         document.getElementById('calculatorLink').value  = savedLink;
-            if (savedCoverageType) document.getElementById('coverageType').value    = savedCoverageType;
-            if (savedIssue)        document.getElementById('deliveryIssue').value   = savedIssue;
-            if (savedReturnReason) document.getElementById('returnReason').value    = savedReturnReason;
-            if (savedDisclaimer)   document.getElementById('disclaimerText').value  = savedDisclaimer;
-            if (savedDeployment)   document.getElementById('deploymentPlan').value  = savedDeployment;
+            if (savedMerchant) document.getElementById('merchantName').value = savedMerchant;
+            if (savedLink) document.getElementById('calculatorLink').value = savedLink;
+            if (savedCoverageType) document.getElementById('coverageType').value = savedCoverageType;
+            if (savedIssue) document.getElementById('deliveryIssue').value = savedIssue;
+            if (savedReturnReason) document.getElementById('returnReason').value = savedReturnReason;
+            if (savedDisclaimer) document.getElementById('disclaimerText').value = savedDisclaimer;
+            if (savedDeployment) document.getElementById('deploymentPlan').value = savedDeployment;
 
-            // If saved link has returns params, show return reason field
             if (savedLink) {
                 try {
-                    const data = parseCalculatorLink(savedLink);
-                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                    const type = detectCalcType(savedLink);
+                    const badge = document.getElementById('calcTypeBadge');
+                    if (type === 'roi') {
+                        badge.style.display = 'flex';
+                        badge.className = 'calc-type-badge roi';
+                        badge.textContent = '✓ ROI Calculator link detected';
+                        const data = parseCalculatorLink(savedLink);
+                        document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
+                    } else if (type === 'self-insure') {
+                        badge.style.display = 'flex';
+                        badge.className = 'calc-type-badge self-insure';
+                        badge.textContent = '✓ Self-Insure vs ShipInsure calculator link detected — comparison proposal will be generated';
+                    }
                 } catch(e) {}
             }
 
-            document.getElementById('merchantName').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_merchant', e.target.value);
-            });
-            document.getElementById('calculatorLink').addEventListener('input', (e) => {
+            document.getElementById('merchantName').addEventListener('input', e => localStorage.setItem('si_proposal_merchant', e.target.value));
+            document.getElementById('calculatorLink').addEventListener('input', e => {
                 localStorage.setItem('si_proposal_link', e.target.value);
-                try {
-                    const data = parseCalculatorLink(e.target.value);
-                    document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
-                } catch(err) {
-                    document.getElementById('returnReasonGroup').style.display = 'none';
-                }
             });
-            document.getElementById('coverageType').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_coverage_type', e.target.value);
-            });
-            document.getElementById('deliveryIssue').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_issue', e.target.value);
-            });
-            document.getElementById('returnReason').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_return_reason', e.target.value);
-            });
-            document.getElementById('disclaimerText').addEventListener('input', (e) => {
-                localStorage.setItem('si_proposal_disclaimer', e.target.value);
-            });
-            document.getElementById('deploymentPlan').addEventListener('change', (e) => {
-                localStorage.setItem('si_proposal_deployment', e.target.value);
-            });
-            document.getElementById('logoUpload').addEventListener('change', (e) => {
+            document.getElementById('coverageType').addEventListener('input', e => localStorage.setItem('si_proposal_coverage_type', e.target.value));
+            document.getElementById('deliveryIssue').addEventListener('input', e => localStorage.setItem('si_proposal_issue', e.target.value));
+            document.getElementById('returnReason').addEventListener('input', e => localStorage.setItem('si_proposal_return_reason', e.target.value));
+            document.getElementById('disclaimerText').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer', e.target.value));
+            document.getElementById('deploymentPlan').addEventListener('change', e => localStorage.setItem('si_proposal_deployment', e.target.value));
+            document.getElementById('logoUpload').addEventListener('change', e => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(event) {
-                        localStorage.setItem('si_proposal_logo', event.target.result);
-                    };
+                    reader.onload = event => localStorage.setItem('si_proposal_logo', event.target.result);
                     reader.readAsDataURL(file);
                 }
             });
