@@ -842,12 +842,52 @@
         function detectCalcType(url) {
             try {
                 const params = new URLSearchParams(new URL(url).search);
-                // Self-insure calc uses 'sia' (SI attach) and 'sa' (DIY attach) and 'cr' (claims rate)
+                // New comparison calc always includes a 'mode' param
+                if (params.has('mode')) return 'comparison:' + params.get('mode');
+                // Legacy self-insure calc uses 'sia'/'sa'/'sitm'
                 if (params.has('sia') || params.has('sa') || params.has('sitm')) return 'self-insure';
-                // ROI calc uses 'attach' and 'claims' and 'share'
+                // ROI calc uses 'attach' and 'claims'
                 if (params.has('attach') || params.has('claims')) return 'roi';
                 return null;
             } catch(e) { return null; }
+        }
+
+        // ── Parse new comparison calc link ──
+        function parseComparisonLink(url) {
+            const p = new URLSearchParams(new URL(url).search);
+            return {
+                mode: p.get('mode') || 'm1',
+                orders: parseFloat(p.get('orders')) || 0,
+                aov: parseFloat(p.get('aov')) || 0,
+                cr: parseFloat(p.get('cr')) || 0,
+                cogs: parseFloat(p.get('cogs')) || 0,
+                cs: parseFloat(p.get('cs')) || 0,
+                // Mode 1 (Self-Insure vs DIY)
+                spp: parseFloat(p.get('spp')) || 0,
+                sa: parseFloat(p.get('sa')) || 0,
+                sipp: parseFloat(p.get('sipp')) || 0,
+                sia: parseFloat(p.get('sia')) || 0,
+                rs: parseFloat(p.get('rs')) || 0,
+                sitm: p.get('sitm') || 'percentage',
+                stmpl: p.get('sitm') || 'percentage',  // alias for generateSelfInsureProposal compat
+                spf: 0,
+                rst: 'net',
+                tf: p.get('tf') || 'monthly',
+                // Mode 2 (vs Another Provider)
+                cname: p.get('cname') || 'Competitor',
+                cpp: parseFloat(p.get('cpp')) || 0,
+                ca: parseFloat(p.get('ca')) || 0,
+                crs: parseFloat(p.get('crs')) || 0,
+                sipp2: parseFloat(p.get('sipp2')) || 0,
+                sia2: parseFloat(p.get('sia2')) || 0,
+                rs2: parseFloat(p.get('rs2')) || 0,
+                // Mode 3 (Returns Offset)
+                rrate: parseFloat(p.get('rrate')) || 0,
+                rlc: parseFloat(p.get('rlc')) || 0,
+                pfee: parseFloat(p.get('pfee')) || 0,
+                sipp3: parseFloat(p.get('sipp3')) || 0,
+                sia3: parseFloat(p.get('sia3')) || 0,
+            };
         }
 
         // ── Standard ROI calc parser (unchanged) ──
@@ -948,6 +988,21 @@
                     badge.className = 'calc-type-badge self-insure';
                     badge.textContent = '✓ Self-Insure vs ShipInsure calculator link detected — comparison proposal will be generated';
                     document.getElementById('returnReasonGroup').style.display = 'none';
+                } else if (type === 'comparison:m1') {
+                    badge.style.display = 'flex';
+                    badge.className = 'calc-type-badge self-insure';
+                    badge.textContent = '✓ Comparison Calculator: Self-Insure vs ShipInsure — comparison proposal will be generated';
+                    document.getElementById('returnReasonGroup').style.display = 'none';
+                } else if (type === 'comparison:m2') {
+                    badge.style.display = 'flex';
+                    badge.className = 'calc-type-badge self-insure';
+                    badge.textContent = '✓ Comparison Calculator: vs Another Provider — comparison proposal will be generated';
+                    document.getElementById('returnReasonGroup').style.display = 'none';
+                } else if (type === 'comparison:m3') {
+                    badge.style.display = 'flex';
+                    badge.className = 'calc-type-badge self-insure';
+                    badge.textContent = '✓ Comparison Calculator: Returns Offset vs ShipInsure — comparison proposal will be generated';
+                    document.getElementById('returnReasonGroup').style.display = 'none';
                 } else {
                     badge.style.display = 'none';
                     document.getElementById('returnReasonGroup').style.display = 'none';
@@ -996,9 +1051,18 @@
             }
 
             try {
-                if (calcType === 'self-insure') {
+                if (calcType === 'self-insure' || calcType === 'comparison:m1') {
                     _activeProposalType = 'self-insure';
-                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText);
+                    // comparison:m1 uses parseComparisonLink which returns proposal-compatible shape
+                    const linkParser = calcType === 'comparison:m1' ? parseComparisonLink : parseSelfInsureLink;
+                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, linkParser);
+                    applyLogoToEl('compMerchantLogo');
+                    document.querySelector('.input-container').style.display = 'none';
+                    document.getElementById('proposalContainer').style.display = 'none';
+                    document.getElementById('proposalComparison').style.display = 'block';
+                } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
+                    _activeProposalType = 'self-insure';
+                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, parseComparisonLink);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
@@ -1119,8 +1183,8 @@
         }
 
         // ── Self-Insure Comparison Proposal ──
-        function generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText) {
-            const d = parseSelfInsureLink(calculatorLink);
+        function generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, parser) {
+            const d = (parser || parseSelfInsureLink)(calculatorLink);
 
             // Period multiplier
             const mult = d.tf === 'annual' ? 12 : 1;
@@ -1303,6 +1367,12 @@
                         badge.style.display = 'flex';
                         badge.className = 'calc-type-badge self-insure';
                         badge.textContent = '✓ Self-Insure vs ShipInsure calculator link detected — comparison proposal will be generated';
+                    } else if (type && type.startsWith('comparison:')) {
+                        badge.style.display = 'flex';
+                        badge.className = 'calc-type-badge self-insure';
+                        const modeLabels = { 'm1': 'Self-Insure vs ShipInsure', 'm2': 'vs Another Provider', 'm3': 'Returns Offset vs ShipInsure' };
+                        const mode = type.split(':')[1];
+                        badge.textContent = '✓ Comparison Calculator: ' + (modeLabels[mode] || mode) + ' — comparison proposal will be generated';
                     }
                 } catch(e) {}
             }
