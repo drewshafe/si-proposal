@@ -208,7 +208,7 @@
         /* Features included — cover image section */
         .prop-features-section {
             position: relative;
-            background-image: url('https://raw.githubusercontent.com/drewshafe/si-proposal/main/cover1.jpg');
+            background-image: url('https://raw.githubusercontent.com/drewshafe/si-proposal/main/cover1.png');
             background-size: cover;
             background-position: center 30%;
             border-radius: 14px;
@@ -252,7 +252,7 @@
             background: white;
             color: #1a1a2e;
         }
-        .prop-badge-icon { font-size: 15px; }
+        .prop-badge-icon { height: 22px; width: 22px; object-fit: contain; flex-shrink: 0; }
 
         /* Metric grid */
         .prop-metrics-grid {
@@ -1249,21 +1249,22 @@
             document.getElementById('propTotalImpactLabel').textContent = data.view === 'annual' ? 'Annual Impact' : 'Monthly Impact';
 
             // Render feature badges dynamically
+            const BASE = 'https://raw.githubusercontent.com/drewshafe/si-proposal/main/';
             const featureConfig = {
-                shipping:     { label: 'Shipping Protection',   icon: '🔒', dark: true  },
-                returns:      { label: 'Returns Offset',         icon: '↩️', dark: false },
-                skiptheline:  { label: 'Skip The Line',          icon: '⚡', dark: false },
-                satisfaction: { label: 'Satisfaction Guarantee', icon: '✅', dark: false },
-                quality:      { label: 'Quality Guarantee',      icon: '🏆', dark: false },
-                cashback:     { label: 'Customer Cashback',      icon: '💰', dark: false },
-                carbon:       { label: 'Carbon Offset',          icon: '🌱', dark: false },
+                shipping:     { label: 'Shipping Protection',   img: 'pro_protection.png',   dark: true  },
+                returns:      { label: 'Returns Offset',         img: 'pro_returns.png',       dark: false },
+                skiptheline:  { label: 'Skip The Line',          img: 'pro_stl.png',           dark: false },
+                satisfaction: { label: 'Satisfaction Guarantee', img: 'pro_satguarantee.png',  dark: false },
+                quality:      { label: 'Quality Guarantee',      img: 'pro_qualguarantee.png', dark: false },
+                cashback:     { label: 'Customer Cashback',      img: 'pro_cashback.png',      dark: false },
+                carbon:       { label: 'Carbon Offset',          img: 'pro_carbon.png',        dark: false },
             };
             const badgesContainer = document.getElementById('propFeaturesBadges');
             badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
                 const cfg = featureConfig[f];
                 if (!cfg) return '';
                 return `<div class="prop-badge${cfg.dark ? ' prop-badge-ship' : ''}">
-                    <span class="prop-badge-icon">${cfg.icon}</span>
+                    <img class="prop-badge-icon" src="${BASE}${cfg.img}" alt="${cfg.label}">
                     <span>${cfg.label}</span>
                 </div>`;
             }).join('');
