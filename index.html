@@ -239,20 +239,14 @@
         }
         .prop-features-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
         .prop-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 16px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.7px;
-            min-width: 210px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-            background: white;
-            color: #1a1a2e;
+            display: inline-flex;
+            flex-shrink: 0;
         }
-        .prop-badge-icon { height: 22px; width: 22px; object-fit: contain; flex-shrink: 0; }
+        .prop-badge-full {
+            height: 52px;
+            width: auto;
+            display: block;
+        }
 
         /* Metric grid */
         .prop-metrics-grid {
@@ -1251,22 +1245,19 @@
             // Render feature badges dynamically
             const BASE = 'https://raw.githubusercontent.com/drewshafe/si-proposal/main/';
             const featureConfig = {
-                shipping:     { label: 'Shipping Protection',   img: 'pro_protection.png',   dark: true  },
-                returns:      { label: 'Returns Offset',         img: 'pro_returns.png',       dark: false },
-                skiptheline:  { label: 'Skip The Line',          img: 'pro_stl.png',           dark: false },
-                satisfaction: { label: 'Satisfaction Guarantee', img: 'pro_satguarantee.png',  dark: false },
-                quality:      { label: 'Quality Guarantee',      img: 'pro_qualguarantee.png', dark: false },
-                cashback:     { label: 'Customer Cashback',      img: 'pro_cashback.png',      dark: false },
-                carbon:       { label: 'Carbon Offset',          img: 'pro_carbon.png',        dark: false },
+                shipping:     { label: 'Shipping Protection',   img: 'protection_badge.png'           },
+                returns:      { label: 'Returns Offset',         img: 'returns_offset_badge.png'       },
+                skiptheline:  { label: 'Skip The Line',          img: 'skip_the_line_badge.png'        },
+                satisfaction: { label: 'Satisfaction Guarantee', img: 'satisfaction_guarantee_badge.png'},
+                quality:      { label: 'Quality Guarantee',      img: 'quality_guarantee_badge.png'    },
+                cashback:     { label: 'Customer Cashback',      img: 'cashback_badge.png'             },
+                carbon:       { label: 'Carbon Offset',          img: 'carbon_badge.png'               },
             };
             const badgesContainer = document.getElementById('propFeaturesBadges');
             badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
                 const cfg = featureConfig[f];
                 if (!cfg) return '';
-                return `<div class="prop-badge${cfg.dark ? ' prop-badge-ship' : ''}">
-                    <img class="prop-badge-icon" src="${BASE}${cfg.img}" alt="">
-                    <span>${cfg.label}</span>
-                </div>`;
+                return `<img class="prop-badge-full" src="${BASE}${cfg.img}" alt="${cfg.label}">`;
             }).join('');
 
             // Returns metric boxes: show only if calculator has returns data
