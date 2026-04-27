@@ -152,7 +152,7 @@
             color: #5a6bd4;
             font-style: italic;
         }
-        .prop-merchant-logo { height: 28px; margin-left: auto; display: none; }
+        .prop-merchant-logo { height: 84px; margin-left: auto; display: none; }
 
         /* Key terms row */
         .prop-terms-row {
@@ -175,23 +175,69 @@
             line-height: 1;
         }
 
-        /* Features included */
-        .prop-features-row {
+        /* Features checkbox input */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .feature-check-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            background: white;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .feature-check-label:has(input:checked) {
+            border-color: #667eea;
+            background: #eef0ff;
+            color: #4a5fc1;
+        }
+        .feature-check-label input[type=checkbox] { accent-color: #667eea; }
+        .feature-check-label .feat-icon { font-size: 16px; }
+
+        /* Features included — cover image section */
+        .prop-features-section {
+            position: relative;
+            background-image: url('https://raw.githubusercontent.com/drewshafe/si-proposal/main/cover1.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            border-radius: 14px;
+            margin-bottom: 26px;
+            overflow: hidden;
+        }
+        .prop-features-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10,10,30,0.48);
+        }
+        .prop-features-inner {
+            position: relative;
+            z-index: 1;
             display: flex;
             align-items: flex-start;
             gap: 20px;
-            margin-bottom: 26px;
+            padding: 20px 24px;
         }
         .prop-features-label {
             font-size: 10px;
             font-weight: 700;
-            color: #888;
+            color: rgba(255,255,255,0.7);
             letter-spacing: 0.9px;
             text-transform: uppercase;
             padding-top: 10px;
             flex-shrink: 0;
         }
-        .prop-features-badges { display: flex; flex-direction: column; gap: 8px; }
+        .prop-features-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
         .prop-badge {
             display: flex;
             align-items: center;
@@ -202,10 +248,10 @@
             font-weight: 800;
             letter-spacing: 0.7px;
             min-width: 210px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            background: white;
+            color: #1a1a2e;
         }
-        .prop-badge-ship { background: #1a1a2e; color: white; }
-        .prop-badge-returns { background: white; color: #1a1a2e; border: 1px solid #e0e0e0; }
         .prop-badge-icon { font-size: 15px; }
 
         /* Metric grid */
@@ -492,8 +538,37 @@
         </div>
 
         <div class="input-group">
-            <label for="coverageType">Coverage Type (optional)</label>
-            <input type="text" id="coverageType" placeholder="e.g., Full Protection, Shipping Only">
+            <label>Features Included</label>
+            <div class="features-grid" id="featuresGrid">
+                <label class="feature-check-label">
+                    <input type="checkbox" value="shipping" checked>
+                    <span class="feat-icon">🔒</span> Shipping Protection
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="returns">
+                    <span class="feat-icon">↩️</span> Returns Offset
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="skiptheline">
+                    <span class="feat-icon">⚡</span> Skip The Line
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="satisfaction">
+                    <span class="feat-icon">✅</span> Satisfaction Guarantee
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="quality">
+                    <span class="feat-icon">🏆</span> Quality Guarantee
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="cashback">
+                    <span class="feat-icon">💰</span> Customer Cashback
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="carbon">
+                    <span class="feat-icon">🌱</span> Carbon Offset
+                </label>
+            </div>
         </div>
 
         <div class="input-group">
@@ -575,17 +650,11 @@
             </div>
 
             <!-- Features included -->
-            <div class="prop-features-row">
-                <div class="prop-features-label">Features Included</div>
-                <div class="prop-features-badges">
-                    <div class="prop-badge prop-badge-ship">
-                        <span class="prop-badge-icon">🔒</span>
-                        <span>Shipping Protection</span>
-                    </div>
-                    <div class="prop-badge prop-badge-returns" id="propReturnsBadge" style="display:none;">
-                        <span class="prop-badge-icon">🔶</span>
-                        <span>Returns Offset</span>
-                    </div>
+            <div class="prop-features-section">
+                <div class="prop-features-overlay"></div>
+                <div class="prop-features-inner">
+                    <div class="prop-features-label">Features<br>Included</div>
+                    <div class="prop-features-badges" id="propFeaturesBadges"></div>
                 </div>
             </div>
 
@@ -1058,7 +1127,7 @@
             const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
             _lastMerchantName = merchantName;
             const calculatorLink = document.getElementById('calculatorLink').value;
-            const coverageType = document.getElementById('coverageType').value || '';
+            const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
             const deliveryIssue = document.getElementById('deliveryIssue').value || '';
             const deploymentPlan = document.getElementById('deploymentPlan').value || '';
             const disclaimerText = document.getElementById('disclaimerText').value || '';
@@ -1111,7 +1180,7 @@
                 } else {
                     _activeProposalType = 'roi';
                     const returnReason = document.getElementById('returnReason').value || '';
-                    generateROIProposal(merchantName, calculatorLink, coverageType, deliveryIssue, returnReason, deploymentPlan, disclaimerText);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, deliveryIssue, returnReason, deploymentPlan, disclaimerText);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
@@ -1125,7 +1194,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, coverageType, deliveryIssue, returnReason, deploymentPlan, disclaimerText) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, deliveryIssue, returnReason, deploymentPlan, disclaimerText) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1179,14 +1248,33 @@
             document.getElementById('propTotalImpactDisplay').textContent = formatCurrency(totalNewRevenue);
             document.getElementById('propTotalImpactLabel').textContent = data.view === 'annual' ? 'Annual Impact' : 'Monthly Impact';
 
+            // Render feature badges dynamically
+            const featureConfig = {
+                shipping:     { label: 'Shipping Protection',   icon: '🔒', dark: true  },
+                returns:      { label: 'Returns Offset',         icon: '↩️', dark: false },
+                skiptheline:  { label: 'Skip The Line',          icon: '⚡', dark: false },
+                satisfaction: { label: 'Satisfaction Guarantee', icon: '✅', dark: false },
+                quality:      { label: 'Quality Guarantee',      icon: '🏆', dark: false },
+                cashback:     { label: 'Customer Cashback',      icon: '💰', dark: false },
+                carbon:       { label: 'Carbon Offset',          icon: '🌱', dark: false },
+            };
+            const badgesContainer = document.getElementById('propFeaturesBadges');
+            badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
+                const cfg = featureConfig[f];
+                if (!cfg) return '';
+                return `<div class="prop-badge${cfg.dark ? ' prop-badge-ship' : ''}">
+                    <span class="prop-badge-icon">${cfg.icon}</span>
+                    <span>${cfg.label}</span>
+                </div>`;
+            }).join('');
+
+            // Returns metric boxes: show only if calculator has returns data
             if (data.returnsEnabled) {
-                document.getElementById('propReturnsBadge').style.display = 'flex';
                 document.getElementById('propReturnLabelsBox').style.display = 'flex';
                 document.getElementById('propSoftwareSavingsBox').style.display = 'flex';
                 document.getElementById('propReturnLabelsDisplay').textContent = formatCurrency(coveredLabelCost);
                 document.getElementById('propSoftwareSavingsDisplay').textContent = formatCurrency(coveredPlatformCost);
             } else {
-                document.getElementById('propReturnsBadge').style.display = 'none';
                 document.getElementById('propReturnLabelsBox').style.display = 'none';
                 document.getElementById('propSoftwareSavingsBox').style.display = 'none';
             }
