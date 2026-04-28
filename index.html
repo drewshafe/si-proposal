@@ -224,9 +224,9 @@
             position: relative;
             z-index: 1;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 20px;
-            padding: 20px 24px;
+            padding: 18px 20px;
         }
         .prop-features-label {
             font-size: 10px;
@@ -238,14 +238,24 @@
             flex-shrink: 0;
         }
         .prop-features-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+        /* Badge images are 816x816 with black padding.
+           The actual badge pill sits at approx:
+             top 36%, bottom 63%, left 4%, right 88%
+           We clip to show only that region at 56px tall. */
         .prop-badge {
-            display: inline-flex;
+            display: inline-block;
+            width: 190px;
+            height: 56px;
+            overflow: hidden;
+            position: relative;
             flex-shrink: 0;
         }
         .prop-badge-full {
-            height: 80px;
+            position: absolute;
+            height: 207px;   /* 56px / 0.27 badge-height-ratio */
             width: auto;
-            display: block;
+            top: -75px;      /* -(36% × 207px) */
+            left: -8px;      /* -(4% × 207px) */
         }
 
         /* Metric grid */
