@@ -226,7 +226,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            padding: 0px 20px;
+            padding: 8px 20px;
         }
         .prop-features-label {
             font-size: 10px;
@@ -237,14 +237,15 @@
             padding-top: 10px;
             flex-shrink: 0;
         }
-        .prop-features-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+        .prop-features-badges { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-items: start; }
         .prop-badge {
             display: inline-flex;
             flex-shrink: 0;
         }
         .prop-badge-full {
-            height: 200px;
+            height: 36px;
             width: auto;
+            max-width: 100%;
             display: block;
             mix-blend-mode: screen;
         }
@@ -1246,13 +1247,13 @@
             // Render feature badges dynamically
             const BASE = 'https://raw.githubusercontent.com/drewshafe/si-proposal/main/';
             const featureConfig = {
-                shipping:     { label: 'Shipping Protection',   img: 'protection_badge.png'           },
-                returns:      { label: 'Returns Offset',         img: 'returns_offset_badge.png'       },
-                skiptheline:  { label: 'Skip The Line',          img: 'skip_the_line_badge.png'        },
-                satisfaction: { label: 'Satisfaction Guarantee', img: 'satisfaction_guarantee_badge.png'},
-                quality:      { label: 'Quality Guarantee',      img: 'quality_guarantee_badge.png'    },
-                cashback:     { label: 'Customer Cashback',      img: 'cashback_badge.png'             },
-                carbon:       { label: 'Carbon Offset',          img: 'carbon_badge.png'               },
+                shipping:     { label: 'Shipping Protection',   img: 'ppbadge.png'  },
+                returns:      { label: 'Returns Offset',         img: 'rbadge.png'   },
+                skiptheline:  { label: 'Skip The Line',          img: 'stlbadge.png' },
+                satisfaction: { label: 'Satisfaction Guarantee', img: 'sgbadge.png'  },
+                quality:      { label: 'Quality Guarantee',      img: 'qgbadge.png'  },
+                cashback:     { label: 'Customer Cashback',      img: 'cbbadge.png'  },
+                carbon:       { label: 'Carbon Offset',          img: 'cbbadge.png'  },
             };
             const badgesContainer = document.getElementById('propFeaturesBadges');
             badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
