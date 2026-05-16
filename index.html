@@ -328,6 +328,96 @@
         }
         .pct-pill:empty { display: none; }
 
+        /* ── Account Info input table (form) ── */
+        .acct-info-input-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .acct-info-input-table thead th {
+            background: #6675ff;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 7px 10px;
+            text-align: left;
+        }
+        .acct-info-input-table td {
+            border: 1px solid #e0e0e0;
+            padding: 6px 8px;
+            vertical-align: middle;
+        }
+        .acct-info-input-table td.label-cell {
+            font-weight: 600;
+            color: #333;
+            background: #f7f8ff;
+            width: 22%;
+            white-space: nowrap;
+        }
+        .acct-info-input-table input[type=text] {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #d0d0d0;
+            border-radius: 5px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+        .acct-rev-share-note-cell {
+            vertical-align: middle;
+            padding: 10px 12px;
+        }
+        .acct-note-preview {
+            font-size: 12px;
+            color: #6675ff;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        /* ── Account Info table (proposal output) ── */
+        .prop-acct-table {
+            width: calc(100% - 60px);
+            margin: 0 30px 16px;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+        .prop-acct-table thead th {
+            background: #6675ff;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 7px 10px;
+            text-align: left;
+        }
+        .prop-acct-table td {
+            border: 1px solid #e0e0e0;
+            padding: 7px 10px;
+            vertical-align: middle;
+            background: white;
+        }
+        .prop-acct-table tr:nth-child(even) td {
+            background: #f7f8ff;
+        }
+        .prop-acct-table td:first-child {
+            font-weight: 700;
+            color: #1a1a2e;
+            width: 22%;
+            white-space: nowrap;
+            background: #f7f8ff;
+        }
+        .prop-acct-table td:nth-child(2) {
+            width: 38%;
+            color: #333;
+        }
+        .prop-acct-table td:nth-child(3) {
+            width: 40%;
+            color: #e07000;
+        }
+
         /* ═══════════════════════════════════════════════
            SELF-INSURE COMPARISON PROPOSAL
         ═══════════════════════════════════════════════ */
@@ -568,26 +658,41 @@
         </div>
 
         <div class="input-group">
-            <label for="deliveryIssue">Most Common Delivery Issue (optional)</label>
-            <input type="text" id="deliveryIssue" placeholder="e.g., Lost in transit, Delayed delivery">
-        </div>
-
-        <div class="input-group" id="returnReasonGroup" style="display: none;">
-            <label for="returnReason">Most Common Return Reason (optional)</label>
-            <input type="text" id="returnReason" placeholder="e.g., Size issues, Changed mind">
-        </div>
-
-        <div class="input-group">
-            <label for="deploymentPlan">Deployment Option (optional)</label>
-            <select id="deploymentPlan">
-                <option value="">Select deployment option...</option>
-                <option value="Cart: Dual Checkout">Cart: Dual Checkout</option>
-                <option value="Cart: Toggle Switch">Cart: Toggle Switch</option>
-                <option value="Cart: Dual Checkout + Checkbox at Checkout">Cart: Dual Checkout + Checkbox at Checkout</option>
-                <option value="Cart: Toggle Switch + Checkbox at Checkout">Cart: Toggle Switch + Checkbox at Checkout</option>
-                <option value="Checkout: Checkbox Included in Shipping Fees">Checkout: Checkbox Included in Shipping Fees</option>
-                <option value="Custom">Custom</option>
-            </select>
+            <label>Important Account Information</label>
+            <table class="acct-info-input-table">
+                <thead>
+                    <tr>
+                        <th style="width:22%">Label</th>
+                        <th style="width:39%">Overview</th>
+                        <th style="width:39%">Additional Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-cell">Estimated Go-Live Date</td>
+                        <td><input type="text" id="acctGoLive" placeholder="TBD"></td>
+                        <td><input type="text" id="acctGoLiveNote" placeholder="– if blank"></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Pricing</td>
+                        <td><input type="text" id="acctPricing" placeholder="e.g., 4% of cart subtotal"></td>
+                        <td><input type="text" id="acctInsuranceLimit" placeholder="Insurance limit value (e.g., $3K)"></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell" rowspan="3">Rev Share</td>
+                        <td><input type="text" id="acctRevShareAmt" placeholder="Amount (e.g., 10%)"></td>
+                        <td rowspan="3" class="acct-rev-share-note-cell">
+                            <span class="acct-note-preview" id="acctRevShareNotePreview">You earn — of post-claims &amp; returns (net) revenue, paid monthly starting 3 months after launch.</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" id="acctPaymentPref" placeholder="Payment preference (e.g., TBD)"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" id="acctFirstPayment" placeholder="First payment date (e.g., TBD)"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <div class="input-group">
@@ -686,6 +791,40 @@
             <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
                 alt="ShipInsure" class="prop-footer-logo">
         </div>
+
+        <!-- Important Account Information table -->
+        <table class="prop-acct-table" id="propAcctInfoTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Important Account Information</th>
+                    <th>Overview</th>
+                    <th>Additional Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Estimated Go-Live Date</td>
+                    <td id="propAcctGoLive">TBD</td>
+                    <td id="propAcctGoLiveNote">—</td>
+                </tr>
+                <tr>
+                    <td>Pricing</td>
+                    <td id="propAcctPricing">—</td>
+                    <td id="propAcctPricingNote">—</td>
+                </tr>
+                <tr>
+                    <td rowspan="3">Rev Share</td>
+                    <td id="propAcctRevShareAmt">Amount: —</td>
+                    <td rowspan="3" id="propAcctRevShareNote">—</td>
+                </tr>
+                <tr>
+                    <td id="propAcctPaymentPref">Payment preference: —</td>
+                </tr>
+                <tr>
+                    <td id="propAcctFirstPayment">First payment date: —</td>
+                </tr>
+            </tbody>
+        </table>
 
         <div id="propDisclaimerSection" style="display:none; padding: 0 30px 12px;">
             <p style="font-size: 11px; color: #888;">
@@ -1083,35 +1222,24 @@
                     badge.style.display = 'flex';
                     badge.className = 'calc-type-badge roi';
                     badge.textContent = '✓ ROI Calculator link detected';
-                    try {
-                        const data = parseCalculatorLink(e.target.value);
-                        document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
-                    } catch(err) {
-                        document.getElementById('returnReasonGroup').style.display = 'none';
-                    }
                 } else if (type === 'self-insure') {
                     badge.style.display = 'flex';
                     badge.className = 'calc-type-badge self-insure';
                     badge.textContent = '✓ Self-Insure vs ShipInsure calculator link detected — comparison proposal will be generated';
-                    document.getElementById('returnReasonGroup').style.display = 'none';
                 } else if (type === 'comparison:m1') {
                     badge.style.display = 'flex';
                     badge.className = 'calc-type-badge self-insure';
                     badge.textContent = '✓ Comparison Calculator: Self-Insure vs ShipInsure — comparison proposal will be generated';
-                    document.getElementById('returnReasonGroup').style.display = 'none';
                 } else if (type === 'comparison:m2') {
                     badge.style.display = 'flex';
                     badge.className = 'calc-type-badge self-insure';
                     badge.textContent = '✓ Comparison Calculator: vs Another Provider — comparison proposal will be generated';
-                    document.getElementById('returnReasonGroup').style.display = 'none';
                 } else if (type === 'comparison:m3') {
                     badge.style.display = 'flex';
                     badge.className = 'calc-type-badge self-insure';
                     badge.textContent = '✓ Comparison Calculator: Returns Offset vs ShipInsure — comparison proposal will be generated';
-                    document.getElementById('returnReasonGroup').style.display = 'none';
                 } else {
                     badge.style.display = 'none';
-                    document.getElementById('returnReasonGroup').style.display = 'none';
                 }
             });
         });
@@ -1124,10 +1252,18 @@
             _lastMerchantName = merchantName;
             const calculatorLink = document.getElementById('calculatorLink').value;
             const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
-            const deliveryIssue = document.getElementById('deliveryIssue').value || '';
-            const deploymentPlan = document.getElementById('deploymentPlan').value || '';
             const disclaimerText = document.getElementById('disclaimerText').value || '';
             const logoFile = document.getElementById('logoUpload').files[0];
+
+            const acctInfo = {
+                goLive:         document.getElementById('acctGoLive').value.trim(),
+                goLiveNote:     document.getElementById('acctGoLiveNote').value.trim(),
+                pricing:        document.getElementById('acctPricing').value.trim(),
+                insuranceLimit: document.getElementById('acctInsuranceLimit').value.trim(),
+                revShareAmt:    document.getElementById('acctRevShareAmt').value.trim(),
+                paymentPref:    document.getElementById('acctPaymentPref').value.trim(),
+                firstPayment:   document.getElementById('acctFirstPayment').value.trim(),
+            };
 
             if (!calculatorLink) {
                 alert('Please enter a calculator link');
@@ -1159,24 +1295,22 @@
             try {
                 if (calcType === 'self-insure' || calcType === 'comparison:m1') {
                     _activeProposalType = 'self-insure';
-                    // comparison:m1 uses parseComparisonLink which returns proposal-compatible shape
                     const linkParser = calcType === 'comparison:m1' ? parseComparisonLink : parseSelfInsureLink;
-                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, linkParser);
+                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, linkParser);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'block';
                 } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
                     _activeProposalType = 'self-insure';
-                    generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, parseComparisonLink);
+                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, parseComparisonLink);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'block';
                 } else {
                     _activeProposalType = 'roi';
-                    const returnReason = document.getElementById('returnReason').value || '';
-                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, deliveryIssue, returnReason, deploymentPlan, disclaimerText);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
@@ -1190,7 +1324,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, deliveryIssue, returnReason, deploymentPlan, disclaimerText) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1273,6 +1407,31 @@
                 document.getElementById('propSoftwareSavingsBox').style.display = 'none';
             }
 
+            // Populate Account Info table
+            if (acctInfo) {
+                const ai = acctInfo;
+                const hasAny = ai.goLive || ai.goLiveNote || ai.pricing || ai.insuranceLimit || ai.revShareAmt || ai.paymentPref || ai.firstPayment;
+                document.getElementById('propAcctInfoTable').style.display = hasAny ? 'table' : 'none';
+
+                document.getElementById('propAcctGoLive').textContent = ai.goLive || 'TBD';
+                document.getElementById('propAcctGoLiveNote').textContent = ai.goLiveNote || '—';
+
+                document.getElementById('propAcctPricing').textContent = ai.pricing || '—';
+                document.getElementById('propAcctPricingNote').textContent = ai.insuranceLimit
+                    ? 'Insurance limit: We can insure orders up to ' + ai.insuranceLimit + ' in value'
+                    : '—';
+
+                document.getElementById('propAcctRevShareAmt').textContent = 'Amount: ' + (ai.revShareAmt || '—');
+                document.getElementById('propAcctPaymentPref').textContent = 'Payment preference: ' + (ai.paymentPref || '—');
+                document.getElementById('propAcctFirstPayment').textContent = 'First payment date: ' + (ai.firstPayment || 'TBD');
+
+                document.getElementById('propAcctRevShareNote').textContent = ai.revShareAmt
+                    ? 'You earn ' + ai.revShareAmt + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.'
+                    : '—';
+            } else {
+                document.getElementById('propAcctInfoTable').style.display = 'none';
+            }
+
             if (disclaimerText) {
                 document.getElementById('propDisclaimer').textContent = disclaimerText;
                 document.getElementById('propDisclaimerSection').style.display = 'block';
@@ -1282,7 +1441,7 @@
         }
 
         // ── Self-Insure Comparison Proposal ──
-        function generateSelfInsureProposal(merchantName, calculatorLink, coverageType, deliveryIssue, deploymentPlan, disclaimerText, parser) {
+        function generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, parser) {
             const d = (parser || parseSelfInsureLink)(calculatorLink);
 
             // Period multiplier
@@ -1341,26 +1500,9 @@
             // Populate comparison proposal
             document.getElementById('compMerchantName').textContent = merchantName;
 
-            if (coverageType) {
-                document.getElementById('compCoverageType').textContent = coverageType;
-                document.getElementById('compCoverageSection').style.display = 'block';
-            } else {
-                document.getElementById('compCoverageSection').style.display = 'none';
-            }
-
-            if (deliveryIssue) {
-                document.getElementById('compDeliveryIssue').textContent = deliveryIssue;
-                document.getElementById('compDeliverySection').style.display = 'block';
-            } else {
-                document.getElementById('compDeliverySection').style.display = 'none';
-            }
-
-            if (deploymentPlan) {
-                document.getElementById('compDeploymentPlan').textContent = deploymentPlan;
-                document.getElementById('compDeploySection').style.display = 'block';
-            } else {
-                document.getElementById('compDeploySection').style.display = 'none';
-            }
+            document.getElementById('compCoverageSection').style.display = 'none';
+            document.getElementById('compDeliverySection').style.display = 'none';
+            document.getElementById('compDeploySection').style.display = 'none';
 
             // Value prop
             const advantageStr = formatCurrency(Math.abs(advantage));
@@ -1444,23 +1586,43 @@
             }
         }
 
+        // Live preview of rev share note in input form
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('acctRevShareAmt').addEventListener('input', function(e) {
+                const val = e.target.value.trim();
+                document.getElementById('acctRevShareNotePreview').textContent = val
+                    ? 'You earn ' + val + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.'
+                    : 'You earn — of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.';
+            });
+        });
+
         // localStorage persistence
         window.addEventListener('load', function() {
-            const savedMerchant = localStorage.getItem('si_proposal_merchant');
-            const savedLink = localStorage.getItem('si_proposal_link');
-            const savedCoverageType = localStorage.getItem('si_proposal_coverage_type');
-            const savedIssue = localStorage.getItem('si_proposal_issue');
-            const savedReturnReason = localStorage.getItem('si_proposal_return_reason');
+            const savedMerchant  = localStorage.getItem('si_proposal_merchant');
+            const savedLink      = localStorage.getItem('si_proposal_link');
             const savedDisclaimer = localStorage.getItem('si_proposal_disclaimer');
-            const savedDeployment = localStorage.getItem('si_proposal_deployment');
+            const savedGoLive    = localStorage.getItem('si_proposal_go_live');
+            const savedGoLiveNote = localStorage.getItem('si_proposal_go_live_note');
+            const savedPricing   = localStorage.getItem('si_proposal_pricing');
+            const savedInsLimit  = localStorage.getItem('si_proposal_ins_limit');
+            const savedRsAmt     = localStorage.getItem('si_proposal_rs_amt');
+            const savedPayPref   = localStorage.getItem('si_proposal_pay_pref');
+            const savedFirstPay  = localStorage.getItem('si_proposal_first_pay');
 
-            if (savedMerchant) document.getElementById('merchantName').value = savedMerchant;
-            if (savedLink) document.getElementById('calculatorLink').value = savedLink;
-            if (savedCoverageType) document.getElementById('coverageType').value = savedCoverageType;
-            if (savedIssue) document.getElementById('deliveryIssue').value = savedIssue;
-            if (savedReturnReason) document.getElementById('returnReason').value = savedReturnReason;
+            if (savedMerchant)   document.getElementById('merchantName').value = savedMerchant;
+            if (savedLink)       document.getElementById('calculatorLink').value = savedLink;
             if (savedDisclaimer) document.getElementById('disclaimerText').value = savedDisclaimer;
-            if (savedDeployment) document.getElementById('deploymentPlan').value = savedDeployment;
+            if (savedGoLive)     document.getElementById('acctGoLive').value = savedGoLive;
+            if (savedGoLiveNote) document.getElementById('acctGoLiveNote').value = savedGoLiveNote;
+            if (savedPricing)    document.getElementById('acctPricing').value = savedPricing;
+            if (savedInsLimit)   document.getElementById('acctInsuranceLimit').value = savedInsLimit;
+            if (savedRsAmt) {
+                document.getElementById('acctRevShareAmt').value = savedRsAmt;
+                document.getElementById('acctRevShareNotePreview').textContent =
+                    'You earn ' + savedRsAmt + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.';
+            }
+            if (savedPayPref)  document.getElementById('acctPaymentPref').value = savedPayPref;
+            if (savedFirstPay) document.getElementById('acctFirstPayment').value = savedFirstPay;
 
             if (savedLink) {
                 try {
@@ -1470,8 +1632,6 @@
                         badge.style.display = 'flex';
                         badge.className = 'calc-type-badge roi';
                         badge.textContent = '✓ ROI Calculator link detected';
-                        const data = parseCalculatorLink(savedLink);
-                        document.getElementById('returnReasonGroup').style.display = data.returnsEnabled ? 'block' : 'none';
                     } else if (type === 'self-insure') {
                         badge.style.display = 'flex';
                         badge.className = 'calc-type-badge self-insure';
@@ -1487,14 +1647,15 @@
             }
 
             document.getElementById('merchantName').addEventListener('input', e => localStorage.setItem('si_proposal_merchant', e.target.value));
-            document.getElementById('calculatorLink').addEventListener('input', e => {
-                localStorage.setItem('si_proposal_link', e.target.value);
-            });
-            document.getElementById('coverageType').addEventListener('input', e => localStorage.setItem('si_proposal_coverage_type', e.target.value));
-            document.getElementById('deliveryIssue').addEventListener('input', e => localStorage.setItem('si_proposal_issue', e.target.value));
-            document.getElementById('returnReason').addEventListener('input', e => localStorage.setItem('si_proposal_return_reason', e.target.value));
+            document.getElementById('calculatorLink').addEventListener('input', e => localStorage.setItem('si_proposal_link', e.target.value));
             document.getElementById('disclaimerText').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer', e.target.value));
-            document.getElementById('deploymentPlan').addEventListener('change', e => localStorage.setItem('si_proposal_deployment', e.target.value));
+            document.getElementById('acctGoLive').addEventListener('input', e => localStorage.setItem('si_proposal_go_live', e.target.value));
+            document.getElementById('acctGoLiveNote').addEventListener('input', e => localStorage.setItem('si_proposal_go_live_note', e.target.value));
+            document.getElementById('acctPricing').addEventListener('input', e => localStorage.setItem('si_proposal_pricing', e.target.value));
+            document.getElementById('acctInsuranceLimit').addEventListener('input', e => localStorage.setItem('si_proposal_ins_limit', e.target.value));
+            document.getElementById('acctRevShareAmt').addEventListener('input', e => localStorage.setItem('si_proposal_rs_amt', e.target.value));
+            document.getElementById('acctPaymentPref').addEventListener('input', e => localStorage.setItem('si_proposal_pay_pref', e.target.value));
+            document.getElementById('acctFirstPayment').addEventListener('input', e => localStorage.setItem('si_proposal_first_pay', e.target.value));
             document.getElementById('logoUpload').addEventListener('change', e => {
                 const file = e.target.files[0];
                 if (file) {
