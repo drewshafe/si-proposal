@@ -593,7 +593,7 @@
         @media print {
             @page { size: landscape; margin: 10mm; }
             body { background: white; padding: 0; }
-            .input-container, .actions { display: none !important; }
+            .input-container, .actions, #proposalActions, #compActions { display: none !important; }
             .proposal-container, .proposal-comparison {
                 box-shadow: none;
                 display: block !important;
@@ -835,10 +835,12 @@
             </p>
         </div>
 
-        <div class="actions" style="padding: 0 30px 28px;">
-            <button class="edit-btn" onclick="editProposal()">Edit</button>
-            <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
-        </div>
+    </div>
+
+    <!-- ROI proposal buttons — outside card so screenshots are clean -->
+    <div id="proposalActions" class="actions" style="display:none; max-width: 680px; margin: 12px auto 0; padding: 0 4px;">
+        <button class="edit-btn" onclick="editProposal()">Edit</button>
+        <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
     </div>
 
     <!-- ── SELF-INSURE COMPARISON PROPOSAL ── -->
@@ -959,10 +961,12 @@
             </p>
         </div>
 
-        <div class="actions">
-            <button class="edit-btn" onclick="editProposal()">Edit</button>
-            <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
-        </div>
+    </div>
+
+    <!-- Comparison proposal buttons — outside card so screenshots are clean -->
+    <div id="compActions" class="actions" style="display:none; max-width: 1100px; margin: 12px auto 0; padding: 0 4px;">
+        <button class="edit-btn" onclick="editProposal()">Edit</button>
+        <button class="print-btn" onclick="downloadProposalPDF()">Download PDF</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1303,21 +1307,27 @@
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
+                    document.getElementById('proposalActions').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'block';
+                    document.getElementById('compActions').style.display = 'flex';
                 } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
                     _activeProposalType = 'self-insure';
                     generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, parseComparisonLink);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
+                    document.getElementById('proposalActions').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'block';
+                    document.getElementById('compActions').style.display = 'flex';
                 } else {
                     _activeProposalType = 'roi';
                     generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
+                    document.getElementById('compActions').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'block';
+                    document.getElementById('proposalActions').style.display = 'flex';
                 }
                 window.scrollTo(0, 0);
             } catch (error) {
@@ -1368,13 +1378,26 @@
             const revenueShare = Math.max(0, postClaimBalance) * (data.share / 100);
             const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
 
-            // Customer premium display
-            const premiumPctDisplay = data.template === 'flat_dollar' && data.aov > 0
-                ? formatPercent(data.premium / data.aov * 100)
-                : formatPercent(data.premium);
+            // Customer premium display — varies by pricing template type
+            const _flatDollarTemplates = ['flat_1.50', 'flat_5.95', 'static_1.50_300_2.00'];
+            const _templateLabels = {
+                '1.5_accurate': '1.5% Tiered', '2_accurate': '2% Tiered', '2_round_50': '2% Rounded',
+                '2.5_accurate': '2.5% Tiered', '3_accurate': '3% Tiered', '3.5_accurate': '3.5% Tiered',
+                '2_flat_0.98': '2% (min $0.98)', '3_accurate_100_1.95': '3% (min $1.95)',
+                '3.25_1.55': '3.25% (min $1.55)', '2.5_1.95': '2.5% (min $1.95)',
+                'born_primitive': 'Born Primitive', 'og_6.5_19.99_3': '6.5% / $19.99 / 3%',
+            };
+            let premiumDisplay;
+            if (data.template === 'percentage') {
+                premiumDisplay = formatPercent(data.premium);
+            } else if (_flatDollarTemplates.includes(data.template)) {
+                premiumDisplay = formatCurrencyWithCents(data.avg_premium || data.premium);
+            } else {
+                premiumDisplay = _templateLabels[data.template] || formatPercent(data.premium);
+            }
 
             // Populate simplified card
-            document.getElementById('propPremiumDisplay').textContent = premiumPctDisplay;
+            document.getElementById('propPremiumDisplay').textContent = premiumDisplay;
             document.getElementById('propRevShareDisplay').textContent = formatPercent(data.share);
             document.getElementById('propClaimsRevDisplay').textContent = formatCurrency(reshipRevenue);
             document.getElementById('propRevSharePayoutDisplay').textContent = formatCurrency(revenueShare);
@@ -1551,6 +1574,8 @@
             document.querySelector('.input-container').style.display = 'block';
             document.getElementById('proposalContainer').style.display = 'none';
             document.getElementById('proposalComparison').style.display = 'none';
+            document.getElementById('proposalActions').style.display = 'none';
+            document.getElementById('compActions').style.display = 'none';
             window.scrollTo(0, 0);
         }
 
@@ -1558,8 +1583,6 @@
             const el = _activeProposalType === 'self-insure'
                 ? document.getElementById('proposalComparison')
                 : document.getElementById('proposalContainer');
-            const actions = el.querySelector('.actions');
-            actions.style.display = 'none';
 
             try {
                 // Wait for all images in the card to fully load before snapshotting
@@ -1568,7 +1591,7 @@
                     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
                     return new Promise(resolve => {
                         img.onload = resolve;
-                        img.onerror = resolve; // don't block on broken images
+                        img.onerror = resolve;
                     });
                 }));
 
@@ -1584,8 +1607,8 @@
                 });
                 pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
                 pdf.save(`ShipInsure_Proposal_${_lastMerchantName.replace(/\s+/g, '_') || 'proposal'}.pdf`);
-            } finally {
-                actions.style.display = 'flex';
+            } catch(e) {
+                console.error('PDF error:', e);
             }
         }
 
