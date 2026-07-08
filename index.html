@@ -168,6 +168,11 @@
             color: #1a1a1a;
             line-height: 1;
         }
+        .prop-stat-value .stat-suffix {
+            font-size: 14.5px;
+            font-weight: 700;
+            margin-left: 4px;
+        }
 
         /* Features checkbox input */
         .features-grid {
@@ -1481,8 +1486,8 @@
             const cashbackStat = document.getElementById('propCashbackStat');
             if (cashbackSelected) {
                 cashbackStat.style.display = 'block';
-                document.getElementById('propSponsoredCashbackDisplay').textContent =
-                    formatPercent(data.cb) + ' (min ' + formatCurrency(data.mincb) + ')';
+                document.getElementById('propSponsoredCashbackDisplay').innerHTML =
+                    formatPercent(data.cb) + ' <span class="stat-suffix">(min ' + formatCurrency(data.mincb) + ')</span>';
             } else {
                 cashbackStat.style.display = 'none';
             }
