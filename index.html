@@ -215,17 +215,18 @@
         .prop-feature-chip {
             border: 1px solid #e6e6e2;
             border-radius: 8px;
-            padding: 4px 10px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
+            gap: 8px;
             background: #fff;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: #1a1a1a;
         }
-        .prop-badge-full {
-            height: 32px;
-            width: auto;
-            max-width: 100%;
-            display: block;
-        }
+        .prop-feature-chip .bullet { color: #999; }
 
         /* Numbered section header */
         .prop-section-header {
@@ -584,7 +585,7 @@
             <div class="features-grid" id="featuresGrid">
                 <label class="feature-check-label">
                     <input type="checkbox" value="shipping" checked>
-                    <span class="feat-icon">🔒</span> Shipping Protection
+                    <span class="feat-icon">🔒</span> Protection
                 </label>
                 <label class="feature-check-label">
                     <input type="checkbox" value="returns">
@@ -610,7 +611,16 @@
                     <input type="checkbox" value="carbon">
                     <span class="feat-icon">🌱</span> Carbon Offset
                 </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="charitable">
+                    <span class="feat-icon">🤝</span> Charitable Contributions
+                </label>
             </div>
+        </div>
+
+        <div class="input-group">
+            <label for="upfrontCashIncentive">Upfront Cash Incentive</label>
+            <input type="text" id="upfrontCashIncentive" placeholder="Dollar amount (e.g., 5000)">
         </div>
 
         <div class="input-group">
@@ -668,7 +678,7 @@
                 <div class="prop-header-left">
                     <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
                         alt="ShipInsure" class="prop-logo-mark">
-                    <div class="prop-tagline">Post-Purchase Protection</div>
+                    <div class="prop-tagline">Post-Purchase Order Enhancement</div>
                 </div>
                 <div class="prop-header-right">
                     <img id="merchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
@@ -700,30 +710,13 @@
                 <div class="prop-features-badges" id="propFeaturesBadges"></div>
             </div>
 
-            <!-- Protection financial impact -->
+            <!-- Financial impact -->
             <div class="prop-section-header">
                 <span class="prop-section-num">01</span>
-                <span class="prop-section-title">Protection Financial Impact</span>
+                <span class="prop-section-title">Financial Impact</span>
                 <span class="prop-section-rule"></span>
             </div>
-            <div class="prop-line-items">
-                <div class="prop-line-item">
-                    <span>Claims Revenue</span>
-                    <span class="val" id="propClaimsRevDisplay">$0</span>
-                </div>
-                <div class="prop-line-item" id="propReturnLabelsBox" style="display:none;">
-                    <span>Return Labels</span>
-                    <span class="val" id="propReturnLabelsDisplay">$0</span>
-                </div>
-                <div class="prop-line-item">
-                    <span>Rev Share Payout</span>
-                    <span class="val" id="propRevSharePayoutDisplay">$0</span>
-                </div>
-                <div class="prop-line-item" id="propSoftwareSavingsBox" style="display:none;">
-                    <span>Software Savings</span>
-                    <span class="val" id="propSoftwareSavingsDisplay">$0</span>
-                </div>
-            </div>
+            <div class="prop-line-items" id="propLineItems"></div>
         </div>
 
         <!-- Total Impact -->
@@ -799,7 +792,7 @@
                 <div class="prop-header-left">
                     <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
                         alt="ShipInsure" class="prop-logo-mark">
-                    <div class="prop-tagline">Post-Purchase Protection</div>
+                    <div class="prop-tagline">Post-Purchase Order Enhancement</div>
                 </div>
                 <div class="prop-header-right">
                     <img id="compMerchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
@@ -1216,6 +1209,7 @@
             const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
             const disclaimerText = document.getElementById('disclaimerText').value || '';
             const logoFile = document.getElementById('logoUpload').files[0];
+            const upfrontCashIncentive = parseFloat(document.getElementById('upfrontCashIncentive').value.replace(/[^0-9.]/g, '')) || 0;
 
             const acctInfo = {
                 goLive:         document.getElementById('acctGoLive').value.trim(),
@@ -1276,7 +1270,7 @@
                     document.getElementById('compActions').style.display = 'flex';
                 } else {
                     _activeProposalType = 'roi';
-                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
@@ -1292,7 +1286,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1331,7 +1325,12 @@
 
             const postClaimBalance = premiumPool - reshipRevenue - (data.returnsEnabled ? totalReturnsOffset : 0);
             const revenueShare = Math.max(0, postClaimBalance) * (data.share / 100);
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset;
+
+            // CS & Shipping savings — cost the merchant avoids on protected claims handled by ShipInsure
+            const csShippingSavings = protectedClaims * (data.cs + data.aship);
+
+            const upfrontCash = upfrontCashIncentive || 0;
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csShippingSavings + upfrontCash;
 
             // Customer premium display — varies by pricing template type
             const _flatDollarTemplates = ['flat_dollar', 'flat_1.50', 'flat_5.95', 'static_1.50_300_2.00'];
@@ -1358,39 +1357,44 @@
             document.getElementById('propPremiumDisplay').textContent = premiumDisplay;
             document.getElementById('propRevShareDisplay').textContent = formatPercent(data.share);
             document.getElementById('propAttachDisplay').textContent = formatPercent(data.attach);
-            document.getElementById('propClaimsRevDisplay').textContent = formatCurrency(reshipRevenue);
-            document.getElementById('propRevSharePayoutDisplay').textContent = formatCurrency(revenueShare);
             document.getElementById('propTotalImpactDisplay').textContent = formatCurrency(totalNewRevenue);
             document.getElementById('propTotalImpactLabel').textContent = data.view === 'annual' ? 'Annual Impact' : 'Monthly Impact';
 
-            // Render feature badges dynamically
-            const BASE = 'https://raw.githubusercontent.com/drewshafe/si-proposal/main/';
+            // Render feature chips — text only, no badge artwork
             const featureConfig = {
-                shipping:     { label: 'Shipping Protection',   img: 'ppbadge.png'  },
-                returns:      { label: 'Returns Offset',         img: 'rbadge.png'   },
-                skiptheline:  { label: 'Skip The Line',          img: 'stlbadge.png' },
-                satisfaction: { label: 'Satisfaction Guarantee', img: 'sgbadge.png'  },
-                quality:      { label: 'Quality Guarantee',      img: 'qgbadge.png'  },
-                cashback:     { label: 'Customer Cashback',      img: 'cbbadge.png'  },
-                carbon:       { label: 'Carbon Offset',          img: 'cbbadge.png'  },
+                shipping:     { label: 'Protection' },
+                returns:      { label: 'Returns Offset' },
+                skiptheline:  { label: 'Skip The Line' },
+                satisfaction: { label: 'Satisfaction Guarantee' },
+                quality:      { label: 'Quality Guarantee' },
+                cashback:     { label: 'Customer Cashback' },
+                carbon:       { label: 'Carbon Offset' },
+                charitable:   { label: 'Charitable Contributions' },
             };
             const badgesContainer = document.getElementById('propFeaturesBadges');
             badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
                 const cfg = featureConfig[f];
                 if (!cfg) return '';
-                return `<div class="prop-feature-chip"><img class="prop-badge-full" src="${BASE}${cfg.img}" alt="${cfg.label}"></div>`;
+                return `<div class="prop-feature-chip"><span class="bullet">•</span>${cfg.label}</div>`;
             }).join('');
 
-            // Returns metric boxes: show only if calculator has returns data
+            // Build financial impact line items, sorted descending by value
+            const lineItems = [
+                { label: 'Claims Revenue', value: reshipRevenue },
+                { label: 'CS & Shipping Savings', value: csShippingSavings },
+                { label: 'Rev Share Payout', value: revenueShare },
+            ];
             if (data.returnsEnabled) {
-                document.getElementById('propReturnLabelsBox').style.display = 'flex';
-                document.getElementById('propSoftwareSavingsBox').style.display = 'flex';
-                document.getElementById('propReturnLabelsDisplay').textContent = formatCurrency(coveredLabelCost);
-                document.getElementById('propSoftwareSavingsDisplay').textContent = formatCurrency(coveredPlatformCost);
-            } else {
-                document.getElementById('propReturnLabelsBox').style.display = 'none';
-                document.getElementById('propSoftwareSavingsBox').style.display = 'none';
+                lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
+                lineItems.push({ label: 'Software Savings', value: coveredPlatformCost });
             }
+            if (upfrontCash > 0) {
+                lineItems.push({ label: 'Upfront Cash Incentive', value: upfrontCash });
+            }
+            lineItems.sort((a, b) => b.value - a.value);
+            document.getElementById('propLineItems').innerHTML = lineItems.map(item =>
+                `<div class="prop-line-item"><span>${item.label}</span><span class="val">${formatCurrency(item.value)}</span></div>`
+            ).join('');
 
             // Populate Account Info table
             if (acctInfo) {
