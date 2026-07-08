@@ -200,16 +200,23 @@
         .feature-check-label .feat-icon { font-size: 16px; }
 
         /* Features included — plain bordered chip grid */
-        .prop-features-block { margin-bottom: 32px; }
+        .prop-features-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
         .prop-features-label {
             font-size: 10px;
             font-weight: 700;
             color: #888;
             letter-spacing: 0.9px;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            flex-shrink: 0;
+            width: 90px;
         }
         .prop-features-badges {
+            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
@@ -287,12 +294,6 @@
             font-size: 13px;
             font-weight: 700;
             color: #1a1a1a;
-        }
-        .prop-shaded-highlight-sub {
-            font-size: 11px;
-            font-style: italic;
-            color: #888;
-            margin-top: 2px;
         }
         .prop-shaded-highlight-value {
             font-size: 22px;
@@ -781,10 +782,7 @@
                 <div class="prop-shaded-box">
                     <div class="prop-line-items shaded" id="propCashbackLineItems"></div>
                     <div class="prop-shaded-highlight">
-                        <div>
-                            <div class="prop-shaded-highlight-label">Repeat Revenue Driven</div>
-                            <div class="prop-shaded-highlight-sub">= Incremental Revenue</div>
-                        </div>
+                        <div class="prop-shaded-highlight-label">Incremental Revenue</div>
                         <div class="prop-shaded-highlight-value" id="propRepeatRevenueDisplay">$0</div>
                     </div>
                 </div>
@@ -1439,7 +1437,6 @@
             const guaranteeMultiplier = guaranteeSelected && data.gcr > 0 ? data.gcr : 1;
             const additionalGuaranteeClaims = guaranteeSelected ? protectedClaims * Math.max(0, guaranteeMultiplier - 1) : 0;
             const guaranteeFundedAmount = additionalGuaranteeClaims * data.aov;
-            const increasedClaimRatePct = guaranteeSelected ? (claimsRate * 100) * Math.max(0, guaranteeMultiplier - 1) : 0;
 
             const postClaimBalance = premiumPool - reshipRevenue - (data.returnsEnabled ? totalReturnsOffset : 0) - guaranteeFundedAmount - cashbackRedeemed;
             const revenueShare = Math.max(0, postClaimBalance) * (data.share / 100);
@@ -1512,9 +1509,9 @@
 
             // Build Protection line items, sorted descending by value
             const lineItems = [
-                { label: 'Claims Revenue', value: reshipRevenue },
+                { label: 'Shipping Claims Revenue', value: reshipRevenue },
                 { label: 'CS Cost Savings', value: csCostSavings },
-                { label: 'Rev Share Payout', value: revenueShare },
+                { label: 'Extra Rev Share Payout', value: revenueShare },
             ];
             if (data.returnsEnabled) {
                 lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
@@ -1540,7 +1537,6 @@
             if (cashbackSelected) {
                 cashbackSection.style.display = 'block';
                 document.getElementById('propCashbackLineItems').innerHTML =
-                    `<div class="prop-line-item"><span>Cashback Funded</span><span class="val">${formatCurrency(cashbackFunded)}</span></div>` +
                     `<div class="prop-line-item"><span>Est. Cashback Redeemed</span><span class="val">${formatCurrency(cashbackRedeemed)}</span></div>`;
                 document.getElementById('propRepeatRevenueDisplay').textContent = formatCurrency(repeatRevenueDriven);
             } else {
@@ -1552,9 +1548,7 @@
             if (guaranteeSelected) {
                 guaranteeSection.style.display = 'block';
                 document.getElementById('propGuaranteeLineItems').innerHTML =
-                    `<div class="prop-line-item"><span>Increased Claim Rate</span><span class="val">${formatPercent(increasedClaimRatePct)}</span></div>` +
-                    `<div class="prop-line-item"><span>Additional Claims Covered</span><span class="val">${formatNumber(additionalGuaranteeClaims)}</span></div>` +
-                    `<div class="prop-line-item"><span>Funded Amount</span><span class="val">${formatCurrency(guaranteeFundedAmount)}</span></div>`;
+                    `<div class="prop-line-item"><span>Guarantee Claims Revenue</span><span class="val">${formatCurrency(guaranteeFundedAmount)}</span></div>`;
             } else {
                 guaranteeSection.style.display = 'none';
             }
