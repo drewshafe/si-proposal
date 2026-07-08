@@ -264,6 +264,41 @@
         }
         .prop-line-item .val { font-weight: 700; color: #1a1a1a; }
 
+        /* Shaded box — used for Cashback Impact / Guarantee Coverage Impact sections */
+        .prop-shaded-box {
+            background: #f7f7f5;
+            border: 1px solid #e6e6e2;
+            border-radius: 10px;
+            padding: 6px 20px;
+            margin-bottom: 30px;
+        }
+        .prop-shaded-box .prop-line-items { margin-bottom: 0; }
+        .prop-shaded-box .prop-line-item:last-child { border-bottom: none; }
+        .prop-shaded-highlight {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-top: 1px solid #e0e0dc;
+        }
+        .prop-shaded-highlight-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        .prop-shaded-highlight-sub {
+            font-size: 11px;
+            font-style: italic;
+            color: #888;
+            margin-top: 2px;
+        }
+        .prop-shaded-highlight-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1a1a1a;
+            white-space: nowrap;
+        }
+
         /* Total Impact bar */
         .prop-total-bar {
             background: #17171a;
@@ -729,6 +764,37 @@
                 </div>
                 <div class="prop-line-items" id="propIncentivesLineItems"></div>
             </div>
+
+            <!-- Cashback Impact (only shown when Customer Cashback is included) -->
+            <div class="prop-section" id="propCashbackSection" style="display:none;">
+                <div class="prop-section-header">
+                    <span class="prop-section-num"></span>
+                    <span class="prop-section-title">Cashback Impact</span>
+                    <span class="prop-section-rule"></span>
+                </div>
+                <div class="prop-shaded-box">
+                    <div class="prop-line-items shaded" id="propCashbackLineItems"></div>
+                    <div class="prop-shaded-highlight">
+                        <div>
+                            <div class="prop-shaded-highlight-label">Repeat Revenue Driven</div>
+                            <div class="prop-shaded-highlight-sub">= Incremental Revenue</div>
+                        </div>
+                        <div class="prop-shaded-highlight-value" id="propRepeatRevenueDisplay">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guarantee Coverage Impact (only shown when Satisfaction or Quality Guarantee is included) -->
+            <div class="prop-section" id="propGuaranteeSection" style="display:none;">
+                <div class="prop-section-header">
+                    <span class="prop-section-num"></span>
+                    <span class="prop-section-title">Guarantee Coverage Impact</span>
+                    <span class="prop-section-rule"></span>
+                </div>
+                <div class="prop-shaded-box">
+                    <div class="prop-line-items shaded" id="propGuaranteeLineItems"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Total Impact -->
@@ -1126,6 +1192,10 @@
                 rr: returnsEnabled ? parseFloat(rr) : 0,
                 rpc: returnsEnabled ? parseFloat(rpc) : 0,
                 rlc: returnsEnabled ? parseFloat(rlc) : 0,
+                cb: parseFloat(params.get('cb')) || 0,
+                mincb: parseFloat(params.get('mincb')) || 0,
+                cbrr: parseFloat(params.get('cbrr')) || 0,
+                gcr: parseFloat(params.get('gcr')) || 0,
             };
         }
 
@@ -1348,14 +1418,31 @@
                 totalReturnsOffset = coveredLabelCost + coveredPlatformCost;
             }
 
-            const postClaimBalance = premiumPool - reshipRevenue - (data.returnsEnabled ? totalReturnsOffset : 0);
+            // Cashback Impact — only computed when the Customer Cashback feature is selected
+            const cashbackSelected = (selectedFeatures || []).includes('cashback');
+            const cashbackPerOrder = cashbackSelected ? Math.max(data.aov * (data.cb / 100), data.mincb) : 0;
+            const cashbackFunded = cashbackSelected ? protectedOrders * cashbackPerOrder : 0;
+            const cashbackRedeemed = cashbackSelected ? cashbackFunded * (data.cbrr / 100) : 0;
+            const repeatRevenueDriven = cashbackSelected && cashbackPerOrder > 0
+                ? (cashbackRedeemed / cashbackPerOrder) * data.aov
+                : 0;
+
+            // Guarantee Coverage Impact — only computed when Satisfaction or Quality Guarantee is selected.
+            // gcr is a claim-rate multiplier (e.g. 1.5 = claims run 1.5x higher with the guarantee in place).
+            const guaranteeSelected = (selectedFeatures || []).includes('satisfaction') || (selectedFeatures || []).includes('quality');
+            const guaranteeMultiplier = guaranteeSelected && data.gcr > 0 ? data.gcr : 1;
+            const additionalGuaranteeClaims = guaranteeSelected ? protectedClaims * Math.max(0, guaranteeMultiplier - 1) : 0;
+            const guaranteeFundedAmount = additionalGuaranteeClaims * data.aov;
+            const increasedClaimRatePct = guaranteeSelected ? (claimsRate * 100) * Math.max(0, guaranteeMultiplier - 1) : 0;
+
+            const postClaimBalance = premiumPool - reshipRevenue - (data.returnsEnabled ? totalReturnsOffset : 0) - guaranteeFundedAmount - cashbackRedeemed;
             const revenueShare = Math.max(0, postClaimBalance) * (data.share / 100);
 
             // CS Cost savings — avoided support ticket cost on protected claims handled by ShipInsure
             const csCostSavings = protectedClaims * data.cs;
 
             const upfrontCash = upfrontCashIncentive || 0;
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash;
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + guaranteeFundedAmount + cashbackRedeemed;
 
             // Customer premium display — varies by pricing template type
             const _flatDollarTemplates = ['flat_dollar', 'flat_1.50', 'flat_5.95', 'static_1.50_300_2.00'];
@@ -1426,6 +1513,30 @@
                     `<div class="prop-line-item"><span>Upfront Cash Incentive</span><span class="val">${formatCurrency(upfrontCash)}</span></div>`;
             } else {
                 incentivesSection.style.display = 'none';
+            }
+
+            // Cashback Impact — only shown when Customer Cashback is included
+            const cashbackSection = document.getElementById('propCashbackSection');
+            if (cashbackSelected) {
+                cashbackSection.style.display = 'block';
+                document.getElementById('propCashbackLineItems').innerHTML =
+                    `<div class="prop-line-item"><span>Cashback Funded</span><span class="val">${formatCurrency(cashbackFunded)}</span></div>` +
+                    `<div class="prop-line-item"><span>Est. Cashback Redeemed</span><span class="val">${formatCurrency(cashbackRedeemed)}</span></div>`;
+                document.getElementById('propRepeatRevenueDisplay').textContent = formatCurrency(repeatRevenueDriven);
+            } else {
+                cashbackSection.style.display = 'none';
+            }
+
+            // Guarantee Coverage Impact — only shown when Satisfaction or Quality Guarantee is included
+            const guaranteeSection = document.getElementById('propGuaranteeSection');
+            if (guaranteeSelected) {
+                guaranteeSection.style.display = 'block';
+                document.getElementById('propGuaranteeLineItems').innerHTML =
+                    `<div class="prop-line-item"><span>Increased Claim Rate</span><span class="val">${formatPercent(increasedClaimRatePct)}</span></div>` +
+                    `<div class="prop-line-item"><span>Additional Claims Covered</span><span class="val">${formatNumber(additionalGuaranteeClaims)}</span></div>` +
+                    `<div class="prop-line-item"><span>Funded Amount</span><span class="val">${formatCurrency(guaranteeFundedAmount)}</span></div>`;
+            } else {
+                guaranteeSection.style.display = 'none';
             }
 
             renumberSections('#proposalContainer');
