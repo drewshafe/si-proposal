@@ -710,13 +710,25 @@
                 <div class="prop-features-badges" id="propFeaturesBadges"></div>
             </div>
 
-            <!-- Financial impact -->
-            <div class="prop-section-header">
-                <span class="prop-section-num">01</span>
-                <span class="prop-section-title">Financial Impact</span>
-                <span class="prop-section-rule"></span>
+            <!-- Protection -->
+            <div class="prop-section" id="propProtectionSection">
+                <div class="prop-section-header">
+                    <span class="prop-section-num"></span>
+                    <span class="prop-section-title">Protection</span>
+                    <span class="prop-section-rule"></span>
+                </div>
+                <div class="prop-line-items" id="propLineItems"></div>
             </div>
-            <div class="prop-line-items" id="propLineItems"></div>
+
+            <!-- Incentives (only shown when an upfront cash incentive is included) -->
+            <div class="prop-section" id="propIncentivesSection" style="display:none;">
+                <div class="prop-section-header">
+                    <span class="prop-section-num"></span>
+                    <span class="prop-section-title">Incentives</span>
+                    <span class="prop-section-rule"></span>
+                </div>
+                <div class="prop-line-items" id="propIncentivesLineItems"></div>
+            </div>
         </div>
 
         <!-- Total Impact -->
@@ -1168,6 +1180,19 @@
             return value.toFixed(2) + '%';
         }
 
+        // Number the visible .prop-section elements within a container sequentially (01, 02, ...),
+        // so conditionally-shown sections always number correctly regardless of which appear.
+        function renumberSections(containerSelector) {
+            const sections = document.querySelectorAll(containerSelector + ' .prop-section');
+            let n = 0;
+            sections.forEach(sec => {
+                if (sec.style.display === 'none') return;
+                n++;
+                const numEl = sec.querySelector('.prop-section-num');
+                if (numEl) numEl.textContent = String(n).padStart(2, '0');
+            });
+        }
+
         // ── Detect calc type and show badge on link input ──
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('calculatorLink').addEventListener('input', function(e) {
@@ -1378,7 +1403,7 @@
                 return `<div class="prop-feature-chip"><span class="bullet">•</span>${cfg.label}</div>`;
             }).join('');
 
-            // Build financial impact line items, sorted descending by value
+            // Build Protection line items, sorted descending by value
             const lineItems = [
                 { label: 'Claims Revenue', value: reshipRevenue },
                 { label: 'CS Cost Savings', value: csCostSavings },
@@ -1388,13 +1413,22 @@
                 lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
                 lineItems.push({ label: 'Software Savings', value: coveredPlatformCost });
             }
-            if (upfrontCash > 0) {
-                lineItems.push({ label: 'Upfront Cash Incentive', value: upfrontCash });
-            }
             lineItems.sort((a, b) => b.value - a.value);
             document.getElementById('propLineItems').innerHTML = lineItems.map(item =>
                 `<div class="prop-line-item"><span>${item.label}</span><span class="val">${formatCurrency(item.value)}</span></div>`
             ).join('');
+
+            // Incentives — only shown when an upfront cash incentive is included
+            const incentivesSection = document.getElementById('propIncentivesSection');
+            if (upfrontCash > 0) {
+                incentivesSection.style.display = 'block';
+                document.getElementById('propIncentivesLineItems').innerHTML =
+                    `<div class="prop-line-item"><span>Upfront Cash Incentive</span><span class="val">${formatCurrency(upfrontCash)}</span></div>`;
+            } else {
+                incentivesSection.style.display = 'none';
+            }
+
+            renumberSections('#proposalContainer');
 
             // Populate Account Info table
             if (acctInfo) {
