@@ -91,76 +91,68 @@
            SIMPLIFIED PROPOSAL CARD (ROI Calc)
         ═══════════════════════════════════════════════ */
         .proposal-container {
-            max-width: 680px;
+            max-width: 720px;
             margin: 0 auto;
-            background: #e9ebe4;
-            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #e6e6e2;
+            border-radius: 6px;
             overflow: hidden;
-            position: relative;
             display: none;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            color: #1a1a1a;
         }
 
-        /* Topographic SVG overlay fills entire card background */
-        .prop-topo {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .prop-topo svg { width: 100%; height: 100%; }
-
-        /* Landscape scene — top right corner */
-        .prop-scene {
-            position: absolute;
-            top: 0; right: 0;
-            width: 40%; height: 190px;
-            background: linear-gradient(175deg, #b8dff0 0%, #a0d4a0 52%, #5fa85f 100%);
-            border-radius: 0 20px 0 0;
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%);
-            z-index: 1;
-            overflow: hidden;
-        }
-        .prop-scene::before {
-            content: '';
-            position: absolute;
-            top: 22px; left: 28px;
-            width: 60px; height: 20px;
-            background: rgba(255,255,255,0.82);
-            border-radius: 40px;
-            box-shadow: 34px -4px 0 rgba(255,255,255,0.65), 16px -7px 0 rgba(255,255,255,0.55);
-        }
-
-        /* Main content layer sits above decorative bg */
-        .prop-content {
-            position: relative;
-            z-index: 2;
-            padding: 26px 30px 0;
-        }
+        .prop-body { padding: 40px 44px 4px; }
 
         /* Header */
         .prop-header {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            padding-bottom: 22px;
+            border-bottom: 2px solid #1a1a1a;
             margin-bottom: 28px;
         }
-        .prop-logo-mark { height: 60px; }
-        .prop-heading {
-            font-size: 24px;
-            font-weight: 800;
-            color: #5a6bd4;
+        .prop-header-left { display: flex; flex-direction: column; gap: 8px; }
+        .prop-logo-mark { height: 30px; width: auto; }
+        .prop-tagline {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #999;
+        }
+        .prop-header-right { text-align: right; }
+        .prop-merchant-logo { height: 26px; margin-bottom: 10px; display: none; margin-left: auto; }
+        .prop-doc-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 6px;
+        }
+        .prop-confidential {
+            font-family: Georgia, 'Times New Roman', serif;
             font-style: italic;
+            font-size: 21px;
+            color: #1a1a1a;
+            line-height: 1.3;
         }
-        .prop-merchant-logo { height: 84px; margin-left: auto; display: none; }
+        .prop-date { font-size: 12px; color: #999; margin-top: 4px; }
 
-        /* Key terms row */
-        .prop-terms-row {
+        /* Key terms stat band — bleeds full width of the card */
+        .prop-stats-band {
             display: flex;
-            gap: 52px;
-            margin-bottom: 30px;
+            gap: 48px;
+            background: #f7f7f5;
+            border-top: 1px solid #e6e6e2;
+            border-bottom: 1px solid #e6e6e2;
+            margin: 0 -44px 28px;
+            padding: 20px 44px;
         }
-        .prop-term-label {
+        .prop-stat-label {
             font-size: 10px;
             font-weight: 700;
             color: #888;
@@ -168,10 +160,10 @@
             text-transform: uppercase;
             margin-bottom: 4px;
         }
-        .prop-term-value {
-            font-size: 34px;
+        .prop-stat-value {
+            font-size: 30px;
             font-weight: 800;
-            color: #1a1a2e;
+            color: #1a1a1a;
             line-height: 1;
         }
 
@@ -205,115 +197,119 @@
         .feature-check-label input[type=checkbox] { accent-color: #667eea; }
         .feature-check-label .feat-icon { font-size: 16px; }
 
-        /* Features included — cover image section */
-        .prop-features-section {
-            position: relative;
-            background-image: url('https://raw.githubusercontent.com/drewshafe/si-proposal/main/cover1.png');
-            background-size: cover;
-            background-position: center 30%;
-            border-radius: 14px;
-            margin-bottom: 14px;
-            overflow: hidden;
-        }
-        .prop-features-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(10,10,30,0.48);
-        }
-        .prop-features-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 8px 20px;
-        }
+        /* Features included — plain bordered chip grid */
+        .prop-features-block { margin-bottom: 32px; }
         .prop-features-label {
             font-size: 10px;
             font-weight: 700;
-            color: rgba(255,255,255,0.7);
+            color: #888;
             letter-spacing: 0.9px;
             text-transform: uppercase;
-            padding-top: 10px;
-            flex-shrink: 0;
+            margin-bottom: 10px;
         }
-        .prop-features-badges { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-items: start; }
-        .prop-badge {
-            display: inline-flex;
-            flex-shrink: 0;
-        }
-        .prop-badge-full {
-            height: 36px;
-            width: auto;
-            max-width: 100%;
-            display: block;
-            mix-blend-mode: screen;
-        }
-
-        /* Metric grid */
-        .prop-metrics-grid {
+        .prop-features-badges {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 12px;
         }
-        .prop-metric-box {
-            background: #6675ff;
+        .prop-feature-chip {
+            border: 1px solid #e6e6e2;
             border-radius: 8px;
-            padding: 14px 16px;
+            padding: 4px 10px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            background: #fff;
         }
-        .prop-metric-val {
-            font-size: 19px;
-            font-weight: 800;
-            color: white;
-            white-space: nowrap;
-        }
-        .prop-metric-lbl {
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.88);
-            letter-spacing: 0.5px;
-            line-height: 1.35;
-            text-transform: uppercase;
+        .prop-badge-full {
+            height: 32px;
+            width: auto;
+            max-width: 100%;
+            display: block;
         }
 
-        /* Total Impact bar */
-        .prop-total-row {
+        /* Numbered section header */
+        .prop-section-header {
             display: flex;
             align-items: center;
-            background: #1a1a2e;
-            border-radius: 8px;
-            padding: 14px 20px;
-            margin-bottom: 22px;
-            gap: 20px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
-        .prop-total-val {
-            font-size: 22px;
-            font-weight: 800;
-            color: white;
-            background: rgba(255,255,255,0.1);
-            padding: 8px 18px;
-            border-radius: 6px;
-            min-width: 140px;
-            text-align: center;
+        .prop-section-num {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 13px;
+            color: #999;
         }
-        .prop-total-lbl {
-            font-size: 15px;
+        .prop-section-title {
+            font-size: 12px;
             font-weight: 800;
-            color: white;
             letter-spacing: 1px;
             text-transform: uppercase;
+            color: #1a1a1a;
+            white-space: nowrap;
         }
+        .prop-section-rule { flex: 1; height: 1px; background: #ddd; }
+
+        /* Line item rows */
+        .prop-line-items { margin-bottom: 30px; }
+        .prop-line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14.5px;
+            color: #333;
+        }
+        .prop-line-item .val { font-weight: 700; color: #1a1a1a; }
+
+        /* Total Impact bar */
+        .prop-total-bar {
+            background: #17171a;
+            padding: 28px 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .prop-total-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 6px;
+        }
+        .prop-total-desc {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 19px;
+            color: #fff;
+        }
+        .prop-total-value {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-weight: 700;
+            font-size: 38px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .prop-footer-body { padding: 26px 44px 4px; }
 
         /* Footer */
         .prop-footer {
-            text-align: center;
-            padding: 10px 0 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 44px;
+            border-top: 1px solid #eee;
         }
-        .prop-footer-logo { height: 40px; }
+        .prop-footer-text {
+            font-size: 10px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #aaa;
+        }
 
         /* Shared pill — used in comparison only now */
         .pct-pill {
@@ -378,47 +374,43 @@
 
         /* ── Account Info table (proposal output) ── */
         .prop-acct-table {
-            width: calc(100% - 60px);
-            margin: 0 30px 16px;
+            width: 100%;
+            margin: 0 0 16px;
             border-collapse: collapse;
             font-size: 11.5px;
-            position: relative;
-            z-index: 2;
         }
         .prop-acct-table thead th {
-            background: #6675ff;
-            color: white;
+            background: #f7f7f5;
+            color: #888;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 7px 10px;
+            padding: 8px 10px;
             text-align: left;
+            border: 1px solid #e6e6e2;
         }
         .prop-acct-table td {
-            border: 1px solid #e0e0e0;
-            padding: 7px 10px;
+            border: 1px solid #e6e6e2;
+            padding: 8px 10px;
             vertical-align: middle;
             background: white;
-            color: #1a1a2e;
-        }
-        .prop-acct-table tr:nth-child(even) td {
-            background: #f7f8ff;
+            color: #1a1a1a;
         }
         .prop-acct-table td:first-child {
             font-weight: 700;
-            color: #1a1a2e;
+            color: #1a1a1a;
             width: 22%;
             white-space: nowrap;
-            background: #f7f8ff;
+            background: #f7f7f5;
         }
         .prop-acct-table td:nth-child(2) {
             width: 38%;
-            color: #1a1a2e;
         }
         .prop-acct-table td:nth-child(3) {
             width: 40%;
-            color: #1a1a2e;
+            color: #888;
+            font-style: italic;
         }
 
         /* ═══════════════════════════════════════════════
@@ -427,62 +419,47 @@
         .proposal-comparison {
             max-width: 1100px;
             margin: 0 auto;
-            background: linear-gradient(to right, #1b1b1b, #6675ff, #b7bfff);
-            padding: 28px 36px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border: 1px solid #e6e6e2;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: none;
-            color: white;
-        }
-
-        .comp-header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .comp-si-inline {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
+            color: #1a1a1a;
         }
 
         /* Comparison table: 4 columns */
-        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
 
         td.comp-col-context {
             width: 24%;
-            background: #f0f0f0;
-            padding: 16px 18px;
+            background: #fafaf9;
+            padding: 20px 22px;
             vertical-align: top;
-            border-radius: 6px 0 0 6px;
+            border-right: 1px solid #eee;
         }
 
         td.comp-col-diy {
             width: 28%;
-            background: #fff8f3;
-            padding: 16px 18px;
+            background: #fff;
+            padding: 20px 22px;
             vertical-align: top;
-            border-left: 1px solid #e8e8e8;
+            border-right: 1px solid #eee;
         }
 
         td.comp-col-si {
             width: 28%;
-            background: white;
-            padding: 16px 18px;
+            background: #fff;
+            padding: 20px 22px;
             vertical-align: top;
-            border-left: 1px solid #e8e8e8;
+            border-right: 1px solid #eee;
         }
 
         td.comp-col-advantage {
             width: 20%;
-            background: white;
-            padding: 16px 18px;
+            background: #fafaf9;
+            padding: 20px 22px;
             vertical-align: top;
-            border-left: 1px solid #e8e8e8;
-            border-radius: 0 6px 6px 0;
         }
 
         .comp-col-header {
@@ -492,13 +469,11 @@
             letter-spacing: 0.8px;
             margin-bottom: 14px;
             padding-bottom: 8px;
-            border-bottom: 2px solid currentColor;
+            border-bottom: 2px solid #1a1a1a;
+            color: #1a1a1a;
         }
 
-        .comp-col-context .comp-col-header { color: #1b1b1b; border-color: #ccc; }
-        .comp-col-diy .comp-col-header { color: #c0620a; border-color: #f97316; }
         .comp-col-si .comp-col-header { color: #4a5fc1; border-color: #6675ff; }
-        .comp-col-advantage .comp-col-header { color: #1a7a3f; border-color: #28a745; }
 
         .comp-metric { margin-bottom: 11px; }
 
@@ -514,70 +489,48 @@
         .comp-metric-value {
             font-size: 13px;
             font-weight: 600;
-            color: #1b1b1b;
+            color: #1a1a1a;
         }
 
-        .comp-metric-value.negative { color: #c0392b; }
-        .comp-metric-value.positive { color: #1a7a3f; }
+        .comp-metric-value.negative { color: #a83b2e; }
+        .comp-metric-value.positive { color: #1a1a1a; }
         .comp-metric-value.neutral { color: #555; }
 
         .comp-divider { border-top: 1px dashed #ddd; margin: 10px 0; }
 
         /* Net P&L rows */
         .comp-net-row {
-            background: #f8f9ff;
-            border-radius: 6px;
-            padding: 10px 12px;
+            border-top: 2px solid #1a1a1a;
+            padding-top: 10px;
             margin-top: 10px;
         }
 
         .comp-net-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.4px; }
-        .comp-net-value { font-size: 17px; font-weight: 800; margin-top: 2px; }
-
-        .comp-col-diy .comp-net-row { background: #fff3e8; }
-        .comp-col-diy .comp-net-value { color: #c0620a; }
-
-        .comp-col-si .comp-net-row { background: #eef0ff; }
-        .comp-col-si .comp-net-value { color: #4a5fc1; }
-
-        /* Advantage column */
-        .adv-badge {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .adv-badge-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; }
-        .adv-badge-value { font-size: 20px; font-weight: 800; color: white; margin-top: 2px; }
-        .adv-badge-sub { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+        .comp-net-value { font-size: 17px; font-weight: 800; margin-top: 2px; color: #1a1a1a; }
 
         .attach-lift-badge {
-            background: #eef0ff;
-            border: 1px solid #c5cbf0;
+            background: #f7f7f5;
+            border: 1px solid #e6e6e2;
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 14px 16px;
             text-align: center;
         }
 
-        .attach-lift-label { font-size: 10px; font-weight: 700; color: #6675ff; text-transform: uppercase; letter-spacing: 0.4px; }
-        .attach-lift-value { font-size: 16px; font-weight: 800; color: #4a5fc1; margin-top: 2px; }
-        .attach-lift-sub { font-size: 10px; color: #888; margin-top: 2px; }
+        .attach-lift-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.4px; }
+        .attach-lift-value { font-size: 20px; font-weight: 800; color: #1a1a1a; margin-top: 4px; }
+        .attach-lift-sub { font-size: 10px; color: #888; margin-top: 4px; }
 
         .comp-context-header {
-            font-size: 13px;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 15px;
             font-weight: 700;
-            color: #1b1b1b;
+            color: #1a1a1a;
             margin-bottom: 12px;
         }
 
-        .comp-context-body { font-size: 11.5px; color: #444; line-height: 1.65; }
-        .comp-context-body strong { color: #1b1b1b; }
-
-        .comp-context-field { margin-bottom: 10px; }
-        .comp-context-field-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
-        .comp-context-field-value { font-size: 12px; font-weight: 600; color: #6675ff; }
+        .comp-context-body { font-size: 11.5px; color: #555; line-height: 1.65; }
+        .comp-context-body strong { color: #1a1a1a; }
 
         /* Shared action buttons */
         .actions {
@@ -709,130 +662,125 @@
     <!-- ── SIMPLIFIED PROPOSAL CARD (ROI calc) ── -->
     <div id="proposalContainer" class="proposal-container">
 
-        <!-- Decorative background layers -->
-        <div class="prop-topo" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 560" preserveAspectRatio="xMidYMid slice">
-                <g fill="none" stroke="#8a8a8a" stroke-width="0.9" opacity="0.32">
-                    <path d="M-60,55 C40,28 150,75 270,44 C390,13 480,68 610,35 C740,2 780,52 860,22"/>
-                    <path d="M-60,100 C50,68 175,120 305,84 C435,48 535,108 670,72 C805,36 840,92 940,60"/>
-                    <path d="M-60,150 C45,112 185,168 330,128 C475,88 590,155 735,115 C880,75 905,138 1020,102"/>
-                    <path d="M-60,205 C40,160 198,220 360,174 C522,128 648,205 805,162 C962,119 980,188 1110,150"/>
-                    <path d="M-60,265 C35,214 210,278 390,226 C570,174 712,258 880,210 C1048,162 1058,240 1210,198"/>
-                    <path d="M-60,332 C30,274 225,342 425,284 C625,226 782,318 960,264 C1138,210 1140,298 1320,250"/>
-                    <path d="M-60,407 C25,340 240,414 465,348 C690,282 862,385 1050,324 C1238,263 1232,358 1440,305"/>
-                    <path d="M-60,492 C20,416 260,496 510,420 C760,344 948,458 1155,390 C1362,322 1345,428 1580,368"/>
-                    <!-- Closed contour shapes (mountain peaks) -->
-                    <ellipse cx="165" cy="310" rx="75" ry="48" transform="rotate(-12 165 310)"/>
-                    <ellipse cx="490" cy="175" rx="62" ry="38" transform="rotate(8 490 175)"/>
-                    <path d="M345,268 C388,238 448,236 480,260 C512,284 514,326 484,346 C454,366 402,362 372,342 C342,322 325,295 345,268Z"/>
-                    <path d="M118,408 C155,376 210,370 246,392 C282,414 288,455 262,474 C236,493 186,490 156,470 C126,450 108,438 118,408Z"/>
-                    <ellipse cx="580" cy="390" rx="88" ry="55" transform="rotate(-8 580 390)"/>
-                </g>
-            </svg>
-        </div>
-        <div class="prop-scene" aria-hidden="true"></div>
-
-        <!-- Content -->
-        <div class="prop-content">
+        <div class="prop-body">
             <!-- Header -->
             <div class="prop-header">
-                <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png"
-                    alt="ShipInsure" class="prop-logo-mark">
-                <img id="merchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
+                <div class="prop-header-left">
+                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
+                        alt="ShipInsure" class="prop-logo-mark">
+                    <div class="prop-tagline">Post-Purchase Protection</div>
+                </div>
+                <div class="prop-header-right">
+                    <img id="merchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
+                    <div class="prop-doc-label">Financial Impact Proposal</div>
+                    <div class="prop-confidential" id="propConfidentialLine">Confidential</div>
+                    <div class="prop-date" id="propDate"></div>
+                </div>
             </div>
 
             <!-- Key terms -->
-            <div class="prop-terms-row">
-                <div class="prop-term">
-                    <div class="prop-term-label">Customer Premium</div>
-                    <div class="prop-term-value" id="propPremiumDisplay">—</div>
+            <div class="prop-stats-band">
+                <div class="prop-stat">
+                    <div class="prop-stat-label">Net Revenue Share</div>
+                    <div class="prop-stat-value" id="propRevShareDisplay">—</div>
                 </div>
-                <div class="prop-term">
-                    <div class="prop-term-label">Net Revenue Share</div>
-                    <div class="prop-term-value" id="propRevShareDisplay">—</div>
+                <div class="prop-stat">
+                    <div class="prop-stat-label">Customer Premium</div>
+                    <div class="prop-stat-value" id="propPremiumDisplay">—</div>
+                </div>
+                <div class="prop-stat">
+                    <div class="prop-stat-label">Attach Rate</div>
+                    <div class="prop-stat-value" id="propAttachDisplay">—</div>
                 </div>
             </div>
 
             <!-- Features included -->
-            <div class="prop-features-section">
-                <div class="prop-features-overlay"></div>
-                <div class="prop-features-inner">
-                    <div class="prop-features-label">Features<br>Included</div>
-                    <div class="prop-features-badges" id="propFeaturesBadges"></div>
-                </div>
+            <div class="prop-features-block">
+                <div class="prop-features-label">Features Included</div>
+                <div class="prop-features-badges" id="propFeaturesBadges"></div>
             </div>
 
-            <!-- Metric boxes (2×2 when returns on, 1×2 when off) -->
-            <div class="prop-metrics-grid" id="propMetricsGrid">
-                <div class="prop-metric-box">
-                    <div class="prop-metric-val" id="propClaimsRevDisplay">$0</div>
-                    <div class="prop-metric-lbl">Claims Revenue</div>
+            <!-- Protection financial impact -->
+            <div class="prop-section-header">
+                <span class="prop-section-num">01</span>
+                <span class="prop-section-title">Protection Financial Impact</span>
+                <span class="prop-section-rule"></span>
+            </div>
+            <div class="prop-line-items">
+                <div class="prop-line-item">
+                    <span>Claims Revenue</span>
+                    <span class="val" id="propClaimsRevDisplay">$0</span>
                 </div>
-                <div class="prop-metric-box" id="propReturnLabelsBox" style="display:none;">
-                    <div class="prop-metric-val" id="propReturnLabelsDisplay">$0</div>
-                    <div class="prop-metric-lbl">Return Labels</div>
+                <div class="prop-line-item" id="propReturnLabelsBox" style="display:none;">
+                    <span>Return Labels</span>
+                    <span class="val" id="propReturnLabelsDisplay">$0</span>
                 </div>
-                <div class="prop-metric-box">
-                    <div class="prop-metric-val" id="propRevSharePayoutDisplay">$0</div>
-                    <div class="prop-metric-lbl">Rev Share Payout</div>
+                <div class="prop-line-item">
+                    <span>Rev Share Payout</span>
+                    <span class="val" id="propRevSharePayoutDisplay">$0</span>
                 </div>
-                <div class="prop-metric-box" id="propSoftwareSavingsBox" style="display:none;">
-                    <div class="prop-metric-val" id="propSoftwareSavingsDisplay">$0</div>
-                    <div class="prop-metric-lbl">Software Savings</div>
+                <div class="prop-line-item" id="propSoftwareSavingsBox" style="display:none;">
+                    <span>Software Savings</span>
+                    <span class="val" id="propSoftwareSavingsDisplay">$0</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Total Impact -->
-            <div class="prop-total-row">
-                <div class="prop-total-val" id="propTotalImpactDisplay">$0</div>
-                <div class="prop-total-lbl" id="propTotalImpactLabel">Total Impact</div>
+        <!-- Total Impact -->
+        <div class="prop-total-bar">
+            <div>
+                <div class="prop-total-label">Total Financial Impact</div>
+                <div class="prop-total-desc" id="propTotalImpactLabel">Total Impact</div>
+            </div>
+            <div class="prop-total-value" id="propTotalImpactDisplay">$0</div>
+        </div>
+
+        <div class="prop-footer-body">
+            <!-- Important Account Information table -->
+            <table class="prop-acct-table" id="propAcctInfoTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Important Account Information</th>
+                        <th>Overview</th>
+                        <th>Additional Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Estimated Go-Live Date</td>
+                        <td id="propAcctGoLive">TBD</td>
+                        <td id="propAcctGoLiveNote">—</td>
+                    </tr>
+                    <tr>
+                        <td>Pricing</td>
+                        <td id="propAcctPricing">—</td>
+                        <td id="propAcctPricingNote">—</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">Rev Share</td>
+                        <td id="propAcctRevShareAmt">Amount: —</td>
+                        <td rowspan="3" id="propAcctRevShareNote">—</td>
+                    </tr>
+                    <tr>
+                        <td id="propAcctPaymentPref">Payment preference: —</td>
+                    </tr>
+                    <tr>
+                        <td id="propAcctFirstPayment">First payment date: —</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div id="propDisclaimerSection" style="display:none; padding-bottom: 8px;">
+                <p style="font-size: 11px; color: #888; font-style: italic;">
+                    <strong>Disclaimer:</strong> <span id="propDisclaimer"></span>
+                </p>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="prop-footer">
-            <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
-                alt="ShipInsure" class="prop-footer-logo">
-        </div>
-
-        <!-- Important Account Information table -->
-        <table class="prop-acct-table" id="propAcctInfoTable" style="display:none;">
-            <thead>
-                <tr>
-                    <th>Important Account Information</th>
-                    <th>Overview</th>
-                    <th>Additional Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Estimated Go-Live Date</td>
-                    <td id="propAcctGoLive">TBD</td>
-                    <td id="propAcctGoLiveNote">—</td>
-                </tr>
-                <tr>
-                    <td>Pricing</td>
-                    <td id="propAcctPricing">—</td>
-                    <td id="propAcctPricingNote">—</td>
-                </tr>
-                <tr>
-                    <td rowspan="3">Rev Share</td>
-                    <td id="propAcctRevShareAmt">Amount: —</td>
-                    <td rowspan="3" id="propAcctRevShareNote">—</td>
-                </tr>
-                <tr>
-                    <td id="propAcctPaymentPref">Payment preference: —</td>
-                </tr>
-                <tr>
-                    <td id="propAcctFirstPayment">First payment date: —</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div id="propDisclaimerSection" style="display:none; padding: 0 30px 12px;">
-            <p style="font-size: 11px; color: #888;">
-                <strong>Disclaimer:</strong> <span id="propDisclaimer"></span>
-            </p>
+            <div class="prop-footer-text">ShipInsure — Confidential &amp; Proprietary</div>
+            <div class="prop-footer-text">shipinsure.io | <span id="propYear"></span></div>
         </div>
 
     </div>
@@ -845,120 +793,127 @@
 
     <!-- ── SELF-INSURE COMPARISON PROPOSAL ── -->
     <div id="proposalComparison" class="proposal-comparison">
-        <div class="comp-header-top">
-            <div>
-                <div class="comp-si-inline">
-                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/proposals_logo.png"
-                        alt="ShipInsure Proposals" style="height: 24px;">
+        <div class="prop-body">
+            <!-- Header -->
+            <div class="prop-header">
+                <div class="prop-header-left">
+                    <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
+                        alt="ShipInsure" class="prop-logo-mark">
+                    <div class="prop-tagline">Post-Purchase Protection</div>
                 </div>
-                <h2 id="compMerchantName" style="color: white; font-size: 28px; margin-top: 8px;"></h2>
+                <div class="prop-header-right">
+                    <img id="compMerchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
+                    <div class="prop-doc-label">Financial Impact Proposal</div>
+                    <div class="prop-confidential" id="compConfidentialLine">Confidential</div>
+                    <div class="prop-date" id="compDate"></div>
+                </div>
             </div>
-            <img id="compMerchantLogo" alt="Merchant Logo" style="height: 40px; display: none;">
+
+            <div class="prop-section-header">
+                <span class="prop-section-num">01</span>
+                <span class="prop-section-title">Self-Insure vs. ShipInsure Comparison</span>
+                <span class="prop-section-rule"></span>
+            </div>
+
+            <table class="comp-table">
+                <tr>
+                    <!-- Column 1: Context -->
+                    <td class="comp-col-context">
+                        <div class="comp-context-header">Annual Comparison</div>
+                        <div class="comp-context-body" id="compValueProp"></div>
+                    </td>
+
+                    <!-- Column 2: DIY Program -->
+                    <td class="comp-col-diy">
+                        <div class="comp-col-header">Self-Insurance Program</div>
+
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Attach Rate</div>
+                            <div class="comp-metric-value neutral" id="compDiyAttach">—</div>
+                        </div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Protected Orders</div>
+                            <div class="comp-metric-value neutral" id="compDiyProtectedOrders">—</div>
+                        </div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Premiums Collected</div>
+                            <div class="comp-metric-value neutral" id="compDiyPremiums">—</div>
+                        </div>
+                        <div class="comp-divider"></div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Total Claim Burden</div>
+                            <div class="comp-metric-value negative" id="compDiyClaimBurden">—</div>
+                        </div>
+                        <div class="comp-net-row">
+                            <div class="comp-net-label">Net Program P&L</div>
+                            <div class="comp-net-value" id="compDiyNetPL">—</div>
+                        </div>
+                    </td>
+
+                    <!-- Column 3: ShipInsure Program -->
+                    <td class="comp-col-si">
+                        <div class="comp-col-header">ShipInsure Program</div>
+
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Attach Rate</div>
+                            <div class="comp-metric-value positive" id="compSiAttach">—</div>
+                        </div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Protected Orders</div>
+                            <div class="comp-metric-value positive" id="compSiProtectedOrders">—</div>
+                        </div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Premiums Collected</div>
+                            <div class="comp-metric-value positive" id="compSiPremiums">—</div>
+                        </div>
+                        <div class="comp-divider"></div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">SI-Funded Claims Value</div>
+                            <div class="comp-metric-value positive" id="compSiClaimsFunded">—</div>
+                        </div>
+                        <div class="comp-metric">
+                            <div class="comp-metric-label">Revenue Share</div>
+                            <div class="comp-metric-value positive" id="compSiRevShare">—</div>
+                        </div>
+                        <div class="comp-net-row">
+                            <div class="comp-net-label">Net Program Benefit</div>
+                            <div class="comp-net-value" id="compSiNetPL">—</div>
+                        </div>
+                    </td>
+
+                    <!-- Column 4: Attach rate lift -->
+                    <td class="comp-col-advantage">
+                        <div class="comp-col-header">Attach Rate Impact</div>
+                        <div class="attach-lift-badge">
+                            <div class="attach-lift-label">Attach Rate Lift</div>
+                            <div class="attach-lift-value" id="compAttachLift">—</div>
+                            <div class="attach-lift-sub" id="compAttachLiftSub"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
-        <table class="comp-table">
-            <tr>
-                <!-- Column 1: Context -->
-                <td class="comp-col-context">
-                    <div id="compCoverageSection" style="display: none;" class="comp-context-field">
-                        <div class="comp-context-field-label">Coverage Type</div>
-                        <div class="comp-context-field-value" id="compCoverageType"></div>
-                    </div>
-                    <div id="compDeliverySection" style="display: none;" class="comp-context-field">
-                        <div class="comp-context-field-label">Most Common Delivery Issue</div>
-                        <div class="comp-context-field-value" id="compDeliveryIssue"></div>
-                    </div>
-                    <div id="compDeploySection" style="display: none;" class="comp-context-field">
-                        <div class="comp-context-field-label">Deployment Option</div>
-                        <div class="comp-context-field-value" id="compDeploymentPlan"></div>
-                    </div>
-                    <div class="comp-context-header">Annual Comparison</div>
-                    <div class="comp-context-body" id="compValueProp"></div>
-                </td>
+        <!-- Total Impact -->
+        <div class="prop-total-bar">
+            <div>
+                <div class="prop-total-label">Total Financial Impact</div>
+                <div class="prop-total-desc" id="compAdvantageSub">Annual Upside vs. Self-Insurance</div>
+            </div>
+            <div class="prop-total-value" id="compAdvantage">—</div>
+        </div>
 
-                <!-- Column 2: DIY Program -->
-                <td class="comp-col-diy">
-                    <div class="comp-col-header">Self-Insurance Program</div>
+        <div class="prop-footer-body">
+            <div id="compDisclaimerSection" style="display: none; padding-bottom: 8px;">
+                <p style="font-size: 11px; color: #888; font-style: italic;">
+                    <strong>Disclaimer:</strong> <span id="compDisclaimer"></span>
+                </p>
+            </div>
+        </div>
 
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Attach Rate</div>
-                        <div class="comp-metric-value neutral" id="compDiyAttach">—</div>
-                    </div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Protected Orders</div>
-                        <div class="comp-metric-value neutral" id="compDiyProtectedOrders">—</div>
-                    </div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Premiums Collected</div>
-                        <div class="comp-metric-value neutral" id="compDiyPremiums">—</div>
-                    </div>
-                    <div class="comp-divider"></div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Total Claim Burden</div>
-                        <div class="comp-metric-value negative" id="compDiyClaimBurden">—</div>
-                    </div>
-                    <div class="comp-net-row">
-                        <div class="comp-net-label">Net Program P&L</div>
-                        <div class="comp-net-value" id="compDiyNetPL">—</div>
-                    </div>
-                </td>
-
-                <!-- Column 3: ShipInsure Program -->
-                <td class="comp-col-si">
-                    <div class="comp-col-header">ShipInsure Program</div>
-
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Attach Rate</div>
-                        <div class="comp-metric-value positive" id="compSiAttach">—</div>
-                    </div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Protected Orders</div>
-                        <div class="comp-metric-value positive" id="compSiProtectedOrders">—</div>
-                    </div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Premiums Collected</div>
-                        <div class="comp-metric-value positive" id="compSiPremiums">—</div>
-                    </div>
-                    <div class="comp-divider"></div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">SI-Funded Claims Value</div>
-                        <div class="comp-metric-value positive" id="compSiClaimsFunded">—</div>
-                    </div>
-                    <div class="comp-metric">
-                        <div class="comp-metric-label">Revenue Share</div>
-                        <div class="comp-metric-value positive" id="compSiRevShare">—</div>
-                    </div>
-                    <div class="comp-net-row">
-                        <div class="comp-net-label">Net Program Benefit</div>
-                        <div class="comp-net-value" id="compSiNetPL">—</div>
-                    </div>
-                </td>
-
-                <!-- Column 4: Advantage -->
-                <td class="comp-col-advantage">
-                    <div class="comp-col-header">SI Advantage</div>
-                    <div class="adv-badge">
-                        <div class="adv-badge-label">Annual Upside vs. DIY</div>
-                        <div class="adv-badge-value" id="compAdvantage">—</div>
-                        <div class="adv-badge-sub" id="compAdvantageSub"></div>
-                    </div>
-                    <div class="attach-lift-badge" style="margin-top: 10px;">
-                        <div class="attach-lift-label">Attach Rate Lift</div>
-                        <div class="attach-lift-value" id="compAttachLift">—</div>
-                        <div class="attach-lift-sub" id="compAttachLiftSub"></div>
-                    </div>
-                    <div style="margin-top: 12px;">
-                        <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
-                            alt="ShipInsure" style="height: 22px; display: block; margin: 0 auto;">
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <div id="compDisclaimerSection" style="display: none;">
-            <p style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 15px;">
-                <strong>Disclaimer:</strong> <span id="compDisclaimer"></span>
-            </p>
+        <div class="prop-footer">
+            <div class="prop-footer-text">ShipInsure — Confidential &amp; Proprietary</div>
+            <div class="prop-footer-text">shipinsure.io | <span id="compYear"></span></div>
         </div>
 
     </div>
@@ -1397,8 +1352,12 @@
             }
 
             // Populate simplified card
+            document.getElementById('propConfidentialLine').textContent = 'Confidential — Prepared for ' + merchantName;
+            document.getElementById('propDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            document.getElementById('propYear').textContent = new Date().getFullYear();
             document.getElementById('propPremiumDisplay').textContent = premiumDisplay;
             document.getElementById('propRevShareDisplay').textContent = formatPercent(data.share);
+            document.getElementById('propAttachDisplay').textContent = formatPercent(data.attach);
             document.getElementById('propClaimsRevDisplay').textContent = formatCurrency(reshipRevenue);
             document.getElementById('propRevSharePayoutDisplay').textContent = formatCurrency(revenueShare);
             document.getElementById('propTotalImpactDisplay').textContent = formatCurrency(totalNewRevenue);
@@ -1419,7 +1378,7 @@
             badgesContainer.innerHTML = (selectedFeatures || ['shipping']).map(f => {
                 const cfg = featureConfig[f];
                 if (!cfg) return '';
-                return `<img class="prop-badge-full" src="${BASE}${cfg.img}" alt="${cfg.label}">`;
+                return `<div class="prop-feature-chip"><img class="prop-badge-full" src="${BASE}${cfg.img}" alt="${cfg.label}"></div>`;
             }).join('');
 
             // Returns metric boxes: show only if calculator has returns data
@@ -1524,11 +1483,9 @@
             const timeLabel = d.tf === 'annual' ? 'year' : 'month';
 
             // Populate comparison proposal
-            document.getElementById('compMerchantName').textContent = merchantName;
-
-            document.getElementById('compCoverageSection').style.display = 'none';
-            document.getElementById('compDeliverySection').style.display = 'none';
-            document.getElementById('compDeploySection').style.display = 'none';
+            document.getElementById('compConfidentialLine').textContent = 'Confidential — Prepared for ' + merchantName;
+            document.getElementById('compDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            document.getElementById('compYear').textContent = new Date().getFullYear();
 
             // Value prop
             const advantageStr = formatCurrency(Math.abs(advantage));
@@ -1545,7 +1502,7 @@
             document.getElementById('compDiyClaimBurden').textContent = '-' + formatCurrency(diyTotalClaimBurden);
             const diyNetEl = document.getElementById('compDiyNetPL');
             diyNetEl.textContent = diyNetPL >= 0 ? formatCurrency(diyNetPL) : '-' + formatCurrency(Math.abs(diyNetPL));
-            diyNetEl.style.color = diyNetPL >= 0 ? '#c0620a' : '#c0392b';
+            diyNetEl.style.color = diyNetPL >= 0 ? '#1a1a1a' : '#a83b2e';
 
             // SI column
             document.getElementById('compSiAttach').textContent = formatPercent(d.sia);
