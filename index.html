@@ -112,7 +112,7 @@
             gap: 20px;
             padding-bottom: 22px;
             border-bottom: 2px solid #1a1a1a;
-            margin-bottom: 28px;
+            margin-bottom: 14px;
         }
         .prop-header-left { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
         .prop-logo-mark { height: 34px; width: auto; }
@@ -145,6 +145,7 @@
         /* Key terms stat band — bleeds full width of the card */
         .prop-stats-band {
             display: flex;
+            justify-content: center;
             gap: 48px;
             background: #f7f7f5;
             border-top: 1px solid #e6e6e2;
@@ -152,6 +153,7 @@
             margin: 0 -44px 28px;
             padding: 20px 44px;
         }
+        .prop-stat { text-align: center; }
         .prop-stat-label {
             font-size: 10px;
             font-weight: 700;
@@ -161,7 +163,7 @@
             margin-bottom: 4px;
         }
         .prop-stat-value {
-            font-size: 30px;
+            font-size: 25px;
             font-weight: 800;
             color: #1a1a1a;
             line-height: 1;
@@ -726,7 +728,7 @@
             <!-- Key terms -->
             <div class="prop-stats-band">
                 <div class="prop-stat">
-                    <div class="prop-stat-label">Net Revenue Share</div>
+                    <div class="prop-stat-label">Premiums You Keep</div>
                     <div class="prop-stat-value" id="propRevShareDisplay">—</div>
                 </div>
                 <div class="prop-stat">
@@ -734,8 +736,12 @@
                     <div class="prop-stat-value" id="propPremiumDisplay">—</div>
                 </div>
                 <div class="prop-stat">
-                    <div class="prop-stat-label">Attach Rate</div>
-                    <div class="prop-stat-value" id="propAttachDisplay">—</div>
+                    <div class="prop-stat-label">Avg Premium</div>
+                    <div class="prop-stat-value" id="propAvgPremiumDisplay">—</div>
+                </div>
+                <div class="prop-stat" id="propCashbackStat" style="display:none;">
+                    <div class="prop-stat-label">Sponsored Cashback</div>
+                    <div class="prop-stat-value" id="propSponsoredCashbackDisplay">—</div>
                 </div>
             </div>
 
@@ -1444,6 +1450,12 @@
             const upfrontCash = upfrontCashIncentive || 0;
             const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + guaranteeFundedAmount + cashbackRedeemed;
 
+            // Premiums You Keep — share of the collected premium pool returned to the merchant
+            // (claims funded + rev share + returns offset + guarantee claims + cashback redeemed)
+            const premiumsKeptPct = premiumPool > 0
+                ? ((reshipRevenue + revenueShare + totalReturnsOffset + guaranteeFundedAmount + cashbackRedeemed) / premiumPool) * 100
+                : 0;
+
             // Customer premium display — varies by pricing template type
             const _flatDollarTemplates = ['flat_dollar', 'flat_1.50', 'flat_5.95', 'static_1.50_300_2.00'];
             const _templateLabels = {
@@ -1467,8 +1479,16 @@
             document.getElementById('propDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('propYear').textContent = new Date().getFullYear();
             document.getElementById('propPremiumDisplay').textContent = premiumDisplay;
-            document.getElementById('propRevShareDisplay').textContent = formatPercent(data.share);
-            document.getElementById('propAttachDisplay').textContent = formatPercent(data.attach);
+            document.getElementById('propRevShareDisplay').textContent = formatPercent(premiumsKeptPct);
+            document.getElementById('propAvgPremiumDisplay').textContent = formatCurrencyWithCents(avgPremium);
+            const cashbackStat = document.getElementById('propCashbackStat');
+            if (cashbackSelected) {
+                cashbackStat.style.display = 'block';
+                document.getElementById('propSponsoredCashbackDisplay').textContent =
+                    formatPercent(data.cb) + ' (min ' + formatCurrency(data.mincb) + ')';
+            } else {
+                cashbackStat.style.display = 'none';
+            }
             document.getElementById('propTotalImpactDisplay').textContent = formatCurrency(totalNewRevenue);
             document.getElementById('propTotalImpactLabel').textContent = data.view === 'annual' ? 'Annual Impact' : 'Monthly Impact';
 
