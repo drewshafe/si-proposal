@@ -1326,11 +1326,11 @@
             const postClaimBalance = premiumPool - reshipRevenue - (data.returnsEnabled ? totalReturnsOffset : 0);
             const revenueShare = Math.max(0, postClaimBalance) * (data.share / 100);
 
-            // CS & Shipping savings — cost the merchant avoids on protected claims handled by ShipInsure
-            const csShippingSavings = protectedClaims * (data.cs + data.aship);
+            // CS Cost savings — avoided support ticket cost on protected claims handled by ShipInsure
+            const csCostSavings = protectedClaims * data.cs;
 
             const upfrontCash = upfrontCashIncentive || 0;
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csShippingSavings + upfrontCash;
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash;
 
             // Customer premium display — varies by pricing template type
             const _flatDollarTemplates = ['flat_dollar', 'flat_1.50', 'flat_5.95', 'static_1.50_300_2.00'];
@@ -1381,7 +1381,7 @@
             // Build financial impact line items, sorted descending by value
             const lineItems = [
                 { label: 'Claims Revenue', value: reshipRevenue },
-                { label: 'CS & Shipping Savings', value: csShippingSavings },
+                { label: 'CS Cost Savings', value: csCostSavings },
                 { label: 'Rev Share Payout', value: revenueShare },
             ];
             if (data.returnsEnabled) {
