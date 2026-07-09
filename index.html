@@ -668,6 +668,11 @@
         </div>
 
         <div class="input-group">
+            <label for="upfrontRevShareIncentive">Upfront Rev Share Incentive</label>
+            <input type="text" id="upfrontRevShareIncentive" placeholder="Dollar amount (e.g., 5000)">
+        </div>
+
+        <div class="input-group">
             <label>Important Account Information</label>
             <table class="acct-info-input-table">
                 <thead>
@@ -1316,6 +1321,7 @@
             const disclaimerText = document.getElementById('disclaimerText').value || '';
             const logoFile = document.getElementById('logoUpload').files[0];
             const upfrontCashIncentive = parseFloat(document.getElementById('upfrontCashIncentive').value.replace(/[^0-9.]/g, '')) || 0;
+            const upfrontRevShareIncentive = parseFloat(document.getElementById('upfrontRevShareIncentive').value.replace(/[^0-9.]/g, '')) || 0;
 
             const acctInfo = {
                 goLive:         document.getElementById('acctGoLive').value.trim(),
@@ -1376,7 +1382,7 @@
                     document.getElementById('compActions').style.display = 'flex';
                 } else {
                     _activeProposalType = 'roi';
-                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive, upfrontRevShareIncentive);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
@@ -1392,7 +1398,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive, upfrontRevShareIncentive) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1457,7 +1463,8 @@
             const csCostSavings = protectedClaims * data.cs;
 
             const upfrontCash = upfrontCashIncentive || 0;
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + guaranteeFundedAmount + cashbackRedeemed;
+            const upfrontRevShare = upfrontRevShareIncentive || 0;
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + upfrontRevShare + guaranteeFundedAmount + cashbackRedeemed;
 
             // Premiums You Keep — share of the collected premium pool returned to the merchant
             // (claims funded + rev share + returns offset + guarantee claims + cashback redeemed)
@@ -1534,12 +1541,17 @@
                 `<div class="prop-line-item"><span>${item.label}</span><span class="val">${formatCurrency(item.value)}</span></div>`
             ).join('');
 
-            // Incentives — only shown when an upfront cash incentive is included
+            // Incentives — only shown when an upfront cash and/or rev share incentive is included
             const incentivesSection = document.getElementById('propIncentivesSection');
-            if (upfrontCash > 0) {
+            const incentiveItems = [];
+            if (upfrontCash > 0) incentiveItems.push({ label: 'Upfront Cash Incentive', value: upfrontCash });
+            if (upfrontRevShare > 0) incentiveItems.push({ label: 'Upfront Rev Share Incentive', value: upfrontRevShare });
+            if (incentiveItems.length > 0) {
                 incentivesSection.style.display = 'block';
-                document.getElementById('propIncentivesLineItems').innerHTML =
-                    `<div class="prop-line-item"><span>Upfront Cash Incentive</span><span class="val">${formatCurrency(upfrontCash)}</span></div>`;
+                incentiveItems.sort((a, b) => b.value - a.value);
+                document.getElementById('propIncentivesLineItems').innerHTML = incentiveItems.map(item =>
+                    `<div class="prop-line-item"><span>${item.label}</span><span class="val">${formatCurrency(item.value)}</span></div>`
+                ).join('');
             } else {
                 incentivesSection.style.display = 'none';
             }
