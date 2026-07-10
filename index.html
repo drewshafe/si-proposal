@@ -22,7 +22,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .input-container h1 { margin-bottom: 20px; color: #333; }
+        .input-container h1 { font-size: 18px; margin-bottom: 20px; color: #333; }
 
         .input-group { margin-bottom: 20px; }
 
@@ -32,6 +32,61 @@
             font-weight: 600;
             color: #555;
         }
+
+        /* Side-by-side field rows (Merchant Name/Logo, incentives) */
+        .input-row { display: flex; gap: 16px; }
+        .input-row .input-group { flex: 1; min-width: 0; }
+        .input-row .input-group label { font-size: 12px; margin-bottom: 6px; }
+
+        /* Custom incentive rows */
+        .custom-incentive-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .custom-incentive-row input[type=text] {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .custom-incentive-row .ci-name { flex: 2; min-width: 0; }
+        .custom-incentive-row .ci-amount { flex: 1; min-width: 0; }
+        .custom-incentive-row select.ci-mode {
+            flex: 1.4;
+            min-width: 0;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .custom-incentive-row .ci-remove {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: none;
+            border-radius: 6px;
+            background: #f5f5f5;
+            color: #c0392b;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .custom-incentive-row .ci-remove:hover { background: #fbe6e6; }
+        .add-custom-incentive-btn {
+            width: auto;
+            padding: 8px 16px;
+            background: #f0f1ff;
+            color: #4a5fc1;
+            border: 2px solid #c5cbf0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .add-custom-incentive-btn:hover { opacity: 0.85; }
 
         .input-group input,
         .input-group textarea,
@@ -181,28 +236,37 @@
             gap: 8px;
             margin-top: 4px;
         }
-        .feature-check-label {
+        #featuresGrid .feature-check-label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 0;
+            padding: 6px 10px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #333;
             background: white;
             transition: all 0.15s;
             user-select: none;
         }
-        .feature-check-label:has(input:checked) {
+        #featuresGrid .feature-check-label:has(input:checked) {
             border-color: #667eea;
             background: #eef0ff;
             color: #4a5fc1;
         }
-        .feature-check-label input[type=checkbox] { accent-color: #667eea; }
-        .feature-check-label .feat-icon { font-size: 16px; }
+        .feature-check-label input[type=checkbox] {
+            width: auto;
+            flex-shrink: 0;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            accent-color: #667eea;
+        }
+        .feature-check-label .feat-icon { font-size: 14px; }
 
         /* Features included — plain bordered chip grid */
         .prop-features-block {
@@ -369,95 +433,6 @@
         }
         .pct-pill:empty { display: none; }
 
-        /* ── Account Info input table (form) ── */
-        .acct-info-input-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 6px;
-        }
-        .acct-info-input-table thead th {
-            background: #6675ff;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 7px 10px;
-            text-align: left;
-        }
-        .acct-info-input-table td {
-            border: 1px solid #e0e0e0;
-            padding: 6px 8px;
-            vertical-align: middle;
-        }
-        .acct-info-input-table td.label-cell {
-            font-weight: 600;
-            color: #333;
-            background: #f7f8ff;
-            width: 22%;
-            white-space: nowrap;
-        }
-        .acct-info-input-table input[type=text] {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1px solid #d0d0d0;
-            border-radius: 5px;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
-        .acct-rev-share-note-cell {
-            vertical-align: middle;
-            padding: 10px 12px;
-        }
-        .acct-note-preview {
-            font-size: 12px;
-            color: #6675ff;
-            font-style: italic;
-            line-height: 1.5;
-        }
-
-        /* ── Account Info table (proposal output) ── */
-        .prop-acct-table {
-            width: 100%;
-            margin: 0 0 16px;
-            border-collapse: collapse;
-            font-size: 11.5px;
-        }
-        .prop-acct-table thead th {
-            background: #f7f7f5;
-            color: #888;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 8px 10px;
-            text-align: left;
-            border: 1px solid #e6e6e2;
-        }
-        .prop-acct-table td {
-            border: 1px solid #e6e6e2;
-            padding: 8px 10px;
-            vertical-align: middle;
-            background: white;
-            color: #1a1a1a;
-        }
-        .prop-acct-table td:first-child {
-            font-weight: 700;
-            color: #1a1a1a;
-            width: 22%;
-            white-space: nowrap;
-            background: #f7f7f5;
-        }
-        .prop-acct-table td:nth-child(2) {
-            width: 38%;
-        }
-        .prop-acct-table td:nth-child(3) {
-            width: 40%;
-            color: #888;
-            font-style: italic;
-        }
-
         /* ═══════════════════════════════════════════════
            SELF-INSURE COMPARISON PROPOSAL
         ═══════════════════════════════════════════════ */
@@ -608,14 +583,23 @@
     <div class="input-container">
         <h1>ShipInsure Proposal Generator</h1>
 
-        <div class="input-group">
-            <label for="merchantName">Merchant Name</label>
-            <input type="text" id="merchantName" placeholder="Enter merchant name">
+        <div class="input-group" id="savedMerchantGroup" style="display:none;">
+            <label for="savedMerchantSelect">Saved Merchant (from calculator)</label>
+            <select id="savedMerchantSelect">
+                <option value="">— Select a saved merchant —</option>
+            </select>
         </div>
 
-        <div class="input-group">
-            <label for="logoUpload">Merchant Logo (optional)</label>
-            <input type="file" id="logoUpload" accept="image/*">
+        <div class="input-row">
+            <div class="input-group">
+                <label for="merchantName">Merchant Name</label>
+                <input type="text" id="merchantName" placeholder="Enter merchant name">
+            </div>
+
+            <div class="input-group">
+                <label for="logoUpload">Merchant Logo (optional)</label>
+                <input type="file" id="logoUpload" accept="image/*">
+            </div>
         </div>
 
         <div class="input-group">
@@ -632,26 +616,6 @@
                     <span class="feat-icon">🔒</span> Package Protection
                 </label>
                 <label class="feature-check-label">
-                    <input type="checkbox" value="returns">
-                    <span class="feat-icon">↩️</span> Returns Offset
-                </label>
-                <label class="feature-check-label">
-                    <input type="checkbox" value="skiptheline">
-                    <span class="feat-icon">⚡</span> Skip The Line
-                </label>
-                <label class="feature-check-label">
-                    <input type="checkbox" value="satisfaction">
-                    <span class="feat-icon">✅</span> Satisfaction Guarantee
-                </label>
-                <label class="feature-check-label">
-                    <input type="checkbox" value="quality">
-                    <span class="feat-icon">🏆</span> Quality Guarantee
-                </label>
-                <label class="feature-check-label">
-                    <input type="checkbox" value="cashback">
-                    <span class="feat-icon">💰</span> Customer Cashback
-                </label>
-                <label class="feature-check-label">
                     <input type="checkbox" value="carbon">
                     <span class="feat-icon">🌱</span> Carbon Offset
                 </label>
@@ -659,55 +623,50 @@
                     <input type="checkbox" value="charitable">
                     <span class="feat-icon">🤝</span> Charitable Contributions
                 </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="cashback">
+                    <span class="feat-icon">💰</span> Customer Cashback
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="quality">
+                    <span class="feat-icon">🏆</span> Quality Guarantee
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="returns">
+                    <span class="feat-icon">↩️</span> Returns Offset
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="satisfaction">
+                    <span class="feat-icon">✅</span> Satisfaction Guarantee
+                </label>
+                <label class="feature-check-label">
+                    <input type="checkbox" value="skiptheline">
+                    <span class="feat-icon">⚡</span> Skip The Line
+                </label>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label for="upfrontCashIncentive">Upfront Cash Incentive</label>
+                <input type="text" id="upfrontCashIncentive" placeholder="Dollar amount (e.g., 5000)">
+            </div>
+
+            <div class="input-group">
+                <label for="upfrontRevShareIncentive">Upfront Rev Share Incentive</label>
+                <input type="text" id="upfrontRevShareIncentive" placeholder="Dollar amount (e.g., 5000)">
             </div>
         </div>
 
         <div class="input-group">
-            <label for="upfrontCashIncentive">Upfront Cash Incentive</label>
-            <input type="text" id="upfrontCashIncentive" placeholder="Dollar amount (e.g., 5000)">
+            <label>Custom Incentives</label>
+            <div id="customIncentivesList"></div>
+            <button type="button" class="add-custom-incentive-btn" onclick="addCustomIncentiveRow()">+ Add Custom Incentive</button>
         </div>
 
         <div class="input-group">
-            <label for="upfrontRevShareIncentive">Upfront Rev Share Incentive</label>
-            <input type="text" id="upfrontRevShareIncentive" placeholder="Dollar amount (e.g., 5000)">
-        </div>
-
-        <div class="input-group">
-            <label>Important Account Information</label>
-            <table class="acct-info-input-table">
-                <thead>
-                    <tr>
-                        <th style="width:22%">Label</th>
-                        <th style="width:39%">Overview</th>
-                        <th style="width:39%">Additional Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="label-cell">Estimated Go-Live Date</td>
-                        <td><input type="text" id="acctGoLive" placeholder="TBD"></td>
-                        <td><input type="text" id="acctGoLiveNote" placeholder="– if blank"></td>
-                    </tr>
-                    <tr>
-                        <td class="label-cell">Pricing</td>
-                        <td><input type="text" id="acctPricing" placeholder="e.g., 4% of cart subtotal"></td>
-                        <td><input type="text" id="acctInsuranceLimit" placeholder="Insurance limit value (e.g., $3K)"></td>
-                    </tr>
-                    <tr>
-                        <td class="label-cell" rowspan="3">Rev Share</td>
-                        <td><input type="text" id="acctRevShareAmt" placeholder="Amount (e.g., 10%)"></td>
-                        <td rowspan="3" class="acct-rev-share-note-cell">
-                            <span class="acct-note-preview" id="acctRevShareNotePreview">You earn — of post-claims &amp; returns (net) revenue, paid monthly starting 3 months after launch.</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" id="acctPaymentPref" placeholder="Payment preference (e.g., TBD)"></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" id="acctFirstPayment" placeholder="First payment date (e.g., TBD)"></td>
-                    </tr>
-                </tbody>
-            </table>
+            <label for="disclaimerLabel">Disclaimer Label (optional — leave blank for no label)</label>
+            <input type="text" id="disclaimerLabel" placeholder="e.g., Disclaimer, Note, Terms">
         </div>
 
         <div class="input-group">
@@ -822,44 +781,8 @@
         </div>
 
         <div class="prop-footer-body">
-            <!-- Important Account Information table -->
-            <table class="prop-acct-table" id="propAcctInfoTable" style="display:none;">
-                <thead>
-                    <tr>
-                        <th>Important Account Information</th>
-                        <th>Overview</th>
-                        <th>Additional Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Estimated Go-Live Date</td>
-                        <td id="propAcctGoLive">TBD</td>
-                        <td id="propAcctGoLiveNote">—</td>
-                    </tr>
-                    <tr>
-                        <td>Pricing</td>
-                        <td id="propAcctPricing">—</td>
-                        <td id="propAcctPricingNote">—</td>
-                    </tr>
-                    <tr>
-                        <td rowspan="3">Rev Share</td>
-                        <td id="propAcctRevShareAmt">Amount: —</td>
-                        <td rowspan="3" id="propAcctRevShareNote">—</td>
-                    </tr>
-                    <tr>
-                        <td id="propAcctPaymentPref">Payment preference: —</td>
-                    </tr>
-                    <tr>
-                        <td id="propAcctFirstPayment">First payment date: —</td>
-                    </tr>
-                </tbody>
-            </table>
-
             <div id="propDisclaimerSection" style="display:none; padding-bottom: 8px;">
-                <p style="font-size: 11px; color: #888; font-style: italic;">
-                    <strong>Disclaimer:</strong> <span id="propDisclaimer"></span>
-                </p>
+                <p id="propDisclaimerText" style="font-size: 11px; color: #888; font-style: italic;"></p>
             </div>
         </div>
 
@@ -991,9 +914,7 @@
 
         <div class="prop-footer-body">
             <div id="compDisclaimerSection" style="display: none; padding-bottom: 8px;">
-                <p style="font-size: 11px; color: #888; font-style: italic;">
-                    <strong>Disclaimer:</strong> <span id="compDisclaimer"></span>
-                </p>
+                <p id="compDisclaimerText" style="font-size: 11px; color: #888; font-style: italic;"></p>
             </div>
         </div>
 
@@ -1279,9 +1200,83 @@
             });
         }
 
+        // Render a disclaimer paragraph: bold "{label}:" prefix only when a label is given,
+        // otherwise just the plain text. Built via DOM nodes (not innerHTML) so no escaping is needed.
+        function renderDisclaimer(sectionId, textElId, label, text) {
+            const section = document.getElementById(sectionId);
+            const p = document.getElementById(textElId);
+            if (!text) {
+                section.style.display = 'none';
+                return;
+            }
+            p.innerHTML = '';
+            if (label) {
+                const strong = document.createElement('strong');
+                strong.textContent = label + ':';
+                p.appendChild(strong);
+                p.appendChild(document.createTextNode(' ' + text));
+            } else {
+                p.appendChild(document.createTextNode(text));
+            }
+            section.style.display = 'block';
+        }
+
+        // ── Auto-check Returns/Cashback/Guarantee based on the pasted calculator link ──
+        // (Package Protection and the calculator-blind features — Skip The Line, Quality
+        // Guarantee as a distinct type, Carbon Offset, Charitable Contributions — are left
+        // to manual selection since the calculator has no signal for them.)
+        function autoDetectFeaturesFromLink(url) {
+            try {
+                const params = new URLSearchParams(new URL(url).search);
+                const returnsOn   = params.get('rr') !== null && params.get('rpc') !== null;
+                const cashbackOn  = params.get('cbe') === '1' || !!params.get('cb');
+                const guaranteeOn = params.get('guar') === '1' || !!params.get('gcr');
+                const setChecked = (value, checked) => {
+                    const cb = document.querySelector('#featuresGrid input[value="' + value + '"]');
+                    if (cb) cb.checked = checked;
+                };
+                setChecked('returns', returnsOn);
+                setChecked('cashback', cashbackOn);
+                setChecked('satisfaction', guaranteeOn);
+                if (!guaranteeOn) setChecked('quality', false);
+            } catch (e) { /* not a full URL yet — ignore until it is */ }
+        }
+
+        // ── Saved Merchants (shared localStorage with si-roi-calculator) ──
+        function getSavedMerchantConfigs() {
+            try { return JSON.parse(localStorage.getItem('si_saved_configs') || '{}'); } catch (e) { return {}; }
+        }
+        function refreshSavedMerchantsDropdown() {
+            const configs = getSavedMerchantConfigs();
+            const names = Object.keys(configs);
+            const group = document.getElementById('savedMerchantGroup');
+            const select = document.getElementById('savedMerchantSelect');
+            if (names.length === 0) {
+                group.style.display = 'none';
+                return;
+            }
+            group.style.display = 'block';
+            const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            select.innerHTML = '<option value="">— Select a saved merchant —</option>' +
+                names.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+        }
+
         // ── Detect calc type and show badge on link input ──
         document.addEventListener('DOMContentLoaded', function() {
+            refreshSavedMerchantsDropdown();
+
+            document.getElementById('savedMerchantSelect').addEventListener('change', function(e) {
+                const name = e.target.value;
+                if (!name) return;
+                const cfg = getSavedMerchantConfigs()[name];
+                if (!cfg || !cfg.url) return;
+                document.getElementById('merchantName').value = name;
+                document.getElementById('calculatorLink').value = cfg.url;
+                document.getElementById('calculatorLink').dispatchEvent(new Event('input', { bubbles: true }));
+            });
+
             document.getElementById('calculatorLink').addEventListener('input', function(e) {
+                autoDetectFeaturesFromLink(e.target.value);
                 const badge = document.getElementById('calcTypeBadge');
                 const type = detectCalcType(e.target.value);
                 if (type === 'roi') {
@@ -1310,6 +1305,31 @@
             });
         });
 
+        // ── Custom incentive rows ──
+        let _customIncentiveRowId = 0;
+        function addCustomIncentiveRow() {
+            const id = 'ci-row-' + (_customIncentiveRowId++);
+            const row = document.createElement('div');
+            row.className = 'custom-incentive-row';
+            row.id = id;
+            row.innerHTML =
+                '<input type="text" class="ci-name" placeholder="Incentive Name">' +
+                '<input type="text" class="ci-amount" placeholder="Amount (e.g., 1000)">' +
+                '<select class="ci-mode">' +
+                    '<option value="include">Include in Total</option>' +
+                    '<option value="exclude">Show Only (exclude from Total)</option>' +
+                '</select>' +
+                '<button type="button" class="ci-remove" onclick="document.getElementById(\'' + id + '\').remove()">✕</button>';
+            document.getElementById('customIncentivesList').appendChild(row);
+        }
+        function getCustomIncentives() {
+            return Array.from(document.querySelectorAll('#customIncentivesList .custom-incentive-row')).map(row => ({
+                name: row.querySelector('.ci-name').value.trim() || 'Custom Incentive',
+                amount: parseFloat(row.querySelector('.ci-amount').value.replace(/[^0-9.]/g, '')) || 0,
+                mode: row.querySelector('.ci-mode').value,
+            })).filter(ci => ci.amount > 0);
+        }
+
         let _lastMerchantName = '';
         let _activeProposalType = 'roi';
 
@@ -1319,19 +1339,11 @@
             const calculatorLink = document.getElementById('calculatorLink').value;
             const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
             const disclaimerText = document.getElementById('disclaimerText').value || '';
+            const disclaimerLabel = document.getElementById('disclaimerLabel').value.trim();
             const logoFile = document.getElementById('logoUpload').files[0];
             const upfrontCashIncentive = parseFloat(document.getElementById('upfrontCashIncentive').value.replace(/[^0-9.]/g, '')) || 0;
             const upfrontRevShareIncentive = parseFloat(document.getElementById('upfrontRevShareIncentive').value.replace(/[^0-9.]/g, '')) || 0;
-
-            const acctInfo = {
-                goLive:         document.getElementById('acctGoLive').value.trim(),
-                goLiveNote:     document.getElementById('acctGoLiveNote').value.trim(),
-                pricing:        document.getElementById('acctPricing').value.trim(),
-                insuranceLimit: document.getElementById('acctInsuranceLimit').value.trim(),
-                revShareAmt:    document.getElementById('acctRevShareAmt').value.trim(),
-                paymentPref:    document.getElementById('acctPaymentPref').value.trim(),
-                firstPayment:   document.getElementById('acctFirstPayment').value.trim(),
-            };
+            const customIncentives = getCustomIncentives();
 
             if (!calculatorLink) {
                 alert('Please enter a calculator link');
@@ -1364,7 +1376,7 @@
                 if (calcType === 'self-insure' || calcType === 'comparison:m1') {
                     _activeProposalType = 'self-insure';
                     const linkParser = calcType === 'comparison:m1' ? parseComparisonLink : parseSelfInsureLink;
-                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, linkParser);
+                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, linkParser);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
@@ -1373,7 +1385,7 @@
                     document.getElementById('compActions').style.display = 'flex';
                 } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
                     _activeProposalType = 'self-insure';
-                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, parseComparisonLink);
+                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, parseComparisonLink);
                     applyLogoToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
@@ -1382,7 +1394,7 @@
                     document.getElementById('compActions').style.display = 'flex';
                 } else {
                     _activeProposalType = 'roi';
-                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive, upfrontRevShareIncentive);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, disclaimerLabel, upfrontCashIncentive, upfrontRevShareIncentive, customIncentives);
                     applyLogoToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
@@ -1398,7 +1410,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, acctInfo, upfrontCashIncentive, upfrontRevShareIncentive) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, disclaimerLabel, upfrontCashIncentive, upfrontRevShareIncentive, customIncentives) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1464,7 +1476,9 @@
 
             const upfrontCash = upfrontCashIncentive || 0;
             const upfrontRevShare = upfrontRevShareIncentive || 0;
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + upfrontRevShare + guaranteeFundedAmount + cashbackRedeemed;
+            const customIncentivesIncluded = (customIncentives || []).filter(ci => ci.mode !== 'exclude');
+            const customIncentiveTotal = customIncentivesIncluded.reduce((sum, ci) => sum + ci.amount, 0);
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + upfrontRevShare + guaranteeFundedAmount + cashbackRedeemed + customIncentiveTotal;
 
             // Premiums You Keep — share of the collected premium pool returned to the merchant
             // (claims funded + rev share + returns offset + guarantee claims + cashback redeemed)
@@ -1546,6 +1560,7 @@
             const incentiveItems = [];
             if (upfrontCash > 0) incentiveItems.push({ label: 'Upfront Cash Incentive', value: upfrontCash });
             if (upfrontRevShare > 0) incentiveItems.push({ label: 'Upfront Rev Share Incentive', value: upfrontRevShare });
+            (customIncentives || []).forEach(ci => incentiveItems.push({ label: ci.name, value: ci.amount }));
             if (incentiveItems.length > 0) {
                 incentivesSection.style.display = 'block';
                 incentiveItems.sort((a, b) => b.value - a.value);
@@ -1579,41 +1594,11 @@
 
             renumberSections('#proposalContainer');
 
-            // Populate Account Info table
-            if (acctInfo) {
-                const ai = acctInfo;
-                const hasAny = ai.goLive || ai.goLiveNote || ai.pricing || ai.insuranceLimit || ai.revShareAmt || ai.paymentPref || ai.firstPayment;
-                document.getElementById('propAcctInfoTable').style.display = hasAny ? 'table' : 'none';
-
-                document.getElementById('propAcctGoLive').textContent = ai.goLive || 'TBD';
-                document.getElementById('propAcctGoLiveNote').textContent = ai.goLiveNote || '—';
-
-                document.getElementById('propAcctPricing').textContent = ai.pricing || '—';
-                document.getElementById('propAcctPricingNote').textContent = ai.insuranceLimit
-                    ? 'Insurance limit: We can insure orders up to ' + ai.insuranceLimit + ' in value'
-                    : '—';
-
-                document.getElementById('propAcctRevShareAmt').textContent = 'Amount: ' + (ai.revShareAmt || '—');
-                document.getElementById('propAcctPaymentPref').textContent = 'Payment preference: ' + (ai.paymentPref || '—');
-                document.getElementById('propAcctFirstPayment').textContent = 'First payment date: ' + (ai.firstPayment || 'TBD');
-
-                document.getElementById('propAcctRevShareNote').textContent = ai.revShareAmt
-                    ? 'You earn ' + ai.revShareAmt + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.'
-                    : '—';
-            } else {
-                document.getElementById('propAcctInfoTable').style.display = 'none';
-            }
-
-            if (disclaimerText) {
-                document.getElementById('propDisclaimer').textContent = disclaimerText;
-                document.getElementById('propDisclaimerSection').style.display = 'block';
-            } else {
-                document.getElementById('propDisclaimerSection').style.display = 'none';
-            }
+            renderDisclaimer('propDisclaimerSection', 'propDisclaimerText', disclaimerLabel, disclaimerText);
         }
 
         // ── Self-Insure Comparison Proposal ──
-        function generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, parser) {
+        function generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, parser) {
             const d = (parser || parseSelfInsureLink)(calculatorLink);
 
             // Period multiplier
@@ -1706,12 +1691,7 @@
             document.getElementById('compAttachLiftSub').textContent = formatPercent(d.sa) + ' → ' + formatPercent(d.sia) + ' attach rate';
 
             // Disclaimer
-            if (disclaimerText) {
-                document.getElementById('compDisclaimer').textContent = disclaimerText;
-                document.getElementById('compDisclaimerSection').style.display = 'block';
-            } else {
-                document.getElementById('compDisclaimerSection').style.display = 'none';
-            }
+            renderDisclaimer('compDisclaimerSection', 'compDisclaimerText', disclaimerLabel, disclaimerText);
         }
 
         function editProposal() {
@@ -1768,43 +1748,17 @@
             }
         }
 
-        // Live preview of rev share note in input form
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('acctRevShareAmt').addEventListener('input', function(e) {
-                const val = e.target.value.trim();
-                document.getElementById('acctRevShareNotePreview').textContent = val
-                    ? 'You earn ' + val + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.'
-                    : 'You earn — of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.';
-            });
-        });
-
         // localStorage persistence
         window.addEventListener('load', function() {
             const savedMerchant  = localStorage.getItem('si_proposal_merchant');
             const savedLink      = localStorage.getItem('si_proposal_link');
             const savedDisclaimer = localStorage.getItem('si_proposal_disclaimer');
-            const savedGoLive    = localStorage.getItem('si_proposal_go_live');
-            const savedGoLiveNote = localStorage.getItem('si_proposal_go_live_note');
-            const savedPricing   = localStorage.getItem('si_proposal_pricing');
-            const savedInsLimit  = localStorage.getItem('si_proposal_ins_limit');
-            const savedRsAmt     = localStorage.getItem('si_proposal_rs_amt');
-            const savedPayPref   = localStorage.getItem('si_proposal_pay_pref');
-            const savedFirstPay  = localStorage.getItem('si_proposal_first_pay');
+            const savedDisclaimerLabel = localStorage.getItem('si_proposal_disclaimer_label');
 
             if (savedMerchant)   document.getElementById('merchantName').value = savedMerchant;
             if (savedLink)       document.getElementById('calculatorLink').value = savedLink;
             if (savedDisclaimer) document.getElementById('disclaimerText').value = savedDisclaimer;
-            if (savedGoLive)     document.getElementById('acctGoLive').value = savedGoLive;
-            if (savedGoLiveNote) document.getElementById('acctGoLiveNote').value = savedGoLiveNote;
-            if (savedPricing)    document.getElementById('acctPricing').value = savedPricing;
-            if (savedInsLimit)   document.getElementById('acctInsuranceLimit').value = savedInsLimit;
-            if (savedRsAmt) {
-                document.getElementById('acctRevShareAmt').value = savedRsAmt;
-                document.getElementById('acctRevShareNotePreview').textContent =
-                    'You earn ' + savedRsAmt + ' of post-claims & returns (net) revenue, paid monthly starting 3 months after launch.';
-            }
-            if (savedPayPref)  document.getElementById('acctPaymentPref').value = savedPayPref;
-            if (savedFirstPay) document.getElementById('acctFirstPayment').value = savedFirstPay;
+            if (savedDisclaimerLabel) document.getElementById('disclaimerLabel').value = savedDisclaimerLabel;
 
             if (savedLink) {
                 try {
@@ -1831,13 +1785,7 @@
             document.getElementById('merchantName').addEventListener('input', e => localStorage.setItem('si_proposal_merchant', e.target.value));
             document.getElementById('calculatorLink').addEventListener('input', e => localStorage.setItem('si_proposal_link', e.target.value));
             document.getElementById('disclaimerText').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer', e.target.value));
-            document.getElementById('acctGoLive').addEventListener('input', e => localStorage.setItem('si_proposal_go_live', e.target.value));
-            document.getElementById('acctGoLiveNote').addEventListener('input', e => localStorage.setItem('si_proposal_go_live_note', e.target.value));
-            document.getElementById('acctPricing').addEventListener('input', e => localStorage.setItem('si_proposal_pricing', e.target.value));
-            document.getElementById('acctInsuranceLimit').addEventListener('input', e => localStorage.setItem('si_proposal_ins_limit', e.target.value));
-            document.getElementById('acctRevShareAmt').addEventListener('input', e => localStorage.setItem('si_proposal_rs_amt', e.target.value));
-            document.getElementById('acctPaymentPref').addEventListener('input', e => localStorage.setItem('si_proposal_pay_pref', e.target.value));
-            document.getElementById('acctFirstPayment').addEventListener('input', e => localStorage.setItem('si_proposal_first_pay', e.target.value));
+            document.getElementById('disclaimerLabel').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer_label', e.target.value));
             document.getElementById('logoUpload').addEventListener('change', e => {
                 const file = e.target.files[0];
                 if (file) {
