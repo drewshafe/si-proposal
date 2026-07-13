@@ -1254,8 +1254,19 @@
                 cbrr: parseFloat(params.get('cbrr')) || 0,
                 gcr: parseFloat(params.get('gcr')) || 0,
                 grossRevShare: params.get('grs') === '1',
+                returnsCoverage: params.get('rc') || 'default',
             };
         }
+
+        // What SI covers under each Returns Coverage Mode (mirrors si-roi-calculator's
+        // _returnsCoverage branches exactly — see setReturnsCoverage()/generateShareableLink()).
+        const RETURNS_COVERAGE_CONFIG = {
+            default:             { labels: true,  platform: true,  allOrders: false },
+            platform_only:       { labels: false, platform: true,  allOrders: false },
+            labels_protected:    { labels: true,  platform: false, allOrders: false },
+            all_labels_platform: { labels: true,  platform: true,  allOrders: true },
+            all_labels:          { labels: true,  platform: false, allOrders: true },
+        };
 
         // ── Self-insure calc parser ──
         function parseSelfInsureLink(url) {
@@ -1737,10 +1748,13 @@
 
             // Compute returns first (label costs deducted before rev share, matching ROI calc logic)
             let coveredLabelCost = 0, coveredPlatformCost = 0, totalReturnsOffset = 0;
+            const rcConfig = RETURNS_COVERAGE_CONFIG[data.returnsCoverage] || RETURNS_COVERAGE_CONFIG.default;
             if (data.returnsEnabled) {
-                const protectedReturns = protectedOrders * returnsRate;
-                coveredLabelCost  = protectedReturns * data.rlc;           // rlc = avgShipping (backward compat)
-                coveredPlatformCost = data.rpc * 12;  // rpc is always monthly in URL params
+                const protectedReturns = protectedOrders * returnsRate;   // returns among protected orders only
+                const totalReturns = annualOrders * returnsRate;          // returns across all orders
+                const labelBasis = rcConfig.allOrders ? totalReturns : protectedReturns;
+                coveredLabelCost  = rcConfig.labels ? labelBasis * data.rlc : 0;   // rlc = avgShipping (backward compat)
+                coveredPlatformCost = rcConfig.platform ? data.rpc * 12 : 0;  // rpc is always monthly in URL params
                 totalReturnsOffset = coveredLabelCost + coveredPlatformCost;
             }
 
@@ -1844,8 +1858,8 @@
                 { label: 'Rev Share Payout', value: revenueShare },
             ];
             if (data.returnsEnabled) {
-                lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
-                lineItems.push({ label: 'Software Savings', value: coveredPlatformCost });
+                if (rcConfig.labels) lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
+                if (rcConfig.platform) lineItems.push({ label: 'Software Savings', value: coveredPlatformCost });
             }
             lineItems.sort((a, b) => b.value - a.value);
             document.getElementById('propLineItems').innerHTML = lineItems.map(item =>
