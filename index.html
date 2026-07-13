@@ -2020,8 +2020,11 @@
                 : document.getElementById('proposalContainer');
 
             try {
-                // Wait for all images in the card to fully load before snapshotting
-                const imgEls = Array.from(el.querySelectorAll('img'));
+                // Wait for all images in the card to fully load before snapshotting.
+                // Skip src-less images (e.g. the merchant logo when none was uploaded) —
+                // they report complete=true/naturalWidth=0 and never fire onload/onerror,
+                // which previously hung this function forever.
+                const imgEls = Array.from(el.querySelectorAll('img')).filter(img => img.getAttribute('src'));
                 await Promise.all(imgEls.map(img => {
                     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
                     return new Promise(resolve => {
