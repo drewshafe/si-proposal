@@ -1819,7 +1819,12 @@
             document.getElementById('propConfidentialLine').textContent = 'Confidential — Prepared for ' + merchantName;
             document.getElementById('propDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('propYear').textContent = new Date().getFullYear();
-            document.getElementById('propPremiumDisplay').textContent = premiumDisplay;
+            // Render the "(min $X)" portion of a template label (e.g. "3% (min $1.95)")
+            // at line-item text size instead of the full stat-value size.
+            const premiumMinMatch = premiumDisplay.match(/^(.+?)\s*(\(min \$[\d.,]+\))$/);
+            document.getElementById('propPremiumDisplay').innerHTML = premiumMinMatch
+                ? premiumMinMatch[1] + ' <span class="stat-suffix">' + premiumMinMatch[2] + '</span>'
+                : premiumDisplay;
             document.getElementById('propRevShareDisplay').textContent = Math.round(premiumsKeptPct) + '%';
             document.getElementById('propAvgPremiumDisplay').textContent = formatCurrencyWithCents(avgPremium);
             const cashbackStat = document.getElementById('propCashbackStat');
