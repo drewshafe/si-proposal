@@ -33,98 +33,10 @@
             color: #555;
         }
 
-        /* Side-by-side field rows (Merchant Name/Logo, incentives) */
+        /* Side-by-side field rows (Saved Merchant/Calculator Link, incentives) */
         .input-row { display: flex; gap: 16px; }
         .input-row .input-group { flex: 1; min-width: 0; }
         .input-row .input-group label { font-size: 12px; margin-bottom: 6px; }
-
-        /* Merchant logo input + clear button */
-        .logo-input-row { display: flex; gap: 8px; }
-        .logo-input-row input[type=file] { flex: 1; min-width: 0; }
-        .logo-clear-btn {
-            flex-shrink: 0;
-            width: 44px;
-            padding: 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            background: white;
-            color: #c0392b;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .logo-clear-btn:hover { background: #fbe6e6; border-color: #e0b3b3; }
-        .logo-style-toggle-btn {
-            flex-shrink: 0;
-            width: auto;
-            padding: 0 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            background: white;
-            color: #4a5fc1;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .logo-style-toggle-btn:hover:not(:disabled) { background: #f0f1ff; border-color: #c5cbf0; }
-        .logo-style-toggle-btn:disabled { color: #bbb; cursor: not-allowed; }
-
-        /* Logo styler — drag-and-snap preview */
-        .logo-styler-preview {
-            position: relative;
-            width: 100%;
-            height: 130px;
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-            border-bottom: 3px solid #1a1a1a;
-        }
-        .styler-ship-logo { position: absolute; top: 14px; left: 16px; height: 22px; width: auto; pointer-events: none; }
-        .styler-tagline {
-            position: absolute; top: 40px; left: 16px;
-            font-size: 8px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #999;
-            pointer-events: none;
-        }
-        .styler-doc-label {
-            position: absolute; top: 14px; right: 16px;
-            font-size: 8px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #999;
-            pointer-events: none;
-        }
-        .styler-confidential {
-            position: absolute; top: 26px; right: 16px;
-            font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 13px; color: #1a1a1a;
-            pointer-events: none;
-        }
-        .styler-logo-drag {
-            position: absolute;
-            height: 26px;
-            cursor: grab;
-            box-shadow: 0 0 0 2px rgba(102,126,234,0.5);
-        }
-        .styler-logo-drag:active { cursor: grabbing; }
-        .styler-guide-v, .styler-guide-h { position: absolute; display: none; background: #667eea; pointer-events: none; z-index: 5; }
-        .styler-guide-v { top: 0; bottom: 0; width: 1px; }
-        .styler-guide-h { left: 0; right: 0; height: 1px; }
-
-        .logo-styler-controls { display: flex; align-items: center; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
-        .logo-styler-size-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #555; margin: 0; }
-        .logo-styler-size-label input[type=range] { width: 140px; }
-        .logo-styler-size-label span { min-width: 34px; }
-        .logo-styler-snap-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #555; margin: 0; }
-        .logo-styler-reset-btn {
-            width: auto;
-            padding: 8px 14px;
-            background: #f5f5f5;
-            color: #555;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .logo-styler-reset-btn:hover { background: #eee; }
 
         /* Custom incentive rows */
         .custom-incentive-row {
@@ -175,6 +87,26 @@
             cursor: pointer;
         }
         .add-custom-incentive-btn:hover { opacity: 0.85; }
+
+        /* CS Cost Savings on/off toggle */
+        .cs-savings-toggle-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #888;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .cs-savings-toggle-btn.active {
+            border-color: #667eea;
+            background: #eef0ff;
+            color: #4a5fc1;
+        }
+        .cs-savings-toggle-btn:hover { opacity: 0.9; }
 
         .input-group input,
         .input-group textarea,
@@ -249,7 +181,6 @@
 
         /* Header */
         .prop-header {
-            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -268,8 +199,6 @@
             color: #999;
         }
         .prop-header-right { text-align: right; min-width: 0; }
-        /* Freely positioned within the header via the logo styler (left/top set inline as %) */
-        .prop-merchant-logo { position: absolute; height: 26px; display: none; }
         .prop-doc-label {
             font-size: 10.5px;
             font-weight: 700;
@@ -677,58 +606,24 @@
     <div class="input-container">
         <h1>ShipInsure Proposal Generator</h1>
 
-        <div class="input-group" id="savedMerchantGroup" style="display:none;">
-            <label for="savedMerchantSelect">Saved Merchant (from calculator)</label>
-            <select id="savedMerchantSelect">
-                <option value="">— Select a saved merchant —</option>
-            </select>
+        <div class="input-group">
+            <label for="merchantName">Merchant Name</label>
+            <input type="text" id="merchantName" placeholder="Enter merchant name">
         </div>
 
         <div class="input-row">
-            <div class="input-group">
-                <label for="merchantName">Merchant Name</label>
-                <input type="text" id="merchantName" placeholder="Enter merchant name">
+            <div class="input-group" id="savedMerchantGroup" style="display:none;">
+                <label for="savedMerchantSelect">Saved Merchant (from calculator)</label>
+                <select id="savedMerchantSelect">
+                    <option value="">— Select a saved merchant —</option>
+                </select>
             </div>
 
             <div class="input-group">
-                <label for="logoUpload">Merchant Logo (optional)</label>
-                <div class="logo-input-row">
-                    <input type="file" id="logoUpload" accept="image/*">
-                    <button type="button" class="logo-clear-btn" onclick="clearMerchantLogo()" title="Clear logo">✕</button>
-                    <button type="button" class="logo-style-toggle-btn" id="logoStyleToggleBtn" onclick="toggleLogoStyler()" disabled>🎨 Style</button>
-                </div>
+                <label for="calculatorLink">Calculator Link</label>
+                <input type="text" id="calculatorLink" placeholder="Paste ROI calculator or Self-Insure vs ShipInsure calculator link">
+                <div class="calc-type-badge roi" id="calcTypeBadge"></div>
             </div>
-        </div>
-
-        <div class="input-group" id="logoStylerPanel" style="display:none;">
-            <label>Logo Style — drag the logo to place it, resize with the slider</label>
-            <div class="logo-styler-preview" id="logoStylerPreview">
-                <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png" class="styler-ship-logo" alt="">
-                <div class="styler-tagline">Post-Purchase Order Enhancement</div>
-                <div class="styler-doc-label">Financial Impact Proposal</div>
-                <div class="styler-confidential">Confidential — Prepared for Merchant</div>
-                <div class="styler-guide-v" id="stylerGuideV"></div>
-                <div class="styler-guide-h" id="stylerGuideH"></div>
-                <img id="stylerLogoPreview" class="styler-logo-drag" alt="Merchant Logo">
-            </div>
-            <div class="logo-styler-controls">
-                <label class="logo-styler-size-label">
-                    Size
-                    <input type="range" id="logoSizeSlider" min="14" max="90" value="26">
-                    <span id="logoSizeValue">26px</span>
-                </label>
-                <label class="logo-styler-snap-label">
-                    <input type="checkbox" id="logoSnapMode" checked>
-                    Snap to guides
-                </label>
-                <button type="button" class="logo-styler-reset-btn" onclick="resetLogoStyle()">Reset Position</button>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label for="calculatorLink">Calculator Link</label>
-            <input type="text" id="calculatorLink" placeholder="Paste ROI calculator or Self-Insure vs ShipInsure calculator link">
-            <div class="calc-type-badge roi" id="calcTypeBadge"></div>
         </div>
 
         <div class="input-group">
@@ -769,6 +664,10 @@
             </div>
         </div>
 
+        <div class="input-group">
+            <button type="button" class="cs-savings-toggle-btn active" id="csSavingsToggleBtn" onclick="toggleCsSavings()">✓ Calculate &amp; Show CS Cost Savings</button>
+        </div>
+
         <div class="input-row">
             <div class="input-group">
                 <label for="upfrontCashIncentive">Upfront Cash Incentive</label>
@@ -806,7 +705,6 @@
         <div class="prop-body">
             <!-- Header -->
             <div class="prop-header">
-                <img id="merchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
                 <div class="prop-header-left">
                     <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
                         alt="ShipInsure" class="prop-logo-mark">
@@ -928,7 +826,6 @@
         <div class="prop-body">
             <!-- Header -->
             <div class="prop-header">
-                <img id="compMerchantLogo" alt="Merchant Logo" class="prop-merchant-logo">
                 <div class="prop-header-left">
                     <img src="https://raw.githubusercontent.com/drewshafe/si-proposal/main/shipinsure-logo-dark.png"
                         alt="ShipInsure" class="prop-logo-mark">
@@ -1351,156 +1248,6 @@
             }
         }
 
-        // Clear the chosen merchant logo file, its saved copy, and any preview already shown.
-        function clearMerchantLogo() {
-            document.getElementById('logoUpload').value = '';
-            localStorage.removeItem('si_proposal_logo');
-            ['merchantLogo', 'compMerchantLogo'].forEach(id => {
-                const img = document.getElementById(id);
-                if (!img) return;
-                img.src = '';
-                img.style.display = 'none';
-            });
-            document.getElementById('logoStylerPanel').style.display = 'none';
-            refreshLogoStylerAvailability();
-        }
-
-        // ── Merchant logo styler — drag-and-snap position + size, scoped to the header ──
-        const LOGO_STYLE_DEFAULT = { xFrac: 0.82, yFrac: 0.06, height: 26, snap: true };
-        let _logoStyle = Object.assign({}, LOGO_STYLE_DEFAULT);
-
-        function loadLogoStyle() {
-            try {
-                const saved = JSON.parse(localStorage.getItem('si_proposal_logo_style') || 'null');
-                if (saved) _logoStyle = Object.assign({}, LOGO_STYLE_DEFAULT, saved);
-            } catch (e) { /* ignore corrupt saved state */ }
-        }
-        function saveLogoStyle() {
-            localStorage.setItem('si_proposal_logo_style', JSON.stringify(_logoStyle));
-        }
-        function resetLogoStyle() {
-            _logoStyle = Object.assign({}, LOGO_STYLE_DEFAULT);
-            saveLogoStyle();
-            syncLogoStylerControls();
-            positionStylerLogo();
-        }
-        function syncLogoStylerControls() {
-            document.getElementById('logoSizeSlider').value = _logoStyle.height;
-            document.getElementById('logoSizeValue').textContent = Math.round(_logoStyle.height) + 'px';
-            document.getElementById('logoSnapMode').checked = _logoStyle.snap;
-        }
-        // Position/size the draggable preview logo per the current _logoStyle
-        function positionStylerLogo() {
-            const box = document.getElementById('logoStylerPreview');
-            const img = document.getElementById('stylerLogoPreview');
-            if (!box || !img) return;
-            img.style.height = _logoStyle.height + 'px';
-            const boxRect = box.getBoundingClientRect();
-            img.style.left = (_logoStyle.xFrac * boxRect.width) + 'px';
-            img.style.top = (_logoStyle.yFrac * boxRect.height) + 'px';
-        }
-        // Enable/disable the Style button and point the styler preview at whatever logo is saved
-        function refreshLogoStylerAvailability() {
-            const dataUrl = localStorage.getItem('si_proposal_logo');
-            const btn = document.getElementById('logoStyleToggleBtn');
-            const stylerImg = document.getElementById('stylerLogoPreview');
-            if (dataUrl) {
-                btn.disabled = false;
-                stylerImg.src = dataUrl;
-            } else {
-                btn.disabled = true;
-                document.getElementById('logoStylerPanel').style.display = 'none';
-            }
-        }
-        function toggleLogoStyler() {
-            const panel = document.getElementById('logoStylerPanel');
-            const opening = panel.style.display === 'none';
-            panel.style.display = opening ? 'block' : 'none';
-            if (opening) {
-                syncLogoStylerControls();
-                requestAnimationFrame(positionStylerLogo);
-            }
-        }
-        function initLogoStylerDrag() {
-            const box = document.getElementById('logoStylerPreview');
-            const img = document.getElementById('stylerLogoPreview');
-            const guideV = document.getElementById('stylerGuideV');
-            const guideH = document.getElementById('stylerGuideH');
-            let dragging = false, offsetX = 0, offsetY = 0;
-
-            img.addEventListener('mousedown', e => {
-                dragging = true;
-                const rect = img.getBoundingClientRect();
-                offsetX = e.clientX - rect.left;
-                offsetY = e.clientY - rect.top;
-                e.preventDefault();
-            });
-
-            document.addEventListener('mousemove', e => {
-                if (!dragging) return;
-                const boxRect = box.getBoundingClientRect();
-                const imgRect = img.getBoundingClientRect();
-                const imgW = imgRect.width, imgH = imgRect.height;
-
-                let x = e.clientX - boxRect.left - offsetX;
-                let y = e.clientY - boxRect.top - offsetY;
-                x = Math.max(0, Math.min(boxRect.width - imgW, x));
-                y = Math.max(0, Math.min(boxRect.height - imgH, y));
-
-                let snappedX = false, snappedY = false;
-                if (_logoStyle.snap) {
-                    const threshold = 8;
-                    const centerX = x + imgW / 2, centerY = y + imgH / 2;
-                    const boxCenterX = boxRect.width / 2, boxCenterY = boxRect.height / 2;
-                    if (Math.abs(centerX - boxCenterX) < threshold) { x = boxCenterX - imgW / 2; snappedX = true; }
-                    else if (Math.abs(x) < threshold) { x = 0; snappedX = true; }
-                    else if (Math.abs((x + imgW) - boxRect.width) < threshold) { x = boxRect.width - imgW; snappedX = true; }
-
-                    if (Math.abs(centerY - boxCenterY) < threshold) { y = boxCenterY - imgH / 2; snappedY = true; }
-                    else if (Math.abs(y) < threshold) { y = 0; snappedY = true; }
-                    else if (Math.abs((y + imgH) - boxRect.height) < threshold) { y = boxRect.height - imgH; snappedY = true; }
-                }
-
-                guideV.style.display = snappedX ? 'block' : 'none';
-                if (snappedX) guideV.style.left = (x + imgW / 2) + 'px';
-                guideH.style.display = snappedY ? 'block' : 'none';
-                if (snappedY) guideH.style.top = (y + imgH / 2) + 'px';
-
-                img.style.left = x + 'px';
-                img.style.top = y + 'px';
-                _logoStyle.xFrac = x / boxRect.width;
-                _logoStyle.yFrac = y / boxRect.height;
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (!dragging) return;
-                dragging = false;
-                guideV.style.display = 'none';
-                guideH.style.display = 'none';
-                saveLogoStyle();
-            });
-
-            document.getElementById('logoSizeSlider').addEventListener('input', e => {
-                _logoStyle.height = parseFloat(e.target.value);
-                document.getElementById('logoSizeValue').textContent = Math.round(_logoStyle.height) + 'px';
-                positionStylerLogo();
-                saveLogoStyle();
-            });
-
-            document.getElementById('logoSnapMode').addEventListener('change', e => {
-                _logoStyle.snap = e.target.checked;
-                saveLogoStyle();
-            });
-        }
-        // Apply the stored position/size to a rendered proposal's merchant logo image
-        function applyLogoStyleToEl(imgId) {
-            const img = document.getElementById(imgId);
-            if (!img) return;
-            img.style.left = (_logoStyle.xFrac * 100) + '%';
-            img.style.top = (_logoStyle.yFrac * 100) + '%';
-            img.style.height = _logoStyle.height + 'px';
-        }
-
         // Render a disclaimer paragraph: bold "{label}:" prefix only when a label is given,
         // otherwise just the plain text. Built via DOM nodes (not innerHTML) so no escaping is needed.
         function renderDisclaimer(sectionId, textElId, label, text) {
@@ -1565,9 +1312,9 @@
         // ── Detect calc type and show badge on link input ──
         document.addEventListener('DOMContentLoaded', function() {
             refreshSavedMerchantsDropdown();
-            loadLogoStyle();
-            initLogoStylerDrag();
-            refreshLogoStylerAvailability();
+            const savedCsSavings = localStorage.getItem('si_proposal_cs_savings_enabled');
+            if (savedCsSavings !== null) _csSavingsEnabled = savedCsSavings === '1';
+            updateCsSavingsToggleUI();
 
             document.getElementById('savedMerchantSelect').addEventListener('change', function(e) {
                 const name = e.target.value;
@@ -1637,6 +1384,20 @@
         let _lastMerchantName = '';
         let _activeProposalType = 'roi';
 
+        // ── CS Cost Savings on/off toggle — an addition of ours beyond the ROI calculator's
+        // own line items, so it can be turned off to keep the proposal 1:1 with the calculator ──
+        let _csSavingsEnabled = true;
+        function toggleCsSavings() {
+            _csSavingsEnabled = !_csSavingsEnabled;
+            localStorage.setItem('si_proposal_cs_savings_enabled', _csSavingsEnabled ? '1' : '0');
+            updateCsSavingsToggleUI();
+        }
+        function updateCsSavingsToggleUI() {
+            const btn = document.getElementById('csSavingsToggleBtn');
+            btn.classList.toggle('active', _csSavingsEnabled);
+            btn.textContent = (_csSavingsEnabled ? '✓ ' : '') + 'Calculate & Show CS Cost Savings';
+        }
+
         function generateProposal() {
             const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
             _lastMerchantName = merchantName;
@@ -1644,7 +1405,6 @@
             const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
             const disclaimerText = document.getElementById('disclaimerText').value || '';
             const disclaimerLabel = document.getElementById('disclaimerLabel').value.trim();
-            const logoFile = document.getElementById('logoUpload').files[0];
             const upfrontCashIncentive = parseFloat(document.getElementById('upfrontCashIncentive').value.replace(/[^0-9.]/g, '')) || 0;
             const upfrontRevShareIncentive = parseFloat(document.getElementById('upfrontRevShareIncentive').value.replace(/[^0-9.]/g, '')) || 0;
             const customIncentives = getCustomIncentives();
@@ -1656,33 +1416,11 @@
 
             const calcType = detectCalcType(calculatorLink);
 
-            // Handle logo upload
-            function applyLogoToEl(imgId) {
-                const logoImg = document.getElementById(imgId);
-                if (logoFile) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        logoImg.src = e.target.result;
-                        logoImg.style.display = 'block';
-                        localStorage.setItem('si_proposal_logo', e.target.result);
-                    };
-                    reader.readAsDataURL(logoFile);
-                } else {
-                    const savedLogo = localStorage.getItem('si_proposal_logo');
-                    if (savedLogo) {
-                        logoImg.src = savedLogo;
-                        logoImg.style.display = 'block';
-                    }
-                }
-            }
-
             try {
                 if (calcType === 'self-insure' || calcType === 'comparison:m1') {
                     _activeProposalType = 'self-insure';
                     const linkParser = calcType === 'comparison:m1' ? parseComparisonLink : parseSelfInsureLink;
                     generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, linkParser);
-                    applyLogoToEl('compMerchantLogo');
-                    applyLogoStyleToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalActions').style.display = 'none';
@@ -1692,8 +1430,6 @@
                 } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
                     _activeProposalType = 'self-insure';
                     generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, parseComparisonLink);
-                    applyLogoToEl('compMerchantLogo');
-                    applyLogoStyleToEl('compMerchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalActions').style.display = 'none';
@@ -1703,8 +1439,6 @@
                 } else {
                     _activeProposalType = 'roi';
                     generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, disclaimerLabel, upfrontCashIncentive, upfrontRevShareIncentive, customIncentives);
-                    applyLogoToEl('merchantLogo');
-                    applyLogoStyleToEl('merchantLogo');
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
                     document.getElementById('compActions').style.display = 'none';
@@ -1784,8 +1518,10 @@
                 ? premiumPool * (data.share / 100)
                 : Math.max(0, postClaimBalance) * (data.share / 100);
 
-            // CS Cost savings — avoided support ticket cost on protected claims handled by ShipInsure
-            const csCostSavings = protectedClaims * data.cs;
+            // CS Cost savings — avoided support ticket cost on protected claims handled by ShipInsure.
+            // This is our own addition on top of the ROI calculator's line items, so it can be
+            // switched off to keep the proposal 1:1 with the calculator it was built from.
+            const csCostSavings = _csSavingsEnabled ? protectedClaims * data.cs : 0;
 
             const upfrontCash = upfrontCashIncentive || 0;
             const upfrontRevShare = upfrontRevShareIncentive || 0;
@@ -1861,9 +1597,9 @@
             // Build Protection line items, sorted descending by value
             const lineItems = [
                 { label: 'Shipping Claims Revenue', value: reshipRevenue },
-                { label: 'CS Cost Savings', value: csCostSavings },
                 { label: 'Rev Share Payout', value: revenueShare },
             ];
+            if (_csSavingsEnabled) lineItems.push({ label: 'CS Cost Savings', value: csCostSavings });
             if (data.returnsEnabled) {
                 if (rcConfig.labels) lineItems.push({ label: 'Return Labels', value: coveredLabelCost });
                 if (rcConfig.platform) lineItems.push({ label: 'Software Savings', value: coveredPlatformCost });
@@ -2028,9 +1764,8 @@
 
             try {
                 // Wait for all images in the card to fully load before snapshotting.
-                // Skip src-less images (e.g. the merchant logo when none was uploaded) —
-                // they report complete=true/naturalWidth=0 and never fire onload/onerror,
-                // which previously hung this function forever.
+                // Skip any src-less <img> — it reports complete=true/naturalWidth=0 and
+                // never fires onload/onerror, which would hang this function forever.
                 const imgEls = Array.from(el.querySelectorAll('img')).filter(img => img.getAttribute('src'));
                 await Promise.all(imgEls.map(img => {
                     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
@@ -2107,17 +1842,6 @@
             document.getElementById('calculatorLink').addEventListener('input', e => localStorage.setItem('si_proposal_link', e.target.value));
             document.getElementById('disclaimerText').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer', e.target.value));
             document.getElementById('disclaimerLabel').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer_label', e.target.value));
-            document.getElementById('logoUpload').addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = event => {
-                        localStorage.setItem('si_proposal_logo', event.target.result);
-                        refreshLogoStylerAvailability();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
         });
     </script>
 </body>
