@@ -239,7 +239,7 @@
             margin-bottom: 4px;
             min-height: 20px;
         }
-        .prop-stat-label .label-sub { display: block; font-size: 5px; margin-top: 2px; }
+        .prop-stat-label .label-sub { display: block; font-size: 7px; margin-top: 2px; }
         .prop-stat-value {
             font-size: 25px;
             font-weight: 800;
@@ -720,7 +720,7 @@
             <!-- Key terms -->
             <div class="prop-stats-band">
                 <div class="prop-stat">
-                    <div class="prop-stat-label">Premiums You Keep <span class="label-sub">(Resolutions Funded &amp; Revenue Share)</span></div>
+                    <div class="prop-stat-label">Premiums You Keep <span class="label-sub" id="propRevShareLabelSub"></span></div>
                     <div class="prop-stat-value" id="propRevShareDisplay">—</div>
                 </div>
                 <div class="prop-stat">
@@ -1248,6 +1248,16 @@
             }
         }
 
+        // What drives "Premiums You Keep" depends on which features are actually included —
+        // Protection alone funds claims, Returns alone funds returns, and any 2+ features
+        // (including Protection + Returns together) is described more generally as "Benefits".
+        function getPremiumsKeptQualifier(selectedFeatures) {
+            const features = selectedFeatures || [];
+            if (features.length === 1 && features[0] === 'shipping') return 'Claims + Rev Share';
+            if (features.length === 1 && features[0] === 'returns') return 'Returns + Rev Share';
+            return 'Benefits + Rev Share';
+        }
+
         // Render a disclaimer paragraph: bold "{label}:" prefix only when a label is given,
         // otherwise just the plain text. Built via DOM nodes (not innerHTML) so no escaping is needed.
         function renderDisclaimer(sectionId, textElId, label, text) {
@@ -1564,6 +1574,7 @@
                 ? premiumMinMatch[1] + ' <span class="stat-suffix">' + premiumMinMatch[2] + '</span>'
                 : premiumDisplay;
             document.getElementById('propRevShareDisplay').textContent = Math.round(premiumsKeptPct) + '%';
+            document.getElementById('propRevShareLabelSub').textContent = '(' + getPremiumsKeptQualifier(selectedFeatures) + ')';
             document.getElementById('propAvgPremiumDisplay').textContent = formatCurrencyWithCents(avgPremium);
             const cashbackStat = document.getElementById('propCashbackStat');
             if (cashbackSelected) {
