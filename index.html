@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShipInsure Proposal Generator</title>
+    <title>ShipInsure Proposal &amp; MSA Generator</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -161,6 +161,100 @@
         }
 
         button:hover { opacity: 0.9; }
+
+        /* Generate Docs: Proposal + Draft MSA side by side */
+        .generate-docs-row { display: flex; gap: 12px; }
+        .generate-docs-row button { width: auto; flex: 1; }
+        #draftMsaBtn { background: linear-gradient(135deg, #2a2f45 0%, #4a4f6a 100%); }
+
+        /* Collapsible section (Features Included) */
+        .collapsible-summary {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            list-style: none;
+        }
+        .collapsible-summary::-webkit-details-marker { display: none; }
+        .collapsible-summary::before {
+            content: '▸ ';
+            display: inline-block;
+            transition: transform 0.15s;
+        }
+        details[open] > .collapsible-summary::before { transform: rotate(90deg); }
+        details.input-group { margin-bottom: 20px; }
+
+        /* ── MSA + SOW Template section ── */
+        .msa-subhead {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #4a5fc1;
+            margin: 22px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e6e9f8;
+        }
+        .msa-subhead:first-of-type { margin-top: 0; }
+        .msa-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 16px;
+        }
+        .msa-fields-grid .input-group { margin-bottom: 0; }
+        .msa-fields-grid .input-group.span-2 { grid-column: 1 / -1; }
+        .msa-fields-grid label { font-size: 12px; margin-bottom: 6px; }
+        .msa-fields-grid input,
+        .msa-fields-grid select,
+        .msa-fields-grid textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .msa-fields-grid textarea { min-height: 60px; resize: vertical; }
+
+        .msa-clause {
+            border: 2px solid #e6e9f8;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+        }
+        .msa-clause-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+        }
+        .msa-clause-toggle input { width: auto; }
+        .msa-clause-hint { font-weight: 400; color: #999; font-size: 12px; margin-left: 4px; }
+        .msa-clause-fields {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        .msa-clause.active .msa-clause-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+        .msa-clause.active { border-color: #c5cbf0; background: #fafaff; }
+
+        .msa-note {
+            font-size: 12px;
+            color: #888;
+            background: #f8f9fb;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        #msaStatus { font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
+        #msaStatus.error { color: #c0392b; }
+        #msaStatus.success { color: #2e7d32; }
 
         /* ═══════════════════════════════════════════════
            SIMPLIFIED PROPOSAL CARD (ROI Calc)
@@ -604,7 +698,7 @@
 </head>
 <body>
     <div class="input-container">
-        <h1>ShipInsure Proposal Generator</h1>
+        <h1>ShipInsure Proposal &amp; MSA Generator</h1>
 
         <div class="input-group">
             <label for="merchantName">Merchant Name</label>
@@ -626,8 +720,8 @@
             </div>
         </div>
 
-        <div class="input-group">
-            <label>Features Included</label>
+        <details class="input-group" open>
+            <summary class="collapsible-summary">Features Included</summary>
             <div class="features-grid" id="featuresGrid">
                 <label class="feature-check-label">
                     <input type="checkbox" value="shipping" checked>
@@ -662,41 +756,231 @@
                     <span class="feat-icon">⚡</span> Skip The Line
                 </label>
             </div>
-        </div>
+        </details>
 
         <div class="input-group">
             <button type="button" class="cs-savings-toggle-btn active" id="csSavingsToggleBtn" onclick="toggleCsSavings()">✓ Calculate &amp; Show CS Cost Savings</button>
         </div>
 
-        <div class="input-row">
-            <div class="input-group">
-                <label for="upfrontCashIncentive">Upfront Cash Incentive</label>
-                <input type="text" id="upfrontCashIncentive" placeholder="Dollar amount (e.g., 5000)">
-            </div>
-
-            <div class="input-group">
-                <label for="upfrontRevShareIncentive">Upfront Rev Share Incentive</label>
-                <input type="text" id="upfrontRevShareIncentive" placeholder="Dollar amount (e.g., 5000)">
-            </div>
-        </div>
-
         <div class="input-group">
-            <label>Custom Incentives</label>
+            <label>Merchant Incentives</label>
             <div id="customIncentivesList"></div>
             <button type="button" class="add-custom-incentive-btn" onclick="addCustomIncentiveRow()">+ Add Custom Incentive</button>
         </div>
 
-        <div class="input-group">
-            <label for="disclaimerLabel">Disclaimer Label (optional — leave blank for no label)</label>
-            <input type="text" id="disclaimerLabel" placeholder="e.g., Disclaimer, Note, Terms">
-        </div>
+        <details class="input-group">
+            <summary class="collapsible-summary">MSA + SOW Template</summary>
+
+            <div class="msa-note">Fills the ShipInsure MSA + SOW template and creates a Google Doc copy named "[Merchant Name] Draft MSA + SOW" for legal to finalize. Premium %, Min $, and Rev Share auto-fill from the Calculator Link above — everything else defaults to the template's standard terms and can be adjusted here.</div>
+
+            <div class="msa-subhead">Client Info</div>
+            <div class="msa-fields-grid">
+                <div class="input-group span-2">
+                    <label for="msaClientAddress1">Client Address Line 1</label>
+                    <input type="text" id="msaClientAddress1" placeholder="e.g. 123 Main St, Suite 100">
+                </div>
+                <div class="input-group">
+                    <label for="msaClientCityStateZip">Client City, State, ZIP</label>
+                    <input type="text" id="msaClientCityStateZip" placeholder="e.g. Austin, TX 78701">
+                </div>
+                <div class="input-group">
+                    <label for="msaClientCountry">Country</label>
+                    <input type="text" id="msaClientCountry" value="United States">
+                </div>
+            </div>
+
+            <div class="msa-subhead">Pricing &amp; Billing</div>
+            <div class="msa-fields-grid">
+                <div class="input-group">
+                    <label for="msaPremiumPct">Premium Rate (%)</label>
+                    <input type="text" id="msaPremiumPct" placeholder="e.g. 3">
+                </div>
+                <div class="input-group">
+                    <label for="msaPremiumMin">Premium Minimum ($)</label>
+                    <input type="text" id="msaPremiumMin" placeholder="e.g. 1.95">
+                </div>
+                <div class="input-group">
+                    <label for="msaCartThreshold">Cart Subtotal Threshold ($)</label>
+                    <input type="text" id="msaCartThreshold" value="100">
+                </div>
+                <div class="input-group">
+                    <label for="msaRevSharePct">Revenue Share (%)</label>
+                    <input type="text" id="msaRevSharePct" placeholder="e.g. 25">
+                </div>
+                <div class="input-group">
+                    <label for="msaBillingCadence">Billing Cadence</label>
+                    <select id="msaBillingCadence">
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="msaOrderCap">Coverage Cap for High-Value Orders ($)</label>
+                    <input type="text" id="msaOrderCap" placeholder="e.g. 500 (leave blank for no cap)">
+                </div>
+            </div>
+
+            <div class="msa-subhead">Claims Policies</div>
+            <div class="msa-fields-grid">
+                <div class="input-group">
+                    <label for="msaClaimSubmissionDays">Claim Submission Window (days)</label>
+                    <input type="text" id="msaClaimSubmissionDays" value="14">
+                </div>
+                <div class="input-group">
+                    <label for="msaClaimResponseTime">Claim Response Time</label>
+                    <input type="text" id="msaClaimResponseTime" value="24 hours">
+                </div>
+            </div>
+
+            <div class="msa-subhead">Notice &amp; Term Periods</div>
+            <div class="msa-fields-grid">
+                <div class="input-group">
+                    <label for="msaRenewalNoticeDays">Renewal Notice (days)</label>
+                    <input type="text" id="msaRenewalNoticeDays" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="msaTerminationDays">Termination for Convenience Notice (days)</label>
+                    <input type="text" id="msaTerminationDays" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="msaCureDays">Cure Period After Breach Notice (days)</label>
+                    <input type="text" id="msaCureDays" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="msaPricingReviewDays">Pricing Review Agreement Window (days)</label>
+                    <input type="text" id="msaPricingReviewDays" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="msaMinTermMonths">Minimum Term (months)</label>
+                    <input type="text" id="msaMinTermMonths" value="12">
+                </div>
+            </div>
+
+            <div class="msa-subhead">Signature Block</div>
+            <div class="msa-fields-grid">
+                <div class="input-group">
+                    <label for="msaSiSignerName">ShipInsure Signer — Printed Name</label>
+                    <input type="text" id="msaSiSignerName" placeholder="">
+                </div>
+                <div class="input-group">
+                    <label for="msaSiSignerTitle">ShipInsure Signer — Title</label>
+                    <input type="text" id="msaSiSignerTitle" placeholder="">
+                </div>
+                <div class="input-group">
+                    <label for="msaClientSignerName">Client Signer — Printed Name</label>
+                    <input type="text" id="msaClientSignerName" placeholder="">
+                </div>
+                <div class="input-group">
+                    <label for="msaClientSignerTitle">Client Signer — Title</label>
+                    <input type="text" id="msaClientSignerTitle" placeholder="">
+                </div>
+            </div>
+
+            <div class="msa-subhead">Optional SOW Clauses</div>
+
+            <div class="msa-clause" id="msaClauseIncentive">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaIncEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    Upfront Merchant Incentive <span class="msa-clause-hint">one-time payment, recouped against future Rev Share</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaIncAmount">Incentive Amount ($)</label><input type="text" id="msaIncAmount" placeholder="e.g. 10000"></div>
+                    <div class="input-group"><label for="msaConfigFormat">Required Checkout Format</label>
+                        <select id="msaConfigFormat">
+                            <option value="dual checkout">Dual Checkout</option>
+                            <option value="pre-checked">Pre-Checked</option>
+                            <option value="opt-out">Opt-Out</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label for="msaOutsideDateDays">Outside Date for Full Deployment (days)</label><input type="text" id="msaOutsideDateDays" value="90"></div>
+                    <div class="input-group"><label for="msaValidationDays">Payment Trigger After Validation Week (days)</label><input type="text" id="msaValidationDays" value="7"></div>
+                    <div class="input-group"><label for="msaEstOrderVolume">Estimated Order Volume</label><input type="text" id="msaEstOrderVolume" placeholder="e.g. 3500"></div>
+                    <div class="input-group"><label for="msaEstOrderVolumePeriod">Estimated Volume Period</label>
+                        <select id="msaEstOrderVolumePeriod">
+                            <option value="week">Per Week</option>
+                            <option value="month">Per Month</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label for="msaValidationThresholdPct">Validation Volume Threshold (%)</label><input type="text" id="msaValidationThresholdPct" value="80"></div>
+                    <div class="input-group"><label for="msaIncRepaymentDays">Repayment Window on Cessation of Use (days)</label><input type="text" id="msaIncRepaymentDays" value="30"></div>
+                    <div class="input-group span-2">
+                        <label class="msa-clause-toggle" style="font-size:12px;"><input type="checkbox" id="msaRecoupmentApplies" checked> Recoupment applies (uncheck if the incentive is not recoupable against Rev Share)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="msa-clause" id="msaClauseExclusivity">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaExclEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    Exclusivity <span class="msa-clause-hint">requires Upfront Incentive or Software Buyout also selected</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaExclRepaymentDays">Reimbursement Window on Breach (days)</label><input type="text" id="msaExclRepaymentDays" value="30"></div>
+                </div>
+            </div>
+
+            <div class="msa-clause" id="msaClauseTpc">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaTpcEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    Third-Party Cost Coverage <span class="msa-clause-hint">ShipInsure covers a merchant's ongoing platform/shipping costs</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaTpcVendorA">Vendor/Platform Name (a)</label><input type="text" id="msaTpcVendorA" placeholder="e.g. Recharge"></div>
+                    <div class="input-group"><label for="msaTpcAmountA">Annual Cap for (a) ($ per Contract Year)</label><input type="text" id="msaTpcAmountA" placeholder="e.g. 6000"></div>
+                    <div class="input-group span-2"><label for="msaTpcCategoryB">Cost Category (b)</label><input type="text" id="msaTpcCategoryB" placeholder="e.g. return shipping labels for orders on which a ShipInsure premium was collected"></div>
+                    <div class="input-group"><label for="msaTpcAmountB">Annual Cap for (b) ($ per Contract Year, optional)</label><input type="text" id="msaTpcAmountB" placeholder="leave blank for no cap"></div>
+                    <div class="input-group"><label for="msaTpcReportingDays">Reimbursement Window After Documentation (days)</label><input type="text" id="msaTpcReportingDays" value="30"></div>
+                    <div class="input-group"><label for="msaTpcRepaymentDays">Repayment Window on Cessation of Use (days)</label><input type="text" id="msaTpcRepaymentDays" value="30"></div>
+                </div>
+            </div>
+
+            <div class="msa-clause" id="msaClauseGuarantee">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaCustomClaimsEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked || document.getElementById('msaQualityGuarEnable').checked)">
+                    Custom Claims Policy <span class="msa-clause-hint">additional covered claim reasons beyond the standard Covered Losses</span>
+                </label>
+                <label class="msa-clause-toggle" style="margin-top:8px;">
+                    <input type="checkbox" id="msaQualityGuarEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked || document.getElementById('msaCustomClaimsEnable').checked)">
+                    Quality Guarantee <span class="msa-clause-hint">e.g. accidental damage, taste/quality guarantee</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group span-2"><label for="msaCustomClaimReasons">Custom Claim Reasons</label><textarea id="msaCustomClaimReasons" placeholder="e.g. wrong item(s) shipped; return to sender; never reached first carrier scan"></textarea></div>
+                    <div class="input-group span-2"><label for="msaQualityGuarCoverage">Quality Guarantee Coverage</label><textarea id="msaQualityGuarCoverage" placeholder="e.g. accidental damage (photo required); taste/quality guarantee"></textarea></div>
+                    <div class="input-group"><label for="msaQualityGuarDays">Quality Guarantee Submission Window (days)</label><input type="text" id="msaQualityGuarDays" value="90"></div>
+                    <div class="input-group"><label for="msaQualityGuarResolution">Quality Guarantee Resolution</label>
+                        <select id="msaQualityGuarResolution">
+                            <option value="reship">Reship</option>
+                            <option value="store credit">Store Credit</option>
+                            <option value="refund">Refund</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="msa-clause" id="msaClauseBuyout">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaBuyEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    Software Buyout <span class="msa-clause-hint">one-time payment to buy out an existing competitor contract</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaBuyAmount">Buyout Amount ($)</label><input type="text" id="msaBuyAmount" placeholder="e.g. 5000"></div>
+                    <div class="input-group"><label for="msaBuyPaymentDays">Payment Window After Effective Date (days)</label><input type="text" id="msaBuyPaymentDays" value="30"></div>
+                    <div class="input-group"><label for="msaCompetitorName">Competitor/Software Name</label><input type="text" id="msaCompetitorName" placeholder="e.g. Narvar"></div>
+                    <div class="input-group"><label for="msaPartnerName">Partner Name (optional)</label><input type="text" id="msaPartnerName" placeholder="leave blank if not applicable"></div>
+                    <div class="input-group"><label for="msaBuyEarlyTermDays">Early Termination Repayment Window (days)</label><input type="text" id="msaBuyEarlyTermDays" value="15"></div>
+                </div>
+            </div>
+
+            <div id="msaStatus"></div>
+        </details>
 
         <div class="input-group">
-            <label for="disclaimerText">Disclaimer (optional — only appears if filled in)</label>
-            <textarea id="disclaimerText" placeholder="Enter disclaimer text"></textarea>
+            <label>Generate Docs</label>
+            <div class="generate-docs-row">
+                <button type="button" onclick="generateProposal()">Proposal</button>
+                <button type="button" id="draftMsaBtn" onclick="draftMSA()">Draft MSA</button>
+            </div>
         </div>
-
-        <button onclick="generateProposal()">Generate Proposal</button>
     </div>
 
     <!-- ── SIMPLIFIED PROPOSAL CARD (ROI calc) ── -->
@@ -753,11 +1037,11 @@
                 <div class="prop-line-items" id="propLineItems"></div>
             </div>
 
-            <!-- Incentives (only shown when an upfront cash incentive is included) -->
+            <!-- Merchant Incentives (only shown when at least one is added) -->
             <div class="prop-section" id="propIncentivesSection" style="display:none;">
                 <div class="prop-section-header">
                     <span class="prop-section-num"></span>
-                    <span class="prop-section-title">Incentives</span>
+                    <span class="prop-section-title">Merchant Incentives</span>
                     <span class="prop-section-rule"></span>
                 </div>
                 <div class="prop-line-items" id="propIncentivesLineItems"></div>
@@ -799,12 +1083,6 @@
                 <div class="prop-total-desc" id="propTotalImpactLabel">Total Impact</div>
             </div>
             <div class="prop-total-value" id="propTotalImpactDisplay">$0</div>
-        </div>
-
-        <div class="prop-footer-body">
-            <div id="propDisclaimerSection" style="display:none; padding-bottom: 8px;">
-                <p id="propDisclaimerText" style="font-size: 11px; color: #888; font-style: italic;"></p>
-            </div>
         </div>
 
         <!-- Footer -->
@@ -932,12 +1210,6 @@
             <div class="prop-total-value" id="compAdvantage">—</div>
         </div>
 
-        <div class="prop-footer-body">
-            <div id="compDisclaimerSection" style="display: none; padding-bottom: 8px;">
-                <p id="compDisclaimerText" style="font-size: 11px; color: #888; font-style: italic;"></p>
-            </div>
-        </div>
-
         <div class="prop-footer">
             <div class="prop-footer-text">ShipInsure — Confidential &amp; Proprietary</div>
             <div class="prop-footer-text">shipinsure.io | <span id="compYear"></span></div>
@@ -955,6 +1227,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
+        // ── MSA + SOW Draft generation ──
+        // Set this to your deployed Apps Script Web App URL (ends in /exec) once
+        // you've completed the one-time Google Doc + Apps Script setup.
+        const MSA_WEBAPP_URL = '';
+        // Must match CONFIG.SHARED_SECRET in the Apps Script exactly.
+        const MSA_WEBAPP_SECRET = '';
+
         // ── Pricing templates (shared with both calcs) ──
         const pricingTemplates = {
             "1.5_accurate": [
@@ -1139,6 +1418,7 @@
                 share: parseFloat(params.get('share')) || 0,
                 attach: parseFloat(params.get('attach')) || 0,
                 premium: parseFloat(params.get('premium')) || 0,
+                minp: parseFloat(params.get('minp')) || 0,
                 avg_premium: parseFloat(params.get('avg_premium')) || 0,
                 template: params.get('template') || 'percentage',
                 view: params.get('view') || 'monthly',
@@ -1258,27 +1538,6 @@
             return 'Benefits + Rev Share';
         }
 
-        // Render a disclaimer paragraph: bold "{label}:" prefix only when a label is given,
-        // otherwise just the plain text. Built via DOM nodes (not innerHTML) so no escaping is needed.
-        function renderDisclaimer(sectionId, textElId, label, text) {
-            const section = document.getElementById(sectionId);
-            const p = document.getElementById(textElId);
-            if (!text) {
-                section.style.display = 'none';
-                return;
-            }
-            p.innerHTML = '';
-            if (label) {
-                const strong = document.createElement('strong');
-                strong.textContent = label + ':';
-                p.appendChild(strong);
-                p.appendChild(document.createTextNode(' ' + text));
-            } else {
-                p.appendChild(document.createTextNode(text));
-            }
-            section.style.display = 'block';
-        }
-
         // ── Auto-check Returns/Cashback/Guarantee based on the pasted calculator link ──
         // (Package Protection and the calculator-blind features — Skip The Line, Quality
         // Guarantee as a distinct type, Carbon Offset, Charitable Contributions — are left
@@ -1297,6 +1556,18 @@
                 setChecked('cashback', cashbackOn);
                 setChecked('satisfaction', guaranteeOn);
                 if (!guaranteeOn) setChecked('quality', false);
+
+                // MSA pricing fields — only meaningful for %-based templates; leave
+                // blank for tiered/flat templates so legal fills those in by hand.
+                const template = params.get('template') || 'percentage';
+                if (template === 'percentage') {
+                    const premium = params.get('premium');
+                    if (premium) document.getElementById('msaPremiumPct').value = premium;
+                    const minp = params.get('minp');
+                    if (minp) document.getElementById('msaPremiumMin').value = minp;
+                }
+                const share = params.get('share');
+                if (share) document.getElementById('msaRevSharePct').value = share;
             } catch (e) { /* not a full URL yet — ignore until it is */ }
         }
 
@@ -1408,15 +1679,125 @@
             btn.textContent = (_csSavingsEnabled ? '✓ ' : '') + 'Calculate & Show CS Cost Savings';
         }
 
+        function msaSetStatus(msg, cls) {
+            const el = document.getElementById('msaStatus');
+            el.textContent = msg;
+            el.className = cls || '';
+        }
+
+        async function draftMSA() {
+            const merchantName = document.getElementById('merchantName').value.trim();
+            if (!merchantName) { msaSetStatus('Enter a Merchant Name first.', 'error'); return; }
+            if (!MSA_WEBAPP_URL) { msaSetStatus('MSA Web App URL is not configured yet — see setup instructions.', 'error'); return; }
+
+            const v = id => (document.getElementById(id).value || '').trim();
+            const ch = id => document.getElementById(id).checked;
+
+            const includeIncentive = ch('msaIncEnable');
+            const includeExclusivity = ch('msaExclEnable');
+            const includeThirdParty = ch('msaTpcEnable');
+            const includeBuyout = ch('msaBuyEnable');
+            const includeCustomClaims = ch('msaCustomClaimsEnable');
+            const includeQualityGuarantee = ch('msaQualityGuarEnable');
+
+            if (includeExclusivity && !includeIncentive && !includeBuyout) {
+                msaSetStatus('Exclusivity requires Upfront Merchant Incentive or Software Buyout to also be selected.', 'error');
+                return;
+            }
+
+            const payload = {
+                secret: MSA_WEBAPP_SECRET,
+                merchantName,
+                fields: {
+                    clientLegalName: merchantName,
+                    clientAddress1: v('msaClientAddress1'),
+                    clientCityStateZip: v('msaClientCityStateZip'),
+                    clientCountry: v('msaClientCountry') || 'United States',
+                    premiumPct: v('msaPremiumPct'),
+                    premiumMin: v('msaPremiumMin'),
+                    cartThreshold: v('msaCartThreshold') || '100',
+                    revSharePct: v('msaRevSharePct'),
+                    billingCadence: v('msaBillingCadence') || 'monthly',
+                    orderCap: v('msaOrderCap'),
+                    claimSubmissionDays: v('msaClaimSubmissionDays') || '14',
+                    claimResponseTime: v('msaClaimResponseTime') || '24 hours',
+                    renewalNoticeDays: v('msaRenewalNoticeDays') || '30',
+                    terminationDays: v('msaTerminationDays') || '30',
+                    cureDays: v('msaCureDays') || '30',
+                    pricingReviewDays: v('msaPricingReviewDays') || '30',
+                    minTermMonths: v('msaMinTermMonths') || '12',
+                    siSignerName: v('msaSiSignerName'),
+                    siSignerTitle: v('msaSiSignerTitle'),
+                    clientSignerName: v('msaClientSignerName'),
+                    clientSignerTitle: v('msaClientSignerTitle'),
+                },
+                clauses: {
+                    upfrontIncentive: includeIncentive ? {
+                        amount: v('msaIncAmount'),
+                        configFormat: v('msaConfigFormat') || 'dual checkout',
+                        outsideDateDays: v('msaOutsideDateDays') || '90',
+                        estOrderVolume: v('msaEstOrderVolume'),
+                        estOrderVolumePeriod: v('msaEstOrderVolumePeriod') || 'month',
+                        validationDays: v('msaValidationDays') || '7',
+                        validationThresholdPct: v('msaValidationThresholdPct') || '80',
+                        recoupmentApplies: ch('msaRecoupmentApplies'),
+                        repaymentDays: v('msaIncRepaymentDays') || '30',
+                    } : null,
+                    exclusivity: includeExclusivity ? {
+                        repaymentDays: v('msaExclRepaymentDays') || '30',
+                    } : null,
+                    thirdPartyCosts: includeThirdParty ? {
+                        vendorA: v('msaTpcVendorA'),
+                        amountA: v('msaTpcAmountA'),
+                        categoryB: v('msaTpcCategoryB'),
+                        amountB: v('msaTpcAmountB'),
+                        reportingDays: v('msaTpcReportingDays') || '30',
+                        repaymentDays: v('msaTpcRepaymentDays') || '30',
+                    } : null,
+                    customClaims: includeCustomClaims ? {
+                        reasons: v('msaCustomClaimReasons'),
+                    } : null,
+                    qualityGuarantee: includeQualityGuarantee ? {
+                        coverage: v('msaQualityGuarCoverage'),
+                        days: v('msaQualityGuarDays') || '90',
+                        resolution: v('msaQualityGuarResolution') || 'reship',
+                    } : null,
+                    softwareBuyout: includeBuyout ? {
+                        amount: v('msaBuyAmount'),
+                        paymentDays: v('msaBuyPaymentDays') || '30',
+                        competitorName: v('msaCompetitorName'),
+                        partnerName: v('msaPartnerName'),
+                        earlyTermDays: v('msaBuyEarlyTermDays') || '15',
+                    } : null,
+                },
+            };
+
+            const btn = document.getElementById('draftMsaBtn');
+            btn.disabled = true;
+            msaSetStatus('Drafting MSA + SOW…', '');
+            try {
+                const resp = await fetch(MSA_WEBAPP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' }, // avoids an Apps Script CORS preflight
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.ok) throw new Error(data.error || ('Request failed (' + resp.status + ')'));
+                msaSetStatus('Draft created — opening in a new tab.', 'success');
+                window.open(data.docUrl, '_blank', 'noopener');
+            } catch (err) {
+                msaSetStatus('Error: ' + err.message, 'error');
+                console.error('draftMSA failed:', err);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         function generateProposal() {
             const merchantName = document.getElementById('merchantName').value || '[Merchant Name]';
             _lastMerchantName = merchantName;
             const calculatorLink = document.getElementById('calculatorLink').value;
             const selectedFeatures = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
-            const disclaimerText = document.getElementById('disclaimerText').value || '';
-            const disclaimerLabel = document.getElementById('disclaimerLabel').value.trim();
-            const upfrontCashIncentive = parseFloat(document.getElementById('upfrontCashIncentive').value.replace(/[^0-9.]/g, '')) || 0;
-            const upfrontRevShareIncentive = parseFloat(document.getElementById('upfrontRevShareIncentive').value.replace(/[^0-9.]/g, '')) || 0;
             const customIncentives = getCustomIncentives();
 
             if (!calculatorLink) {
@@ -1430,7 +1811,7 @@
                 if (calcType === 'self-insure' || calcType === 'comparison:m1') {
                     _activeProposalType = 'self-insure';
                     const linkParser = calcType === 'comparison:m1' ? parseComparisonLink : parseSelfInsureLink;
-                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, linkParser);
+                    generateSelfInsureProposal(merchantName, calculatorLink, linkParser);
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalActions').style.display = 'none';
@@ -1439,7 +1820,7 @@
                     fitConfidentialLine('compConfidentialLine');
                 } else if (calcType === 'comparison:m2' || calcType === 'comparison:m3') {
                     _activeProposalType = 'self-insure';
-                    generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, parseComparisonLink);
+                    generateSelfInsureProposal(merchantName, calculatorLink, parseComparisonLink);
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalContainer').style.display = 'none';
                     document.getElementById('proposalActions').style.display = 'none';
@@ -1448,7 +1829,7 @@
                     fitConfidentialLine('compConfidentialLine');
                 } else {
                     _activeProposalType = 'roi';
-                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, disclaimerLabel, upfrontCashIncentive, upfrontRevShareIncentive, customIncentives);
+                    generateROIProposal(merchantName, calculatorLink, selectedFeatures, customIncentives);
                     document.querySelector('.input-container').style.display = 'none';
                     document.getElementById('proposalComparison').style.display = 'none';
                     document.getElementById('compActions').style.display = 'none';
@@ -1464,7 +1845,7 @@
         }
 
         // ── Standard ROI Proposal ──
-        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, disclaimerText, disclaimerLabel, upfrontCashIncentive, upfrontRevShareIncentive, customIncentives) {
+        function generateROIProposal(merchantName, calculatorLink, selectedFeatures, customIncentives) {
             const data = parseCalculatorLink(calculatorLink);
 
             // Resolve annual orders — new calc supports annual view (orders param IS annual when view=annual)
@@ -1533,11 +1914,9 @@
             // switched off to keep the proposal 1:1 with the calculator it was built from.
             const csCostSavings = _csSavingsEnabled ? protectedClaims * data.cs : 0;
 
-            const upfrontCash = upfrontCashIncentive || 0;
-            const upfrontRevShare = upfrontRevShareIncentive || 0;
             const customIncentivesIncluded = (customIncentives || []).filter(ci => ci.mode !== 'exclude');
             const customIncentiveTotal = customIncentivesIncluded.reduce((sum, ci) => sum + ci.amount, 0);
-            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + upfrontCash + upfrontRevShare + guaranteeFundedAmount + cashbackRedeemed + customIncentiveTotal;
+            const totalNewRevenue = reshipRevenue + revenueShare + totalReturnsOffset + csCostSavings + guaranteeFundedAmount + cashbackRedeemed + customIncentiveTotal;
 
             // Premiums You Keep — share of the collected premium pool returned to the merchant
             // (claims funded + rev share + returns offset + guarantee claims + cashback redeemed)
@@ -1623,8 +2002,6 @@
             // Incentives — only shown when an upfront cash and/or rev share incentive is included
             const incentivesSection = document.getElementById('propIncentivesSection');
             const incentiveItems = [];
-            if (upfrontCash > 0) incentiveItems.push({ label: 'Upfront Cash Incentive', value: upfrontCash });
-            if (upfrontRevShare > 0) incentiveItems.push({ label: 'Upfront Rev Share Incentive', value: upfrontRevShare });
             (customIncentives || []).forEach(ci => incentiveItems.push({ label: ci.name, value: ci.amount }));
             if (incentiveItems.length > 0) {
                 incentivesSection.style.display = 'block';
@@ -1659,11 +2036,10 @@
 
             renumberSections('#proposalContainer');
 
-            renderDisclaimer('propDisclaimerSection', 'propDisclaimerText', disclaimerLabel, disclaimerText);
         }
 
         // ── Self-Insure Comparison Proposal ──
-        function generateSelfInsureProposal(merchantName, calculatorLink, disclaimerText, disclaimerLabel, parser) {
+        function generateSelfInsureProposal(merchantName, calculatorLink, parser) {
             const d = (parser || parseSelfInsureLink)(calculatorLink);
 
             // Period multiplier
@@ -1754,9 +2130,6 @@
             document.getElementById('compAdvantageSub').textContent = 'vs. self-insurance per ' + timeLabel;
             document.getElementById('compAttachLift').textContent = '+' + attachLift.toFixed(1) + ' pts';
             document.getElementById('compAttachLiftSub').textContent = formatPercent(d.sa) + ' → ' + formatPercent(d.sia) + ' attach rate';
-
-            // Disclaimer
-            renderDisclaimer('compDisclaimerSection', 'compDisclaimerText', disclaimerLabel, disclaimerText);
         }
 
         function editProposal() {
@@ -1819,13 +2192,9 @@
         window.addEventListener('load', function() {
             const savedMerchant  = localStorage.getItem('si_proposal_merchant');
             const savedLink      = localStorage.getItem('si_proposal_link');
-            const savedDisclaimer = localStorage.getItem('si_proposal_disclaimer');
-            const savedDisclaimerLabel = localStorage.getItem('si_proposal_disclaimer_label');
 
             if (savedMerchant)   document.getElementById('merchantName').value = savedMerchant;
             if (savedLink)       document.getElementById('calculatorLink').value = savedLink;
-            if (savedDisclaimer) document.getElementById('disclaimerText').value = savedDisclaimer;
-            if (savedDisclaimerLabel) document.getElementById('disclaimerLabel').value = savedDisclaimerLabel;
 
             if (savedLink) {
                 try {
@@ -1851,8 +2220,6 @@
 
             document.getElementById('merchantName').addEventListener('input', e => localStorage.setItem('si_proposal_merchant', e.target.value));
             document.getElementById('calculatorLink').addEventListener('input', e => localStorage.setItem('si_proposal_link', e.target.value));
-            document.getElementById('disclaimerText').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer', e.target.value));
-            document.getElementById('disclaimerLabel').addEventListener('input', e => localStorage.setItem('si_proposal_disclaimer_label', e.target.value));
         });
     </script>
 </body>
