@@ -26,8 +26,8 @@
  */
 
 const CONFIG = {
-  TEMPLATE_DOC_ID: 'PUT_YOUR_TEMPLATE_GOOGLE_DOC_ID_HERE',
-  SHARED_SECRET: 'PUT_A_RANDOM_SECRET_STRING_HERE',
+  TEMPLATE_DOC_ID: '11YmrLdYeTZEkpRkikzvLsZ7CipH_C-ggNGAM8iNVA-Q',
+  SHARED_SECRET: 'SCfP4ZmkdJbf-IY2wtA_3m6FpWq26ZkQ',
   DEST_FOLDER_ID: '', // optional
 };
 
@@ -40,6 +40,7 @@ function doPost(e) {
     const docUrl = generateMsaDraft(payload);
     return jsonResponse({ ok: true, docUrl });
   } catch (err) {
+    console.error((err && err.stack) || String(err));
     return jsonResponse({ ok: false, error: String(err && err.message || err) });
   }
 }
@@ -90,8 +91,13 @@ function escapeRegex(s) {
 function stripOptionalInsertsAppendix(body) {
   const idx = findParagraphIndex(body, 'OPTIONAL INSERTS');
   if (idx === -1) return;
-  const total = body.getNumChildren();
-  for (let i = total - 1; i >= idx; i--) {
+  // Append a fresh blank paragraph first so the document always has a safe
+  // trailing paragraph to fall back on — Apps Script refuses to remove
+  // whatever would become the document's last paragraph (even via setText),
+  // so we never let the removal range include the actual last paragraph.
+  body.appendParagraph('');
+  const total = body.getNumChildren(); // includes the paragraph just appended
+  for (let i = total - 2; i >= idx; i--) {
     body.removeChild(body.getChild(i));
   }
 }
