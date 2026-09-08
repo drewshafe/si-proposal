@@ -765,6 +765,7 @@
         <div class="input-group">
             <label>Merchant Incentives</label>
             <div id="customIncentivesList"></div>
+            <button type="button" class="add-custom-incentive-btn" onclick="addUpfrontRevShareIncentive()">+ Upfront Revenue Share</button>
             <button type="button" class="add-custom-incentive-btn" onclick="addCustomIncentiveRow()">+ Add Custom Incentive</button>
         </div>
 
@@ -1434,6 +1435,8 @@
                 gcr: parseFloat(params.get('gcr')) || 0,
                 grossRevShare: params.get('grs') === '1',
                 returnsCoverage: params.get('rc') || 'default',
+                upfrontTier: parseFloat(params.get('upf')) || 0,
+                upfrontAmount: parseFloat(params.get('upfa')) || 0,
             };
         }
 
@@ -1639,20 +1642,37 @@
 
         // ── Custom incentive rows ──
         let _customIncentiveRowId = 0;
-        function addCustomIncentiveRow() {
+        function addCustomIncentiveRow(preset) {
+            preset = (preset && typeof preset === 'object' && !preset.target) ? preset : {};
             const id = 'ci-row-' + (_customIncentiveRowId++);
+            const esc = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
             const row = document.createElement('div');
             row.className = 'custom-incentive-row';
             row.id = id;
             row.innerHTML =
-                '<input type="text" class="ci-name" placeholder="Incentive Name">' +
-                '<input type="text" class="ci-amount" placeholder="Amount (e.g., 1000)">' +
+                '<input type="text" class="ci-name" placeholder="Incentive Name" value="' + esc(preset.name) + '">' +
+                '<input type="text" class="ci-amount" placeholder="Amount (e.g., 1000)" value="' + esc(preset.amount) + '">' +
                 '<select class="ci-mode">' +
-                    '<option value="include">Include in Total</option>' +
-                    '<option value="exclude">Show Only (exclude from Total)</option>' +
+                    '<option value="include"' + (preset.mode === 'include' ? ' selected' : '') + '>Include in Total</option>' +
+                    '<option value="exclude"' + (preset.mode === 'exclude' ? ' selected' : '') + '>Show Only (exclude from Total)</option>' +
                 '</select>' +
                 '<button type="button" class="ci-remove" onclick="document.getElementById(\'' + id + '\').remove()">✕</button>';
             document.getElementById('customIncentivesList').appendChild(row);
+        }
+
+        // Built-in "Upfront Revenue Share" incentive — always Show Only (excluded from
+        // the deal Total). Prefills the amount from a pasted calculator link's ?upfa=.
+        function addUpfrontRevShareIncentive() {
+            let amount = '';
+            try {
+                const link = (document.getElementById('calculatorLink').value || '').trim();
+                if (link) {
+                    const p = new URLSearchParams(new URL(link).search);
+                    const upfa = parseFloat(p.get('upfa'));
+                    if (!isNaN(upfa) && upfa > 0) amount = String(Math.round(upfa));
+                }
+            } catch (e) {}
+            addCustomIncentiveRow({ name: 'Upfront Revenue Share', amount: amount, mode: 'exclude' });
         }
         function getCustomIncentives() {
             return Array.from(document.querySelectorAll('#customIncentivesList .custom-incentive-row')).map(row => ({
