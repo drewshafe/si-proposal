@@ -1901,7 +1901,8 @@
                 const totalReturns = annualOrders * returnsRate;          // returns across all orders
                 const labelBasis = rcConfig.allOrders ? totalReturns : protectedReturns;
                 coveredLabelCost  = rcConfig.labels ? labelBasis * data.rlc : 0;   // rlc = avgShipping (backward compat)
-                coveredPlatformCost = rcConfig.platform ? data.rpc * 12 : 0;  // rpc is always monthly in URL params
+                // rpc is a period value (like orders): already annual when view=annual, else ×12.
+                coveredPlatformCost = rcConfig.platform ? (data.view === 'annual' ? data.rpc : data.rpc * 12) : 0;
                 totalReturnsOffset = coveredLabelCost + coveredPlatformCost;
             }
 
