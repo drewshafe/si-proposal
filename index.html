@@ -980,6 +980,7 @@
             <div class="generate-docs-row">
                 <button type="button" onclick="generateProposal()">Proposal</button>
                 <button type="button" id="draftMsaBtn" onclick="draftMSA()">Draft MSA</button>
+                <button type="button" id="draftMndaBtn" onclick="draftMNDA()">Draft MNDA</button>
             </div>
         </div>
     </div>
@@ -1571,6 +1572,9 @@
                 }
                 const share = params.get('share');
                 if (share) document.getElementById('msaRevSharePct').value = share;
+                // Coverage cap ← the calculator's Limit $ (blank = no cap → section omitted).
+                const limit = params.get('limit');
+                if (limit) document.getElementById('msaOrderCap').value = limit;
             } catch (e) { /* not a full URL yet — ignore until it is */ }
         }
 
@@ -1808,6 +1812,50 @@
             } catch (err) {
                 msaSetStatus('Error: ' + err.message, 'error');
                 console.error('draftMSA failed:', err);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Mutual NDA draft — straight template fill (client identity + effective date +
+        // signers), posting kind:'mnda' to the same Web App.
+        async function draftMNDA() {
+            const merchantName = document.getElementById('merchantName').value.trim();
+            if (!merchantName) { msaSetStatus('Enter a Merchant Name first.', 'error'); return; }
+            if (!MSA_WEBAPP_URL) { msaSetStatus('MSA Web App URL is not configured yet — see setup instructions.', 'error'); return; }
+            const v = id => { const e = document.getElementById(id); return e ? (e.value || '').trim() : ''; };
+            const payload = {
+                secret: MSA_WEBAPP_SECRET,
+                kind: 'mnda',
+                merchantName,
+                fields: {
+                    clientLegalName: merchantName,
+                    clientAddress1: v('msaClientAddress1'),
+                    clientCityStateZip: v('msaClientCityStateZip'),
+                    clientCountry: v('msaClientCountry') || 'United States',
+                    effectiveDate: v('msaEffectiveDate'),
+                    siSignerName: v('msaSiSignerName'),
+                    siSignerTitle: v('msaSiSignerTitle'),
+                    clientSignerName: v('msaClientSignerName'),
+                    clientSignerTitle: v('msaClientSignerTitle'),
+                },
+            };
+            const btn = document.getElementById('draftMndaBtn');
+            btn.disabled = true;
+            msaSetStatus('Drafting MNDA…', '');
+            try {
+                const resp = await fetch(MSA_WEBAPP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.ok) throw new Error(data.error || ('Request failed (' + resp.status + ')'));
+                msaSetStatus('MNDA draft created — opening in a new tab.', 'success');
+                window.open(data.docUrl, '_blank', 'noopener');
+            } catch (err) {
+                msaSetStatus('Error: ' + err.message, 'error');
+                console.error('draftMNDA failed:', err);
             } finally {
                 btn.disabled = false;
             }

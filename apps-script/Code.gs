@@ -27,6 +27,11 @@
 
 const CONFIG = {
   TEMPLATE_DOC_ID: '11YmrLdYeTZEkpRkikzvLsZ7CipH_C-ggNGAM8iNVA-Q',
+  // Mutual NDA template — upload "Mutual Non-Disclosure Agreement" to Drive, open
+  // it as a Google Doc, and paste its file ID here. Give its merge fields the same
+  // bracket placeholders the MSA uses ([Client Legal Name], [Client Address Line 1],
+  // [Client City, State, ZIP], [Effective Date]) + a trailing signature table.
+  MNDA_TEMPLATE_DOC_ID: '',
   SHARED_SECRET: 'SCfP4ZmkdJbf-IY2wtA_3m6FpWq26ZkQ',
   DEST_FOLDER_ID: '', // optional
 };
@@ -37,7 +42,7 @@ function doPost(e) {
     if (CONFIG.SHARED_SECRET && payload.secret !== CONFIG.SHARED_SECRET) {
       return jsonResponse({ ok: false, error: 'Unauthorized' });
     }
-    const docUrl = generateMsaDraft(payload);
+    const docUrl = payload.kind === 'mnda' ? generateMndaDraft(payload) : generateMsaDraft(payload);
     return jsonResponse({ ok: true, docUrl });
   } catch (err) {
     console.error((err && err.stack) || String(err));
@@ -67,6 +72,47 @@ function generateMsaDraft(payload) {
   stripOptionalInsertsAppendix(body);
   insertSelectedClauses(body, fields, clauses);
   applyCoreMergeFields(body, fields);
+
+  doc.saveAndClose();
+  return copyFile.getUrl();
+}
+
+// Mutual NDA draft — straight template fill (client identity + effective date +
+// signature block), mirroring the MSA's client merge fields. Requires
+// CONFIG.MNDA_TEMPLATE_DOC_ID to be set (see setup note on CONFIG).
+function generateMndaDraft(payload) {
+  if (!CONFIG.MNDA_TEMPLATE_DOC_ID) {
+    throw new Error('MNDA template not configured — set CONFIG.MNDA_TEMPLATE_DOC_ID.');
+  }
+  const fields = payload.fields || {};
+  const merchantName = payload.merchantName || fields.clientLegalName || 'Merchant';
+
+  const templateFile = DriveApp.getFileById(CONFIG.MNDA_TEMPLATE_DOC_ID);
+  const destFolder = CONFIG.DEST_FOLDER_ID ? DriveApp.getFolderById(CONFIG.DEST_FOLDER_ID) : null;
+  const copyFile = destFolder
+    ? templateFile.makeCopy(merchantName + ' Draft MNDA', destFolder)
+    : templateFile.makeCopy(merchantName + ' Draft MNDA');
+
+  const doc = DocumentApp.openById(copyFile.getId());
+  const body = doc.getBody();
+
+  // Client identity + effective date — same placeholder convention as the MSA.
+  body.replaceText('\\[Client Legal Name\\]', escapeReplacement(val(fields.clientLegalName, '[Client Legal Name]')));
+  body.replaceText('\\[Client Address Line 1\\]', escapeReplacement(val(fields.clientAddress1, '[Client Address Line 1]')));
+  body.replaceText('\\[Client City, State, ZIP\\]', escapeReplacement(val(fields.clientCityStateZip, '[Client City, State, ZIP]')));
+  body.replaceText('\\[Country\\]', escapeReplacement(val(fields.clientCountry, '[Country]')));
+  body.replaceText('\\[Effective Date\\]', escapeReplacement(val(fields.effectiveDate, '[Effective Date]')));
+
+  // Signature table (if present) — last table, ShipInsure then Client, same as MSA.
+  const tables = body.getTables();
+  if (tables.length) {
+    const sigTable = tables[tables.length - 1];
+    if (sigTable && sigTable.getNumRows() > 0) {
+      const row = sigTable.getRow(0);
+      fillSignatureCell(row.getCell(0), fields.siSignerName, fields.siSignerTitle);
+      if (row.getNumCells() > 1) fillSignatureCell(row.getCell(1), fields.clientSignerName, fields.clientSignerTitle);
+    }
+  }
 
   doc.saveAndClose();
   return copyFile.getUrl();
@@ -371,6 +417,12 @@ function insertSelectedClauses(body, fields, clauses) {
       insertParagraphsAfter(body, cursor, paras);
     }
   }
+
+  // Revenue Share sentence's "[, subject to the Recoupment provision below]" caveat —
+  // keep (brackets stripped) only when an upfront incentive with recoupment is active;
+  // otherwise remove the placeholder entirely.
+  const recoup = incentive && (incentive.recoupmentApplies !== false);
+  body.replaceText('\\[, subject to the Recoupment provision below\\]', recoup ? ', subject to the Recoupment provision below' : '');
 }
 
 // ── Core template merge fields (always present in the base MSA/SOW) ────────
@@ -432,13 +484,25 @@ function applyCoreMergeFields(body, fields) {
     { pattern: 'submitted within \\[14\\] days of the tracking delivery date', value: 'submitted within ' + val(fields.claimSubmissionDays, '[14]') + ' days of the tracking delivery date' },
     { pattern: 'resolve claims within \\[24 hours\\]', value: 'resolve claims within ' + val(fields.claimResponseTime, '[24 hours]') },
 
-    // Coverage cap
-    { pattern: 'capped at \\[\\$_____\\]\\. Orders exceeding', value: 'capped at $' + val(fields.orderCap, '[$_____]') + '. Orders exceeding' },
+    // Editor/instruction notes baked into the template — strip from client drafts.
+    { pattern: ' ?\\[If this SOW has no Minimum Term[^\\]]*\\]', value: '' },
+    { pattern: ' ?\\[Insert self-serve billing language here\\.\\]', value: '' },
   ];
 
   replacements.forEach(function (r) {
     body.replaceText(r.pattern, escapeReplacement(r.value));
   });
+
+  // Coverage cap — fill from the Limit $ (orderCap). If none is set, remove the
+  // whole "Coverage Cap for High-Value Orders" section rather than leaving the
+  // "$[$_____]" placeholder blank in a client-facing draft.
+  var orderCap = String(val(fields.orderCap, '')).replace(/[^0-9.,]/g, '');
+  if (orderCap !== '') {
+    body.replaceText('capped at \\[\\$_____\\]\\. Orders exceeding', 'capped at $' + orderCap + '. Orders exceeding');
+  } else {
+    removeParagraphByText(body, 'Coverage Cap for High-Value Orders');
+    removeParagraphByText(body, 'Coverage for any single order is capped');
+  }
 
   // Signature block — table cells, disambiguated by the "Printed Name:"/"Title:"
   // label within each cell rather than by (row, col), since coordinates would
@@ -458,9 +522,23 @@ function fillSignatureCell(cell, name, title) {
   cell.replaceText('Title: \\[_+\\]', 'Title: ' + escapeReplacement(val(title, '[__________________]')));
 }
 
-// Apps Script's replaceText treats "$" specially in the replacement string
-// (like a regex substitution target), so literal dollar signs / backslashes
-// in merge values must be escaped before being used as a replacement.
+// DocumentApp.Body.replaceText() uses the replacement as a LITERAL string — unlike
+// regex substitution APIs, "$" is not special here. The previous version escaped
+// "$" -> "\$", which Apps Script then inserted verbatim, producing the stray
+// backslashes seen in drafts (e.g. "\$0.98"). Keep the replacement literal.
 function escapeReplacement(s) {
-  return String(s).replace(/\\/g, '\\\\').replace(/\$/g, '\\$');
+  return String(s);
+}
+
+// Remove the first paragraph whose text contains `needle` (used to drop an entire
+// optional section, e.g. the coverage cap, when it doesn't apply to this deal).
+function removeParagraphByText(body, needle) {
+  const paras = body.getParagraphs();
+  for (let i = 0; i < paras.length; i++) {
+    if (paras[i].getText().indexOf(needle) !== -1) {
+      try { paras[i].removeFromParent(); } catch (e) {}
+      return true;
+    }
+  }
+  return false;
 }
