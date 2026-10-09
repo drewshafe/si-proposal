@@ -861,11 +861,11 @@
             <div class="msa-fields-grid">
                 <div class="input-group">
                     <label for="msaSiSignerName">ShipInsure Signer — Printed Name</label>
-                    <input type="text" id="msaSiSignerName" placeholder="">
+                    <input type="text" id="msaSiSignerName" placeholder="" value="David Dustin">
                 </div>
                 <div class="input-group">
                     <label for="msaSiSignerTitle">ShipInsure Signer — Title</label>
-                    <input type="text" id="msaSiSignerTitle" placeholder="">
+                    <input type="text" id="msaSiSignerTitle" placeholder="" value="CEO">
                 </div>
                 <div class="input-group">
                     <label for="msaClientSignerName">Client Signer — Printed Name</label>
@@ -1575,6 +1575,18 @@
                 // Coverage cap ← the calculator's Limit $ (blank = no cap → section omitted).
                 const limit = params.get('limit');
                 if (limit) document.getElementById('msaOrderCap').value = limit;
+                // Currency ← the calculator's selected currency (used for MSA price symbols).
+                const CURSYM = { USD: '$', EUR: '€', GBP: '£', CAD: 'CA$', AUD: 'A$', NZD: 'NZ$', JPY: '¥' };
+                window._msaCurSym = CURSYM[params.get('cur')] || '$';
+                // Upfront incentive ← pre-check + fill the optional clause when the calc
+                // link carries an upfront offer (rep selected a tier).
+                const upfa = parseFloat(params.get('upfa')) || 0;
+                if (upfa > 0) {
+                    const inc = document.getElementById('msaIncEnable');
+                    if (inc && !inc.checked) { inc.checked = true; inc.dispatchEvent(new Event('change')); }
+                    const amt = document.getElementById('msaIncAmount');
+                    if (amt && !amt.value) amt.value = Math.round(upfa);
+                }
             } catch (e) { /* not a full URL yet — ignore until it is */ }
         }
 
@@ -1743,6 +1755,7 @@
                     revSharePct: v('msaRevSharePct'),
                     billingCadence: v('msaBillingCadence') || 'monthly',
                     orderCap: v('msaOrderCap'),
+                    currencySymbol: window._msaCurSym || '$',
                     claimSubmissionDays: v('msaClaimSubmissionDays') || '14',
                     claimResponseTime: v('msaClaimResponseTime') || '24 hours',
                     renewalNoticeDays: v('msaRenewalNoticeDays') || '30',
@@ -1750,8 +1763,8 @@
                     cureDays: v('msaCureDays') || '30',
                     pricingReviewDays: v('msaPricingReviewDays') || '30',
                     minTermMonths: v('msaMinTermMonths') || '12',
-                    siSignerName: v('msaSiSignerName'),
-                    siSignerTitle: v('msaSiSignerTitle'),
+                    siSignerName: v('msaSiSignerName') || 'David Dustin',
+                    siSignerTitle: v('msaSiSignerTitle') || 'CEO',
                     clientSignerName: v('msaClientSignerName'),
                     clientSignerTitle: v('msaClientSignerTitle'),
                 },
@@ -1834,8 +1847,8 @@
                     clientCityStateZip: v('msaClientCityStateZip'),
                     clientCountry: v('msaClientCountry') || 'United States',
                     effectiveDate: v('msaEffectiveDate'),
-                    siSignerName: v('msaSiSignerName'),
-                    siSignerTitle: v('msaSiSignerTitle'),
+                    siSignerName: v('msaSiSignerName') || 'David Dustin',
+                    siSignerTitle: v('msaSiSignerTitle') || 'CEO',
                     clientSignerName: v('msaClientSignerName'),
                     clientSignerTitle: v('msaClientSignerTitle'),
                 },

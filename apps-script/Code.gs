@@ -428,6 +428,7 @@ function insertSelectedClauses(body, fields, clauses) {
 // ── Core template merge fields (always present in the base MSA/SOW) ────────
 
 function applyCoreMergeFields(body, fields) {
+  const cur = val(fields.currencySymbol, '$'); // merchant's currency from the calc link
   const replacements = [
     // Client identity — same value at every occurrence.
     { pattern: '\\[Client Legal Name\\]', value: val(fields.clientLegalName, '[Client Legal Name]') },
@@ -460,12 +461,12 @@ function applyCoreMergeFields(body, fields) {
     // Pricing
     {
       pattern: 'charged at the rate of \\[\\$1\\.95\\], or \\[3%\\] of the cart subtotal, whichever is higher',
-      value: 'charged at the rate of $' + val(fields.premiumMin, '[$1.95]') + ', or ' + val(fields.premiumPct, '[3%]') +
+      value: 'charged at the rate of ' + cur + val(fields.premiumMin, '[$1.95]') + ', or ' + val(fields.premiumPct, '[3%]') +
         '% of the cart subtotal, whichever is higher',
     },
     {
       pattern: 'Premiums start at \\[\\$1\\.95\\] or \\[3%\\] over \\[\\$100\\] of the cart subtotal, whichever is greater',
-      value: 'Premiums start at $' + val(fields.premiumMin, '[$1.95]') + ' or ' + val(fields.premiumPct, '[3%]') + '% over $' +
+      value: 'Premiums start at ' + cur + val(fields.premiumMin, '[$1.95]') + ' or ' + val(fields.premiumPct, '[3%]') + '% over ' + cur +
         val(fields.cartThreshold, '[$100]') + ' of the cart subtotal, whichever is greater',
     },
 
@@ -498,7 +499,7 @@ function applyCoreMergeFields(body, fields) {
   // "$[$_____]" placeholder blank in a client-facing draft.
   var orderCap = String(val(fields.orderCap, '')).replace(/[^0-9.,]/g, '');
   if (orderCap !== '') {
-    body.replaceText('capped at \\[\\$_____\\]\\. Orders exceeding', 'capped at $' + orderCap + '. Orders exceeding');
+    body.replaceText('capped at \\[\\$_____\\]\\. Orders exceeding', 'capped at ' + val(fields.currencySymbol, '$') + orderCap + '. Orders exceeding');
   } else {
     removeParagraphByText(body, 'Coverage Cap for High-Value Orders');
     removeParagraphByText(body, 'Coverage for any single order is capped');
