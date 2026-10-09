@@ -2272,11 +2272,16 @@
 
         // localStorage persistence
         window.addEventListener('load', function() {
+            // When opened stacked under the ROI Builder, the hub seeds the current calc
+            // link via ?calc= so the generator autofills (currency, pricing, limit, upfront).
+            let seededCalc = '';
+            try { seededCalc = new URLSearchParams(location.search).get('calc') || ''; } catch (e) {}
             const savedMerchant  = localStorage.getItem('si_proposal_merchant');
-            const savedLink      = localStorage.getItem('si_proposal_link');
+            const savedLink      = seededCalc || localStorage.getItem('si_proposal_link');
 
             if (savedMerchant)   document.getElementById('merchantName').value = savedMerchant;
             if (savedLink)       document.getElementById('calculatorLink').value = savedLink;
+            if (seededCalc)      document.getElementById('calculatorLink').dispatchEvent(new Event('input', { bubbles: true }));
 
             if (savedLink) {
                 try {
