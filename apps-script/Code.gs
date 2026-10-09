@@ -31,7 +31,7 @@ const CONFIG = {
   // it as a Google Doc, and paste its file ID here. Give its merge fields the same
   // bracket placeholders the MSA uses ([Client Legal Name], [Client Address Line 1],
   // [Client City, State, ZIP], [Effective Date]) + a trailing signature table.
-  MNDA_TEMPLATE_DOC_ID: '',
+  MNDA_TEMPLATE_DOC_ID: '1r1vbFe3_sAxQGSA9c6zwG9VJqQVzTD3Q',
   SHARED_SECRET: 'SCfP4ZmkdJbf-IY2wtA_3m6FpWq26ZkQ',
   DEST_FOLDER_ID: '', // optional
 };
