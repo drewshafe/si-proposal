@@ -705,6 +705,18 @@
             <input type="text" id="merchantName" placeholder="Enter merchant name">
         </div>
 
+        <div class="input-group" id="cloudFolderGroup">
+            <label for="cloudFolderSelect">☁ Cloud Folder</label>
+            <div style="display:flex; gap:6px; align-items:stretch;">
+                <select id="cloudFolderSelect" style="flex:1; min-width:0;">
+                    <option value="">— Load a saved calc from the cloud —</option>
+                </select>
+                <button type="button" id="cloudFolderBtn" title="Sign in / refresh cloud folders"
+                    style="width:auto; flex:0 0 auto; padding:0 16px; font-size:18px; line-height:1; background:#eef0ff; color:#4a5fc1; border:2px solid #c5cbf0; border-radius:6px;">↻</button>
+            </div>
+            <div class="calc-type-badge" id="cloudFolderStatus"></div>
+        </div>
+
         <div class="input-row">
             <div class="input-group" id="savedMerchantGroup" style="display:none;">
                 <label for="savedMerchantSelect">Saved Merchant (from calculator)</label>
@@ -1227,6 +1239,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Shared Supabase client (same project as the calculators) — powers ☁ Cloud Folders. -->
+    <script src="sb.js"></script>
 
     <script>
         // ── MSA + SOW Draft generation ──
@@ -1609,9 +1623,89 @@
                 names.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
         }
 
+        // ── Cloud Folders (Supabase, same project as the calculators) ──
+        // Loads a saved merchant calc straight from the cloud and autofills the
+        // generator from its calc link (currency, pricing, limit, upfront, etc.) —
+        // no need to hunt down and paste a link.
+        const CLOUD_CALC_BASE = 'https://drewshafe.github.io/si-roi-calculator/proposal.html';
+        let _cloudConfigs = [];
+        function cloudStatus(msg, kind) {
+            const el = document.getElementById('cloudFolderStatus');
+            if (!el) return;
+            if (!msg) { el.style.display = 'none'; return; }
+            el.style.display = 'flex';
+            el.className = 'calc-type-badge ' + (kind || 'roi');
+            el.textContent = msg;
+        }
+        async function cloudEnsureSignedIn(interactive) {
+            if (!window.SIsb) return null;
+            try { const u = await SIsb.currentUser(); if (u) return u; } catch (e) {}
+            if (!interactive) return null;
+            const email = prompt('Sign in to load cloud folders.\nEnter your ShipInsure email — we\'ll send you a magic link:');
+            if (!email) return null;
+            try {
+                await SIsb.signInMagic(email.trim());
+                cloudStatus('✉ Magic link sent to ' + email.trim() + ' — open it, then click ↻', 'self-insure');
+            } catch (e) {
+                cloudStatus('Sign-in failed: ' + (e && e.message || e), 'self-insure');
+            }
+            return null;
+        }
+        async function populateCloudFolders(interactive) {
+            const select = document.getElementById('cloudFolderSelect');
+            if (!window.SIsb || !select) return;
+            const user = await cloudEnsureSignedIn(interactive);
+            if (!user) { if (interactive) { /* status set by sign-in */ } else { cloudStatus('Sign in (↻) to load your saved cloud folders', 'self-insure'); } return; }
+            cloudStatus('Loading cloud folders…', 'roi');
+            try {
+                const rows = await SIsb.listConfigs();
+                _cloudConfigs = rows || [];
+                if (!_cloudConfigs.length) { cloudStatus('No cloud folders saved yet', 'self-insure'); return; }
+                const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                _cloudConfigs.sort((a, b) =>
+                    (a.merchant || a.title || '').localeCompare(b.merchant || b.title || '') ||
+                    String(b.updated_at || '').localeCompare(String(a.updated_at || '')));
+                select.innerHTML = '<option value="">— Load a saved calc from the cloud —</option>' +
+                    _cloudConfigs.map(c => {
+                        const name = c.merchant || c.title || 'Untitled';
+                        const extra = [c.kind, (c.updated_at || '').slice(0, 10)].filter(Boolean).join(' · ');
+                        return `<option value="${esc(c.id)}">${esc(name)}${extra ? ' — ' + esc(extra) : ''}</option>`;
+                    }).join('');
+                cloudStatus('✓ ' + _cloudConfigs.length + ' cloud folder' + (_cloudConfigs.length > 1 ? 's' : '') + ' loaded — pick one', 'roi');
+            } catch (e) {
+                cloudStatus('Could not load cloud folders: ' + (e && e.message || e), 'self-insure');
+            }
+        }
+        async function loadCloudConfig(id) {
+            if (!id || !window.SIsb) return;
+            cloudStatus('Loading…', 'roi');
+            try {
+                const row = await SIsb.loadConfig(id);
+                const q = (row && row.data && row.data.q) || '';
+                const link = CLOUD_CALC_BASE + (q ? ('?' + q) : '');
+                const mname = row.merchant || row.title || '';
+                if (mname) {
+                    const mi = document.getElementById('merchantName');
+                    mi.value = mname; mi.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                const li = document.getElementById('calculatorLink');
+                li.value = link;
+                li.dispatchEvent(new Event('input', { bubbles: true }));
+                cloudStatus('✓ Loaded ' + (mname || 'config') + ' — fields autofilled from the calc link', 'roi');
+            } catch (e) {
+                cloudStatus('Load failed: ' + (e && e.message || e), 'self-insure');
+            }
+        }
+
         // ── Detect calc type and show badge on link input ──
         document.addEventListener('DOMContentLoaded', function() {
             refreshSavedMerchantsDropdown();
+            const cfBtn = document.getElementById('cloudFolderBtn');
+            const cfSelect = document.getElementById('cloudFolderSelect');
+            if (cfBtn) cfBtn.addEventListener('click', () => populateCloudFolders(true));
+            if (cfSelect) cfSelect.addEventListener('change', e => loadCloudConfig(e.target.value));
+            // Silent populate if already signed in (e.g. returned from a magic link).
+            populateCloudFolders(false);
             const savedCsSavings = localStorage.getItem('si_proposal_cs_savings_enabled');
             if (savedCsSavings !== null) _csSavingsEnabled = savedCsSavings === '1';
             updateCsSavingsToggleUI();
