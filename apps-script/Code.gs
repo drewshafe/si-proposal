@@ -2,8 +2,8 @@
  * ShipInsure MSA + SOW draft generator — Apps Script Web App backend.
  *
  * Copies the MSA + SOW template Google Doc, fills in the known merge fields,
- * inserts any selected optional SOW clauses (Upfront Incentive, Exclusivity,
- * Third-Party Cost Coverage, 90-Day Guarantee/Custom Claims, Software Buyout)
+ * inserts any selected optional SOW clauses (Gross Revenue Share, Upfront Incentive,
+ * Exclusivity, Third-Party Cost Coverage, 90-Day Guarantee/Custom Claims, Software Buyout)
  * at the correct point in the document, strips the "OPTIONAL INSERTS" appendix,
  * renames the copy to "<Merchant Name> Draft MSA + SOW", and returns its URL.
  *
@@ -206,7 +206,7 @@ function configDeploymentParagraphs(fields, referencesIncentive) {
   ];
 }
 
-function upfrontIncentiveParagraphs(fields, clause) {
+function upfrontIncentiveParagraphs(fields, clause, gross) {
   const amount = val(clause.amount, '$_____');
   const minTerm = val(fields.minTermMonths, '[12]');
   const outsideDays = val(clause.outsideDateDays, '[90]');
@@ -248,7 +248,19 @@ function upfrontIncentiveParagraphs(fields, clause) {
         'withhold or proportionately adjust the Upfront Merchant Incentive, or extend the Validation Period until the threshold is met.',
     }
   );
-  if (clause.recoupmentApplies !== false) {
+  if (clause.recoupmentApplies !== false && gross) {
+    // Gross deals: the incentive is an advance against the Client's Revenue Share.
+    paragraphs.push({
+      boldPrefix: 'Recoupment of Upfront Merchant Incentive.',
+      text: 'Recoupment of Upfront Merchant Incentive. The Upfront Merchant Incentive is an advance against the Client’s Revenue Share. ' +
+        'Beginning with the billing period in which the Upfront Merchant Incentive is paid, the Company will withhold the Revenue Share ' +
+        'otherwise payable to the Client and apply it against the Upfront Merchant Incentive until the Upfront Merchant Incentive has been ' +
+        'recouped in full. The “Unrecouped Balance” means, at any time, the Upfront Merchant Incentive less the aggregate Revenue Share ' +
+        'withheld and applied against it. In the billing period in which the Unrecouped Balance reaches zero, the Company will pay the Client ' +
+        'the portion of that period’s Revenue Share remaining after the Unrecouped Balance has been fully reduced, and Revenue Share is ' +
+        'payable in full for each billing period thereafter.',
+    });
+  } else if (clause.recoupmentApplies !== false) {
     paragraphs.push({
       boldPrefix: 'Recoupment of Upfront Merchant Incentive.',
       text: 'Recoupment of Upfront Merchant Incentive. Beginning with the billing period in which the Upfront Merchant Incentive is paid, ' +
@@ -399,7 +411,7 @@ function insertSelectedClauses(body, fields, clauses) {
     let cursor = findParagraphIndex(body, 'Negative Net Revenue; Carryforward.');
     if (cursor === -1) cursor = findParagraphIndex(body, 'Revenue Share is calculated and paid');
     if (cursor !== -1) {
-      if (incentive) cursor = insertParagraphsAfter(body, cursor, upfrontIncentiveParagraphs(fields, incentive));
+      if (incentive) cursor = insertParagraphsAfter(body, cursor, upfrontIncentiveParagraphs(fields, incentive, !!clauses.grossRevShare));
       if (buyout) cursor = insertParagraphsAfter(body, cursor, softwareBuyoutParagraphs(fields, buyout, !incentive));
       if (thirdParty) cursor = insertParagraphsAfter(body, cursor, thirdPartyCostParagraphs(fields, thirdParty));
       if (exclusivity) cursor = insertParagraphsAfter(body, cursor, exclusivityParagraphs(exclusivity));
@@ -418,11 +430,72 @@ function insertSelectedClauses(body, fields, clauses) {
     }
   }
 
+  // Gross Revenue Share — rewrite the SOW's Revenue Share paragraph and replace the
+  // Net-Revenue carryforward paragraph (done after the compensation inserts, which
+  // anchor on that paragraph's heading text).
+  if (clauses.grossRevShare) applyGrossRevenueShare(body, fields, clauses.grossRevShare, incentive);
+
   // Revenue Share sentence's "[, subject to the Recoupment provision below]" caveat —
   // keep (brackets stripped) only when an upfront incentive with recoupment is active;
   // otherwise remove the placeholder entirely.
   const recoup = incentive && (incentive.recoupmentApplies !== false);
   body.replaceText('\\[, subject to the Recoupment provision below\\]', recoup ? ', subject to the Recoupment provision below' : '');
+}
+
+// ── Gross Revenue Share ─────────────────────────────────────────────────────
+// Revenue Share is a % of Gross Premiums (premiums collected, less premium
+// refunds and chargebacks) instead of Net Revenue. The Company bears all claims
+// cost; there is no negative balance or carryforward. Overrides MSA §§1.7/1.9
+// for this SOW (the MSA already lets the SOW control commercial terms).
+function grossRevenueShareParagraphs(fields, clause, recoup) {
+  const pct = val(fields.revSharePct, '[__]');
+  const cadence = val(fields.billingCadence, '[monthly]');
+  const payDays = val(clause.paymentDays, '[30]');
+  return {
+    share: 'The Company will pay the Client ' + pct + '% of “Gross Premiums” (the “Revenue Share”)' +
+      (recoup ? ', subject to the Recoupment provision below' : '') + '. “Gross Premiums” means the total premiums the Company ' +
+      'actually collects from the Client’s customers during a billing period, less any premiums the Company refunds to customers and any ' +
+      'chargebacks or payment reversals of premiums during that period. Gross Premiums are not reduced by claims paid, by Covered ' +
+      'Third-Party Costs, or by any other cost of providing the Services. Notwithstanding Sections 1.7 and 1.9 of the MSA, the Revenue ' +
+      'Share under this SOW is calculated on Gross Premiums rather than Net Revenue. Revenue Share is calculated and paid on a ' + cadence + ' basis.',
+    after: [
+      {
+        boldPrefix: 'Claims Risk; No Carryforward.',
+        text: 'Claims Risk; No Carryforward. The Company bears the full cost of all claims paid and refunds issued under this SOW. The ' +
+          'Revenue Share for a billing period is not reduced by claims paid in that or any other billing period, no negative balance is ' +
+          'carried forward between billing periods, and the Client has no liability for any amount by which claims exceed premiums. The ' +
+          'parties acknowledge that the Revenue Share is set in reliance on the premium rate and coverage terms in this SOW, and that any ' +
+          'proposed change to the Revenue Share percentage is governed by the Premium Evaluation and Adjustment section below.',
+      },
+      {
+        boldPrefix: 'Revenue Share Statement and Payment.',
+        text: 'Revenue Share Statement and Payment. For each billing period, the Company will provide the Client a statement showing the ' +
+          'Gross Premiums collected and the Revenue Share earned for that period. The Company will pay the Revenue Share within ' + payDays +
+          ' days after the end of the billing period, either by separate payment or as a credit against the Company’s premium invoice to ' +
+          'the Client for that period, at the Company’s election. Revenue Share is earned only on premiums the Company actually collects; ' +
+          'if a premium on which Revenue Share was paid is later refunded or reversed, the Company may deduct the corresponding Revenue ' +
+          'Share from a subsequent payment.',
+      },
+    ],
+  };
+}
+
+function applyGrossRevenueShare(body, fields, clause, incentive) {
+  const recoup = incentive && (incentive.recoupmentApplies !== false);
+  const g = grossRevenueShareParagraphs(fields, clause, recoup);
+  const shareIdx = findParagraphIndex(body, 'of “Net Revenue”');
+  if (shareIdx !== -1) body.getChild(shareIdx).asParagraph().setText(g.share);
+  const carryIdx = findParagraphIndex(body, 'Negative Net Revenue; Carryforward.');
+  if (carryIdx !== -1) {
+    const para = body.getChild(carryIdx).asParagraph();
+    const first = g.after[0];
+    para.setText(first.text);
+    para.editAsText().setBold(false);
+    para.editAsText().setBold(0, first.boldPrefix.length - 1, true);
+    insertParagraphsAfter(body, carryIdx, g.after.slice(1));
+  } else if (shareIdx !== -1) {
+    insertParagraphsAfter(body, shareIdx, g.after);
+  }
 }
 
 // ── Core template merge fields (always present in the base MSA/SOW) ────────

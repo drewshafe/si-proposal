@@ -891,6 +891,17 @@
 
             <div class="msa-subhead">Optional SOW Clauses</div>
 
+            <div class="msa-clause" id="msaClauseGross">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaGrossEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    Gross Revenue Share <span class="msa-clause-hint">Rev Share paid on premiums collected — not reduced by claims (replaces the Net Revenue terms)</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaGrossPayDays">Revenue Share Payment Window After Each Billing Period (days)</label><input type="text" id="msaGrossPayDays" value="30"></div>
+                    <div class="input-group span-2" style="font-size:12px;color:#667;line-height:1.45">Uses the Revenue Share (%) above as a % of <b>Gross Premiums</b> (premiums collected, less premium refunds and chargebacks). ShipInsure carries all claims cost; no negative balance carries forward. If an Upfront Incentive is selected, it is recouped by withholding the Client’s Revenue Share until repaid.</div>
+                </div>
+            </div>
+
             <div class="msa-clause" id="msaClauseIncentive">
                 <label class="msa-clause-toggle">
                     <input type="checkbox" id="msaIncEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
@@ -1586,6 +1597,9 @@
                 }
                 const share = params.get('share');
                 if (share) document.getElementById('msaRevSharePct').value = share;
+                // Gross Rev Share ← the calculator's Gross toggle (grs=1) pre-checks the Gross clause.
+                const gross = document.getElementById('msaGrossEnable');
+                if (gross && (params.get('grs') === '1') !== gross.checked) { gross.checked = params.get('grs') === '1'; gross.dispatchEvent(new Event('change')); }
                 // Coverage cap ← the calculator's Limit $ (blank = no cap → section omitted).
                 const limit = params.get('limit');
                 if (limit) document.getElementById('msaOrderCap').value = limit;
@@ -1829,6 +1843,7 @@
             const includeBuyout = ch('msaBuyEnable');
             const includeCustomClaims = ch('msaCustomClaimsEnable');
             const includeQualityGuarantee = ch('msaQualityGuarEnable');
+            const includeGross = ch('msaGrossEnable');
 
             if (includeExclusivity && !includeIncentive && !includeBuyout) {
                 msaSetStatus('Exclusivity requires Upfront Merchant Incentive or Software Buyout to also be selected.', 'error');
@@ -1863,6 +1878,9 @@
                     clientSignerTitle: v('msaClientSignerTitle'),
                 },
                 clauses: {
+                    grossRevShare: includeGross ? {
+                        paymentDays: v('msaGrossPayDays') || '30',
+                    } : null,
                     upfrontIncentive: includeIncentive ? {
                         amount: v('msaIncAmount'),
                         configFormat: v('msaConfigFormat') || 'dual checkout',
