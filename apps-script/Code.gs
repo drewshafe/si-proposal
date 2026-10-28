@@ -1,11 +1,13 @@
 /**
  * ShipInsure MSA + SOW draft generator — Apps Script Web App backend.
  *
- * Copies the MSA + SOW template Google Doc, fills in the known merge fields,
- * inserts any selected optional SOW clauses (Gross Revenue Share, Upfront Incentive,
- * Exclusivity, Third-Party Cost Coverage, 90-Day Guarantee/Custom Claims, Software Buyout)
- * at the correct point in the document, strips the "OPTIONAL INSERTS" appendix,
- * renames the copy to "<Merchant Name> Draft MSA + SOW", and returns its URL.
+ * Copies the 2027 MSA + SOW template Google Doc, fills in the merge fields (the
+ * template carries Earth Breeze sample values in the highlighted spots — those
+ * exact strings are what gets replaced), toggles the optional sections (Covered
+ * Third-Party Costs, Exhibit B claim categories), inserts any selected optional SOW
+ * clauses (Gross Revenue Share, Upfront Incentive, Exclusivity, Software Buyout),
+ * clears the highlighting, renames the copy to "<Merchant Name> Draft MSA + SOW",
+ * and returns its URL.
  *
  * SETUP (one time):
  * 1. Upload "ShipInsure MSA + SOW Template.docx" to Google Drive, then open it
@@ -26,7 +28,12 @@
  */
 
 const CONFIG = {
-  TEMPLATE_DOC_ID: '11YmrLdYeTZEkpRkikzvLsZ7CipH_C-ggNGAM8iNVA-Q',
+  // 2027 Standard MSA + SOW (frozen copy of "Drew Copy of 2027 Standard MSA + SOW
+  // Template"). Its sample values (Earth Breeze, $.98 / 2.5%, 70%, $1,000, AfterShip
+  // $2,000 monthly…) are the merge anchors below — don't edit that copy; make a new
+  // copy and update the anchors if the template wording changes.
+  // Previous (pre-2027) template: 11YmrLdYeTZEkpRkikzvLsZ7CipH_C-ggNGAM8iNVA-Q
+  TEMPLATE_DOC_ID: '1UkJ4qXZ7W5v-xKIyxnmsZFN-eJRSy4rBU3xiUolIC1I',
   // Mutual NDA template — upload "Mutual Non-Disclosure Agreement" to Drive, open
   // it as a Google Doc, and paste its file ID here. Give its merge fields the same
   // bracket placeholders the MSA uses ([Client Legal Name], [Client Address Line 1],
@@ -71,7 +78,9 @@ function generateMsaDraft(payload) {
 
   stripOptionalInsertsAppendix(body);
   insertSelectedClauses(body, fields, clauses);
-  applyCoreMergeFields(body, fields);
+  applyCoreMergeFields(body, fields, clauses);
+  applyExhibitB(body, clauses);
+  clearHighlights(body);
 
   doc.saveAndClose();
   return copyFile.getUrl();
@@ -274,7 +283,7 @@ function upfrontIncentiveParagraphs(fields, clause, gross) {
   }
   paragraphs.push({
     boldPrefix: 'Repayment.',
-    text: 'Repayment. Upon a Cessation of Use (as defined in the MSA), the Client shall repay the Company the Unrecouped Balance, due within ' +
+    text: 'Repayment. Upon a Cessation of Use (as defined in this SOW), the Client shall repay the Company the Unrecouped Balance, due within ' +
       repaymentDays + ' days of the Cessation of Use.',
   });
   return paragraphs;
@@ -291,76 +300,15 @@ function exclusivityParagraphs(clause) {
   }];
 }
 
-function thirdPartyCostParagraphs(fields, clause) {
-  const vendorA = val(clause.vendorA, '[vendor / platform name]');
-  const amountA = val(clause.amountA, '$_____');
-  const categoryB = val(clause.categoryB, '[cost category]');
-  const capBText = (clause.amountB && String(clause.amountB).trim())
-    ? ('up to $' + clause.amountB + ' per Contract Year')
-    : 'without an annual cap';
-  const billingCadence = val(fields.billingCadence, 'monthly');
-  const reportingDays = val(clause.reportingDays, '[30]');
-  const repaymentDays = val(clause.repaymentDays, '[30]');
-
-  return [
-    {
-      boldPrefix: 'Covered Third-Party Costs.',
-      text: 'Covered Third-Party Costs. As further consideration for the Client’s commitment under this SOW, during the Minimum Term the ' +
-        'Company will cover the Client’s third-party costs in the following categories: (a) ' + vendorA + ' fees, up to $' + amountA +
-        ' per Contract Year; and (b) ' + categoryB + ', ' + capBText + ' (together, the “Covered Third-Party Costs”). “Contract Year” ' +
-        'means each successive twelve (12) month period beginning on Full Deployment.',
-    },
-    {
-      boldPrefix: 'Annual Caps.',
-      text: 'Annual Caps. Any amounts stated above as a cap are annual maximums and not fixed or guaranteed payments. The Company is ' +
-        'responsible only for Covered Third-Party Costs actually incurred by the Client, up to the applicable cap, and the Client remains ' +
-        'solely responsible for any amount exceeding a cap. Unused amounts under a cap do not carry over to a subsequent Contract Year, are ' +
-        'not interchangeable between categories, and are not payable to the Client in cash.',
-    },
-    {
-      boldPrefix: 'Reporting and Payment.',
-      text: 'Reporting and Payment. The Client will submit to the Company, on a ' + billingCadence + ' basis, invoices, statements, or other ' +
-        'reasonable documentation evidencing the Covered Third-Party Costs incurred, and the Company will reimburse the Client within ' +
-        reportingDays + ' days after receipt of conforming documentation.',
-    },
-    {
-      boldPrefix: 'No Assumption of Client Agreements.',
-      text: 'No Assumption of Client Agreements. The Company’s payment of Covered Third-Party Costs does not make the Company a party to, ' +
-        'or otherwise responsible for, the Client’s agreement with ' + vendorA + ', any carrier, or any other third party. The Client remains ' +
-        'solely responsible for its obligations under those agreements, including renewal, termination, and any change in pricing. The Client ' +
-        'will promptly notify the Company of any renewal, price increase, or other change in the applicable third-party fees or costs. Any ' +
-        'amount the Company pays under this section is fixed at the amount stated above and will not increase if the Client’s third-party ' +
-        'fees increase.',
-    },
-    {
-      boldPrefix: 'Repayment.',
-      text: 'Repayment. Upon a Cessation of Use (as defined in the MSA), the Client shall repay the Company all Covered Third-Party Costs ' +
-        'paid or reimbursed by the Company during the twelve (12) months preceding the Cessation of Use, within ' + repaymentDays +
-        ' days of the Cessation of Use. This repayment obligation is in addition to, and not in lieu of, any repayment obligation applicable ' +
-        'to an Upfront Merchant Incentive or Buyout Payment.',
-    },
-  ];
-}
-
-function customClaimsParagraph(clause) {
-  const reasons = val(clause.reasons, '[e.g., wrong item(s) shipped; return to sender; never reached first carrier scan]');
+// MSA §1.8 "Cessation of Use" was dropped from the 2027 MSA, so any SOW with an
+// upfront payment carries the definition itself.
+function cessationOfUseParagraph() {
   return {
-    boldPrefix: 'Custom Claims Policy.',
-    text: 'Custom Claims Policy. In addition to the standard Covered Losses, the Company will cover the following claim reasons for the ' +
-      'Client’s customers: ' + reasons + '.',
-  };
-}
-
-function qualityGuaranteeParagraph(clause) {
-  const coverage = val(clause.coverage, '[e.g., accidental damage (photo required); taste/quality guarantee]');
-  const days = val(clause.days, '[90]');
-  const resolution = val(clause.resolution, 'reship / store credit / refund');
-  return {
-    boldPrefix: 'Quality Guarantee.',
-    text: 'Quality Guarantee. The Company will additionally honor the following merchant quality guarantees: ' + coverage + '. ' +
-      'Notwithstanding the standard submission window in the Claim Acceptance Rate section, claims under this Quality Guarantee must be ' +
-      'submitted within ' + days + ' days of the tracking delivery date. Resolution for Quality Guarantee claims will be ' + resolution +
-      ' at the Company’s discretion in accordance with the Claims Policies.',
+    boldPrefix: 'Cessation of Use.',
+    text: 'Cessation of Use. “Cessation of Use” means the occurrence of any of the following prior to the end of the Minimum Term: ' +
+      '(a) the Client terminates this SOW for any reason; (b) the Client ceases using ShipInsure’s dual checkout on its site; or (c) the ' +
+      'Client changes away from the Required Configuration or any other checkout or program setup in place upon Full Deployment, ' +
+      'including switching off a pre-checked, opt-out, or dual checkout format, in each case without the Company’s prior written consent.',
   };
 }
 
@@ -386,7 +334,7 @@ function softwareBuyoutParagraphs(fields, clause, includeConfigBlock) {
     },
     {
       boldPrefix: 'Early Termination.',
-      text: 'Early Termination. If a Cessation of Use (as defined in the MSA) occurs within the Minimum Term, or if the Client determines ' +
+      text: 'Early Termination. If a Cessation of Use (as defined in this SOW) occurs within the Minimum Term, or if the Client determines ' +
         'within the Minimum Term that the Services are not satisfactory, the Client may (or, in the case of a Cessation of Use, shall) repay ' +
         'the full Buyout Payment within ' + earlyTermDays + ' days by written notice to the Company. Upon receipt of repayment, this SOW will ' +
         'terminate and neither party will have further obligations except those intended to survive termination.',
@@ -400,64 +348,57 @@ function softwareBuyoutParagraphs(fields, clause, includeConfigBlock) {
 function insertSelectedClauses(body, fields, clauses) {
   const incentive = clauses.upfrontIncentive;
   const exclusivity = clauses.exclusivity;
-  const thirdParty = clauses.thirdPartyCosts;
   const buyout = clauses.softwareBuyout;
-  const customClaims = clauses.customClaims;
-  const qualityGuarantee = clauses.qualityGuarantee;
+  const minTerm = !!(incentive || buyout);
 
   // Compensation-clause group — anchored right after the Revenue Share
   // section's Negative Net Revenue paragraph.
-  if (incentive || exclusivity || thirdParty || buyout) {
+  if (incentive || exclusivity || buyout) {
     let cursor = findParagraphIndex(body, 'Negative Net Revenue; Carryforward.');
     if (cursor === -1) cursor = findParagraphIndex(body, 'Revenue Share is calculated and paid');
     if (cursor !== -1) {
       if (incentive) cursor = insertParagraphsAfter(body, cursor, upfrontIncentiveParagraphs(fields, incentive, !!clauses.grossRevShare));
       if (buyout) cursor = insertParagraphsAfter(body, cursor, softwareBuyoutParagraphs(fields, buyout, !incentive));
-      if (thirdParty) cursor = insertParagraphsAfter(body, cursor, thirdPartyCostParagraphs(fields, thirdParty));
+      if (minTerm) cursor = insertParagraphsAfter(body, cursor, [cessationOfUseParagraph()]);
       if (exclusivity) cursor = insertParagraphsAfter(body, cursor, exclusivityParagraphs(exclusivity));
     }
   }
 
-  // 90-Day Guarantee + Custom Claims — anchored right after the Claim
-  // Policies section, before Claim Acceptance Rate.
-  if (customClaims || qualityGuarantee) {
-    let cursor = findParagraphIndex(body, 'shipinsure-claims-policies');
-    if (cursor !== -1) {
-      const paras = [];
-      if (customClaims) paras.push(customClaimsParagraph(customClaims));
-      if (qualityGuarantee) paras.push(qualityGuaranteeParagraph(qualityGuarantee));
-      insertParagraphsAfter(body, cursor, paras);
-    }
+  // The 2027 SOW is month-to-month with "There is no minimum term." — an upfront
+  // payment adds a Minimum Term, so the Term section and MSA §12.1 say so.
+  if (minTerm) {
+    body.replaceText('this SOW shall continue on a month-to-month basis', 'this SOW shall continue for the Minimum Term set forth below and thereafter on a month-to-month basis');
+    body.replaceText('There is no minimum term\\.', 'The Minimum Term begins on Full Deployment, as defined and confirmed in this SOW.');
+    body.replaceText('in accordance with Section 12\\.1 of the MSA\\.', 'in accordance with Section 12.1 of the MSA, subject to the minimum-commitment and repayment terms of this SOW.');
+    body.replaceText('days’ prior written notice\\.', 'days’ prior written notice, subject to any minimum-commitment or repayment terms set forth in the applicable SOW.');
   }
 
   // Gross Revenue Share — rewrite the SOW's Revenue Share paragraph and replace the
   // Net-Revenue carryforward paragraph (done after the compensation inserts, which
   // anchor on that paragraph's heading text).
-  if (clauses.grossRevShare) applyGrossRevenueShare(body, fields, clauses.grossRevShare, incentive);
-
-  // Revenue Share sentence's "[, subject to the Recoupment provision below]" caveat —
-  // keep (brackets stripped) only when an upfront incentive with recoupment is active;
-  // otherwise remove the placeholder entirely.
   const recoup = incentive && (incentive.recoupmentApplies !== false);
-  body.replaceText('\\[, subject to the Recoupment provision below\\]', recoup ? ', subject to the Recoupment provision below' : '');
+  if (clauses.grossRevShare) {
+    applyGrossRevenueShare(body, fields, clauses.grossRevShare, incentive);
+  } else if (recoup) {
+    body.replaceText('\\(the “Revenue Share”\\)\\.', '(the “Revenue Share”), subject to the Recoupment provision below.');
+  }
 }
 
 // ── Gross Revenue Share ─────────────────────────────────────────────────────
 // Revenue Share is a % of Gross Premiums (premiums collected, less premium
 // refunds and chargebacks) instead of Net Revenue. The Company bears all claims
-// cost; there is no negative balance or carryforward. Overrides MSA §§1.7/1.9
+// cost; there is no negative balance or carryforward. Overrides MSA §§1.7/1.8
 // for this SOW (the MSA already lets the SOW control commercial terms).
 function grossRevenueShareParagraphs(fields, clause, recoup) {
   const pct = val(fields.revSharePct, '[__]');
-  const cadence = val(fields.billingCadence, '[monthly]');
   const payDays = val(clause.paymentDays, '[30]');
   return {
     share: 'The Company will pay the Client ' + pct + '% of “Gross Premiums” (the “Revenue Share”)' +
       (recoup ? ', subject to the Recoupment provision below' : '') + '. “Gross Premiums” means the total premiums the Company ' +
       'actually collects from the Client’s customers during a billing period, less any premiums the Company refunds to customers and any ' +
       'chargebacks or payment reversals of premiums during that period. Gross Premiums are not reduced by claims paid, by Covered ' +
-      'Third-Party Costs, or by any other cost of providing the Services. Notwithstanding Sections 1.7 and 1.9 of the MSA, the Revenue ' +
-      'Share under this SOW is calculated on Gross Premiums rather than Net Revenue. Revenue Share is calculated and paid on a ' + cadence + ' basis.',
+      'Third-Party Costs, or by any other cost of providing the Services. Notwithstanding Sections 1.7 and 1.8 of the MSA, the Revenue ' +
+      'Share under this SOW is calculated on Gross Premiums rather than Net Revenue, for each billing period, and paid as set forth below.',
     after: [
       {
         boldPrefix: 'Claims Risk; No Carryforward.',
@@ -498,95 +439,164 @@ function applyGrossRevenueShare(body, fields, clause, incentive) {
   }
 }
 
-// ── Core template merge fields (always present in the base MSA/SOW) ────────
+// ── Core template merge fields (2027 template) ──────────────────────────────
+// The 2027 template carries Earth Breeze sample values in the highlighted spots;
+// each pattern below is that exact sample text (regex-escaped) plus enough
+// surrounding words to be unique in the document.
 
-function applyCoreMergeFields(body, fields) {
+function applyCoreMergeFields(body, fields, clauses) {
+  clauses = clauses || {};
   const cur = val(fields.currencySymbol, '$'); // merchant's currency from the calc link
+  const quarterly = /quarter/i.test(String(fields.billingCadence || ''));
+  const name = val(fields.clientLegalName, '[Client Legal Name]');
+
+  // Client header block (first table, Client column) — address lines + country.
+  // Done per-cell because "United States" also appears in ShipInsure's column.
+  const tables = body.getTables();
+  if (tables.length && tables[0].getNumRows() > 1 && tables[0].getRow(1).getNumCells() > 1) {
+    const cell = tables[0].getRow(1).getCell(1);
+    cell.replaceText('500 Westover Dr #14160', val(fields.clientAddress1, '[Client Address Line 1]'));
+    cell.replaceText('Sanford, NC 27330', val(fields.clientCityStateZip, '[Client City, State, ZIP]'));
+    cell.replaceText('United States', val(fields.clientCountry, '[Country]'));
+  }
+
   const replacements = [
-    // Client identity — same value at every occurrence.
-    { pattern: '\\[Client Legal Name\\]', value: val(fields.clientLegalName, '[Client Legal Name]') },
-    { pattern: '\\[Client Address Line 1\\]', value: val(fields.clientAddress1, '[Client Address Line 1]') },
-    { pattern: '\\[Client City, State, ZIP\\]', value: val(fields.clientCityStateZip, '[Client City, State, ZIP]') },
-    { pattern: '\\[Country\\]', value: val(fields.clientCountry, '[Country]') },
+    // Client legal name — header, MSA intro, SOW intro, Ongoing Relationship, signature block.
+    { pattern: 'Earth Breeze, Inc\\.', value: name },
 
     // Notice/term periods — each disambiguated by surrounding, doc-unique text.
-    {
-      pattern: 'at least \\[30\\] days prior to the end of the then-current term',
-      value: 'at least ' + val(fields.renewalNoticeDays, '[30]') + ' days prior to the end of the then-current term',
-    },
-    {
-      pattern: 'convenience upon \\[30\\] days’ prior written notice, subject to any minimum-commitment',
-      value: 'convenience upon ' + val(fields.terminationDays, '[30]') + ' days’ prior written notice, subject to any minimum-commitment',
-    },
-    {
-      pattern: 'fails to cure within \\[30\\] days after written notice',
-      value: 'fails to cure within ' + val(fields.cureDays, '[30]') + ' days after written notice',
-    },
-    {
-      pattern: 'cannot reach agreement within \\[30\\] days of the Company’s notice',
-      value: 'cannot reach agreement within ' + val(fields.pricingReviewDays, '[30]') + ' days of the Company’s notice',
-    },
-    {
-      pattern: 'may terminate this SOW upon \\[30\\] days’ written notice to the Client',
-      value: 'may terminate this SOW upon ' + val(fields.pricingReviewDays, '[30]') + ' days’ written notice to the Client',
-    },
+    { pattern: 'for convenience upon 30 days’', value: 'for convenience upon ' + val(fields.terminationDays, '30') + ' days’' },
+    { pattern: 'fails to cure within 30 days after written notice', value: 'fails to cure within ' + val(fields.cureDays, '30') + ' days after written notice' },
+    { pattern: 'cannot reach agreement within 30 days of the Company’s notice', value: 'cannot reach agreement within ' + val(fields.pricingReviewDays, '30') + ' days of the Company’s notice' },
+    { pattern: 'may terminate this SOW upon 30 days’ written notice to the Client', value: 'may terminate this SOW upon ' + val(fields.pricingReviewDays, '30') + ' days’ written notice to the Client' },
 
     // Pricing
     {
-      pattern: 'charged at the rate of \\[\\$1\\.95\\], or \\[3%\\] of the cart subtotal, whichever is higher',
-      value: 'charged at the rate of ' + cur + val(fields.premiumMin, '[$1.95]') + ', or ' + val(fields.premiumPct, '[3%]') +
-        '% of the cart subtotal, whichever is higher',
-    },
-    {
-      pattern: 'Premiums start at \\[\\$1\\.95\\] or \\[3%\\] over \\[\\$100\\] of the cart subtotal, whichever is greater',
-      value: 'Premiums start at ' + cur + val(fields.premiumMin, '[$1.95]') + ' or ' + val(fields.premiumPct, '[3%]') + '% over ' + cur +
-        val(fields.cartThreshold, '[$100]') + ' of the cart subtotal, whichever is greater',
+      pattern: 'charged at the rate of \\$\\.98, or 2\\.5% of the cart subtotal',
+      value: 'charged at the rate of ' + cur + val(fields.premiumMin, '[_____]') + ', or ' + val(fields.premiumPct, '[__]') + '% of the cart subtotal',
     },
 
-    // Revenue share / billing cadence
-    { pattern: '\\[__\\]% of “Net Revenue”', value: val(fields.revSharePct, '[__]') + '% of “Net Revenue”' },
+    // Premium collecting — calendar month / quarter
     {
-      pattern: 'automatically billed \\[monthly\\], solely for the premiums',
-      value: 'automatically billed ' + val(fields.billingCadence, '[monthly]') + ', solely for the premiums',
+      pattern: 'generated on the first day of each calendar month for premiums accrued from protected orders in the prior month',
+      value: quarterly
+        ? 'generated on the first day of each calendar quarter for premiums accrued from protected orders in the prior quarter'
+        : 'generated on the first day of each calendar month for premiums accrued from protected orders in the prior month',
     },
-    {
-      pattern: 'calculated and paid on a \\[monthly\\] basis',
-      value: 'calculated and paid on a ' + val(fields.billingCadence, '[monthly]') + ' basis',
-    },
+
+    // Revenue share
+    { pattern: 'will pay the Client 70% of', value: 'will pay the Client ' + val(fields.revSharePct, '[__]') + '% of' },
 
     // Claims
-    { pattern: 'submitted within \\[14\\] days of the tracking delivery date', value: 'submitted within ' + val(fields.claimSubmissionDays, '[14]') + ' days of the tracking delivery date' },
-    { pattern: 'resolve claims within \\[24 hours\\]', value: 'resolve claims within ' + val(fields.claimResponseTime, '[24 hours]') },
-
-    // Editor/instruction notes baked into the template — strip from client drafts.
-    { pattern: ' ?\\[If this SOW has no Minimum Term[^\\]]*\\]', value: '' },
-    { pattern: ' ?\\[Insert self-serve billing language here\\.\\]', value: '' },
+    { pattern: 'submitted within 14 days of the tracking delivery date', value: 'submitted within ' + val(fields.claimSubmissionDays, '14') + ' days of the tracking delivery date' },
+    { pattern: 'resolve claims within 24 hours', value: 'resolve claims within ' + val(fields.claimResponseTime, '24 hours') },
   ];
 
   replacements.forEach(function (r) {
     body.replaceText(r.pattern, escapeReplacement(r.value));
   });
 
+  applyCoveredThirdPartyCosts(body, fields, clauses.thirdPartyCosts, !!clauses.grossRevShare);
+
   // Coverage cap — fill from the Limit $ (orderCap). If none is set, remove the
   // whole "Coverage Cap for High-Value Orders" section rather than leaving the
-  // "$[$_____]" placeholder blank in a client-facing draft.
+  // sample amount in a client-facing draft.
   var orderCap = String(val(fields.orderCap, '')).replace(/[^0-9.,]/g, '');
   if (orderCap !== '') {
-    body.replaceText('capped at \\[\\$_____\\]\\. Orders exceeding', 'capped at ' + val(fields.currencySymbol, '$') + orderCap + '. Orders exceeding');
+    body.replaceText('initially capped at \\$1,000\\.', 'initially capped at ' + cur + orderCap + '.');
   } else {
     removeParagraphByText(body, 'Coverage Cap for High-Value Orders');
-    removeParagraphByText(body, 'Coverage for any single order is capped');
+    removeParagraphByText(body, 'Coverage for any single order is');
   }
 
   // Signature block — table cells, disambiguated by the "Printed Name:"/"Title:"
   // label within each cell rather than by (row, col), since coordinates would
   // silently break if the template's table layout ever changes.
-  const tables = body.getTables();
   const sigTable = tables[tables.length - 1];
   if (sigTable && sigTable.getNumRows() > 0) {
     const row = sigTable.getRow(0);
     fillSignatureCell(row.getCell(0), fields.siSignerName, fields.siSignerTitle);
     fillSignatureCell(row.getCell(1), fields.clientSignerName, fields.clientSignerTitle);
+  }
+}
+
+// ── Covered Third-Party Costs (2027 SOW section) ────────────────────────────
+// Selected: fill the vendor / product / amount into the template's AfterShip
+// sample. Not selected: remove the section and the Net Revenue "(b) Covered
+// Third-Party Costs" carve-outs so the draft never mentions them.
+function applyCoveredThirdPartyCosts(body, fields, tpc, gross) {
+  const defIdx = findParagraphIndex(body, 'means the SaaS fees the Company pays');
+  if (tpc) {
+    if (defIdx === -1) return;
+    const para = body.getChild(defIdx).asParagraph();
+    const cur = val(fields.currencySymbol, '$');
+    const vendor = val(tpc.vendor, '[vendor]');
+    const amount = String(tpc.amount || '').trim();
+    const fee = amount ? (' (' + cur + amount + ' ' + val(tpc.period, 'monthly') + ')') : '';
+    para.replaceText('AfterShip’s Return Platform \\(\\$2,000 monthly\\)', vendor + '’s ' + val(tpc.product, '[product / platform]') + fee);
+    para.replaceText('AfterShip', vendor);
+    if (gross) {
+      para.replaceText('Covered Third-Party Costs are deducted in calculating Net Revenue for the period in which the Company pays them\\.',
+        'Covered Third-Party Costs are borne by the Company and do not reduce Gross Premiums or the Revenue Share.');
+    }
+    return;
+  }
+  if (defIdx !== -1) {
+    // Heading is the paragraph right before the definition.
+    const prev = defIdx > 0 ? body.getChild(defIdx - 1) : null;
+    body.getChild(defIdx).removeFromParent();
+    if (prev && prev.getType() === DocumentApp.ElementType.PARAGRAPH &&
+        prev.asParagraph().getText().trim() === 'Covered Third-Party Costs') prev.removeFromParent();
+  }
+  body.replaceText('minus \\(a\\) the total amount of claims the Company actually pays out \\(and any refunds the Company issues\\) for that period, and \\(b\\) any Covered Third-Party Costs the Company pays or reimburses under this SOW for that period\\.',
+    'minus the total amount of claims the Company actually pays out (and any refunds the Company issues) for that period.');
+  body.replaceText('claims paid out \\(together with any refunds issued\\) and Covered Third-Party Costs exceed premiums collected',
+    'claims paid out (together with any refunds issued) exceed premiums collected');
+}
+
+// ── Exhibit B — additional claim categories ─────────────────────────────────
+// The template lists Quality Satisfaction Guarantee, Manufacturer Defect and
+// Missing Items; unselected ones are removed. Free-text custom claim reasons are
+// appended as one more Exhibit B category.
+function applyExhibitB(body, clauses) {
+  const qg = clauses.qualityGuarantee;
+  if (qg) {
+    body.replaceText('manufacturing defects within X days of delivery', 'manufacturing defects within ' + val(qg.days, '[__]') + ' days of delivery');
+  } else {
+    removeParagraphExact(body, 'Quality Satisfaction Guarantee');
+    removeParagraphByText(body, 'Provides coverage for accidental damage during normal use');
+  }
+  if (!clauses.manufacturerDefect) {
+    removeParagraphExact(body, 'Manufacturer Defect');
+    removeParagraphByText(body, 'Provides coverage for items that arrive defective');
+  }
+  if (!clauses.missingItems) {
+    removeParagraphExact(body, 'Missing Items');
+    removeParagraphByText(body, 'Provides coverage when items are missing');
+  }
+
+  const reasons = clauses.customClaims && String(clauses.customClaims.reasons || '').trim();
+  if (reasons) {
+    let anchor = -1;
+    ['Provides coverage when items are missing', 'Provides coverage for items that arrive defective',
+      'Provides coverage for accidental damage during normal use', 'claims policies in effect on the Effective Date']
+      .some(function (n) { anchor = findParagraphIndex(body, n); return anchor !== -1; });
+    if (anchor !== -1) {
+      const h = body.insertParagraph(anchor + 1, 'Additional Covered Claim Reasons');
+      h.setHeading(DocumentApp.ParagraphHeading.HEADING2);
+      body.insertParagraph(anchor + 2, 'Provides coverage for the following additional claim reasons: ' + reasons.replace(/[.;\s]+$/, '') + '.')
+        .setHeading(DocumentApp.ParagraphHeading.NORMAL);
+    }
+  }
+}
+
+// Template highlights mark the merge spots for the author — never ship them.
+function clearHighlights(body) {
+  let r = null;
+  while ((r = body.findElement(DocumentApp.ElementType.TEXT, r))) {
+    const t = r.getElement().asText();
+    const len = t.getText().length;
+    if (len) t.setBackgroundColor(0, len - 1, null);
   }
 }
 
@@ -606,6 +616,17 @@ function escapeReplacement(s) {
 
 // Remove the first paragraph whose text contains `needle` (used to drop an entire
 // optional section, e.g. the coverage cap, when it doesn't apply to this deal).
+function removeParagraphExact(body, text) {
+  const paras = body.getParagraphs();
+  for (let i = 0; i < paras.length; i++) {
+    if (paras[i].getText().trim() === text) {
+      try { paras[i].removeFromParent(); } catch (e) {}
+      return true;
+    }
+  }
+  return false;
+}
+
 function removeParagraphByText(body, needle) {
   const paras = body.getParagraphs();
   for (let i = 0; i < paras.length; i++) {

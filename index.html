@@ -784,7 +784,7 @@
         <details class="input-group">
             <summary class="collapsible-summary">MSA + SOW Template</summary>
 
-            <div class="msa-note">Fills the ShipInsure MSA + SOW template and creates a Google Doc copy named "[Merchant Name] Draft MSA + SOW" for legal to finalize. Premium %, Min $, and Rev Share auto-fill from the Calculator Link above — everything else defaults to the template's standard terms and can be adjusted here.</div>
+            <div class="msa-note">Fills the 2027 Standard ShipInsure MSA + SOW template and creates a Google Doc copy named "[Merchant Name] Draft MSA + SOW" for legal to finalize. Premium %, Min $, and Rev Share auto-fill from the Calculator Link above — everything else defaults to the template's standard terms and can be adjusted here.</div>
 
             <div class="msa-subhead">Client Info</div>
             <div class="msa-fields-grid">
@@ -813,15 +813,11 @@
                     <input type="text" id="msaPremiumMin" placeholder="e.g. 1.95">
                 </div>
                 <div class="input-group">
-                    <label for="msaCartThreshold">Cart Subtotal Threshold ($)</label>
-                    <input type="text" id="msaCartThreshold" value="100">
-                </div>
-                <div class="input-group">
                     <label for="msaRevSharePct">Revenue Share (%)</label>
                     <input type="text" id="msaRevSharePct" placeholder="e.g. 25">
                 </div>
                 <div class="input-group">
-                    <label for="msaBillingCadence">Billing Cadence</label>
+                    <label for="msaBillingCadence">Invoice Cadence</label>
                     <select id="msaBillingCadence">
                         <option value="monthly">Monthly</option>
                         <option value="quarterly">Quarterly</option>
@@ -829,7 +825,7 @@
                 </div>
                 <div class="input-group">
                     <label for="msaOrderCap">Coverage Cap for High-Value Orders ($)</label>
-                    <input type="text" id="msaOrderCap" placeholder="e.g. 500 (leave blank for no cap)">
+                    <input type="text" id="msaOrderCap" placeholder="e.g. 1,000 (blank removes the section)">
                 </div>
             </div>
 
@@ -848,10 +844,6 @@
             <div class="msa-subhead">Notice &amp; Term Periods</div>
             <div class="msa-fields-grid">
                 <div class="input-group">
-                    <label for="msaRenewalNoticeDays">Renewal Notice (days)</label>
-                    <input type="text" id="msaRenewalNoticeDays" value="30">
-                </div>
-                <div class="input-group">
                     <label for="msaTerminationDays">Termination for Convenience Notice (days)</label>
                     <input type="text" id="msaTerminationDays" value="30">
                 </div>
@@ -864,7 +856,7 @@
                     <input type="text" id="msaPricingReviewDays" value="30">
                 </div>
                 <div class="input-group">
-                    <label for="msaMinTermMonths">Minimum Term (months)</label>
+                    <label for="msaMinTermMonths">Minimum Term (months) <span style="font-weight:400;color:#889">— only with Upfront Incentive / Buyout; otherwise month-to-month</span></label>
                     <input type="text" id="msaMinTermMonths" value="12">
                 </div>
             </div>
@@ -946,38 +938,44 @@
             <div class="msa-clause" id="msaClauseTpc">
                 <label class="msa-clause-toggle">
                     <input type="checkbox" id="msaTpcEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
-                    Third-Party Cost Coverage <span class="msa-clause-hint">ShipInsure covers a merchant's ongoing platform/shipping costs</span>
+                    Covered Third-Party Costs <span class="msa-clause-hint">ShipInsure pays a vendor's SaaS fees directly (e.g. AfterShip Returns) — deducted from Net Revenue</span>
                 </label>
                 <div class="msa-clause-fields">
-                    <div class="input-group"><label for="msaTpcVendorA">Vendor/Platform Name (a)</label><input type="text" id="msaTpcVendorA" placeholder="e.g. Recharge"></div>
-                    <div class="input-group"><label for="msaTpcAmountA">Annual Cap for (a) ($ per Contract Year)</label><input type="text" id="msaTpcAmountA" placeholder="e.g. 6000"></div>
-                    <div class="input-group span-2"><label for="msaTpcCategoryB">Cost Category (b)</label><input type="text" id="msaTpcCategoryB" placeholder="e.g. return shipping labels for orders on which a ShipInsure premium was collected"></div>
-                    <div class="input-group"><label for="msaTpcAmountB">Annual Cap for (b) ($ per Contract Year, optional)</label><input type="text" id="msaTpcAmountB" placeholder="leave blank for no cap"></div>
-                    <div class="input-group"><label for="msaTpcReportingDays">Reimbursement Window After Documentation (days)</label><input type="text" id="msaTpcReportingDays" value="30"></div>
-                    <div class="input-group"><label for="msaTpcRepaymentDays">Repayment Window on Cessation of Use (days)</label><input type="text" id="msaTpcRepaymentDays" value="30"></div>
+                    <div class="input-group"><label for="msaTpcVendor">Vendor</label><input type="text" id="msaTpcVendor" placeholder="e.g. AfterShip"></div>
+                    <div class="input-group"><label for="msaTpcProduct">Product / Platform</label><input type="text" id="msaTpcProduct" placeholder="e.g. Return Platform"></div>
+                    <div class="input-group"><label for="msaTpcAmount">Fee Amount ($)</label><input type="text" id="msaTpcAmount" placeholder="e.g. 2,000"></div>
+                    <div class="input-group"><label for="msaTpcPeriod">Fee Period</label>
+                        <select id="msaTpcPeriod">
+                            <option value="monthly">Monthly</option>
+                            <option value="annually">Annually</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div class="msa-clause" id="msaClauseGuarantee">
-                <label class="msa-clause-toggle">
-                    <input type="checkbox" id="msaCustomClaimsEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked || document.getElementById('msaQualityGuarEnable').checked)">
-                    Custom Claims Policy <span class="msa-clause-hint">additional covered claim reasons beyond the standard Covered Losses</span>
+                <label class="msa-clause-toggle" style="cursor:default">
+                    Exhibit B — Additional Claim Categories <span class="msa-clause-hint">tick what this merchant gets on top of Lost / Stolen / Damaged</span>
                 </label>
                 <label class="msa-clause-toggle" style="margin-top:8px;">
-                    <input type="checkbox" id="msaQualityGuarEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked || document.getElementById('msaCustomClaimsEnable').checked)">
-                    Quality Guarantee <span class="msa-clause-hint">e.g. accidental damage, taste/quality guarantee</span>
+                    <input type="checkbox" id="msaQualityGuarEnable" onchange="msaExhibitBToggle()">
+                    Quality Satisfaction Guarantee <span class="msa-clause-hint">accidental damage in normal use + manufacturing defects within X days</span>
+                </label>
+                <label class="msa-clause-toggle" style="margin-top:8px;">
+                    <input type="checkbox" id="msaMfrDefectEnable" onchange="msaExhibitBToggle()">
+                    Manufacturer Defect
+                </label>
+                <label class="msa-clause-toggle" style="margin-top:8px;">
+                    <input type="checkbox" id="msaMissingItemsEnable" onchange="msaExhibitBToggle()">
+                    Missing Items
+                </label>
+                <label class="msa-clause-toggle" style="margin-top:8px;">
+                    <input type="checkbox" id="msaCustomClaimsEnable" onchange="msaExhibitBToggle()">
+                    Custom Claim Reasons <span class="msa-clause-hint">added to Exhibit B as one more category</span>
                 </label>
                 <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaQualityGuarDays">Quality Guarantee Window (days after delivery)</label><input type="text" id="msaQualityGuarDays" value="90"></div>
                     <div class="input-group span-2"><label for="msaCustomClaimReasons">Custom Claim Reasons</label><textarea id="msaCustomClaimReasons" placeholder="e.g. wrong item(s) shipped; return to sender; never reached first carrier scan"></textarea></div>
-                    <div class="input-group span-2"><label for="msaQualityGuarCoverage">Quality Guarantee Coverage</label><textarea id="msaQualityGuarCoverage" placeholder="e.g. accidental damage (photo required); taste/quality guarantee"></textarea></div>
-                    <div class="input-group"><label for="msaQualityGuarDays">Quality Guarantee Submission Window (days)</label><input type="text" id="msaQualityGuarDays" value="90"></div>
-                    <div class="input-group"><label for="msaQualityGuarResolution">Quality Guarantee Resolution</label>
-                        <select id="msaQualityGuarResolution">
-                            <option value="reship">Reship</option>
-                            <option value="store credit">Store Credit</option>
-                            <option value="refund">Refund</option>
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -1897,6 +1895,12 @@
             el.className = cls || '';
         }
 
+        function msaExhibitBToggle() {
+            const on = ['msaQualityGuarEnable', 'msaMfrDefectEnable', 'msaMissingItemsEnable', 'msaCustomClaimsEnable']
+                .some(id => document.getElementById(id).checked);
+            document.getElementById('msaClauseGuarantee').classList.toggle('active', on);
+        }
+
         async function draftMSA() {
             const merchantName = document.getElementById('merchantName').value.trim();
             if (!merchantName) { msaSetStatus('Enter a Merchant Name first.', 'error'); return; }
@@ -1911,6 +1915,8 @@
             const includeBuyout = ch('msaBuyEnable');
             const includeCustomClaims = ch('msaCustomClaimsEnable');
             const includeQualityGuarantee = ch('msaQualityGuarEnable');
+            const includeMfrDefect = ch('msaMfrDefectEnable');
+            const includeMissingItems = ch('msaMissingItemsEnable');
             const includeGross = ch('msaGrossEnable');
 
             if (includeExclusivity && !includeIncentive && !includeBuyout) {
@@ -1928,14 +1934,12 @@
                     clientCountry: v('msaClientCountry') || 'United States',
                     premiumPct: v('msaPremiumPct'),
                     premiumMin: v('msaPremiumMin'),
-                    cartThreshold: v('msaCartThreshold') || '100',
                     revSharePct: v('msaRevSharePct'),
                     billingCadence: v('msaBillingCadence') || 'monthly',
                     orderCap: v('msaOrderCap'),
                     currencySymbol: window._msaCurSym || '$',
                     claimSubmissionDays: v('msaClaimSubmissionDays') || '14',
                     claimResponseTime: v('msaClaimResponseTime') || '24 hours',
-                    renewalNoticeDays: v('msaRenewalNoticeDays') || '30',
                     terminationDays: v('msaTerminationDays') || '30',
                     cureDays: v('msaCureDays') || '30',
                     pricingReviewDays: v('msaPricingReviewDays') || '30',
@@ -1964,21 +1968,19 @@
                         repaymentDays: v('msaExclRepaymentDays') || '30',
                     } : null,
                     thirdPartyCosts: includeThirdParty ? {
-                        vendorA: v('msaTpcVendorA'),
-                        amountA: v('msaTpcAmountA'),
-                        categoryB: v('msaTpcCategoryB'),
-                        amountB: v('msaTpcAmountB'),
-                        reportingDays: v('msaTpcReportingDays') || '30',
-                        repaymentDays: v('msaTpcRepaymentDays') || '30',
+                        vendor: v('msaTpcVendor'),
+                        product: v('msaTpcProduct'),
+                        amount: v('msaTpcAmount'),
+                        period: v('msaTpcPeriod') || 'monthly',
                     } : null,
                     customClaims: includeCustomClaims ? {
                         reasons: v('msaCustomClaimReasons'),
                     } : null,
                     qualityGuarantee: includeQualityGuarantee ? {
-                        coverage: v('msaQualityGuarCoverage'),
                         days: v('msaQualityGuarDays') || '90',
-                        resolution: v('msaQualityGuarResolution') || 'reship',
                     } : null,
+                    manufacturerDefect: includeMfrDefect,
+                    missingItems: includeMissingItems,
                     softwareBuyout: includeBuyout ? {
                         amount: v('msaBuyAmount'),
                         paymentDays: v('msaBuyPaymentDays') || '30',
