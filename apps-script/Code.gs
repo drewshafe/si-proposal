@@ -300,6 +300,60 @@ function exclusivityParagraphs(clause) {
   }];
 }
 
+// Capped reimbursement model (pre-2027 template insert) — an alternative to the
+// 2027 template's vendor-SaaS "Covered Third-Party Costs" section; the form makes
+// the two mutually exclusive and requires a Minimum Term (Incentive or Buyout).
+function thirdPartyReimbursementParagraphs(fields, clause) {
+  const vendorA = val(clause.vendorA, '[vendor / platform name]');
+  const amountA = val(clause.amountA, '$_____');
+  const categoryB = val(clause.categoryB, '[cost category]');
+  const capBText = (clause.amountB && String(clause.amountB).trim())
+    ? ('up to $' + clause.amountB + ' per Contract Year')
+    : 'without an annual cap';
+  const billingCadence = val(fields.billingCadence, 'monthly');
+  const reportingDays = val(clause.reportingDays, '[30]');
+  const repaymentDays = val(clause.repaymentDays, '[30]');
+
+  return [
+    {
+      boldPrefix: 'Covered Third-Party Costs.',
+      text: 'Covered Third-Party Costs. As further consideration for the Client’s commitment under this SOW, during the Minimum Term the ' +
+        'Company will cover the Client’s third-party costs in the following categories: (a) ' + vendorA + ' fees, up to $' + amountA +
+        ' per Contract Year; and (b) ' + categoryB + ', ' + capBText + ' (together, the “Covered Third-Party Costs”). “Contract Year” ' +
+        'means each successive twelve (12) month period beginning on Full Deployment.',
+    },
+    {
+      boldPrefix: 'Annual Caps.',
+      text: 'Annual Caps. Any amounts stated above as a cap are annual maximums and not fixed or guaranteed payments. The Company is ' +
+        'responsible only for Covered Third-Party Costs actually incurred by the Client, up to the applicable cap, and the Client remains ' +
+        'solely responsible for any amount exceeding a cap. Unused amounts under a cap do not carry over to a subsequent Contract Year, are ' +
+        'not interchangeable between categories, and are not payable to the Client in cash.',
+    },
+    {
+      boldPrefix: 'Reporting and Payment.',
+      text: 'Reporting and Payment. The Client will submit to the Company, on a ' + billingCadence + ' basis, invoices, statements, or other ' +
+        'reasonable documentation evidencing the Covered Third-Party Costs incurred, and the Company will reimburse the Client within ' +
+        reportingDays + ' days after receipt of conforming documentation.',
+    },
+    {
+      boldPrefix: 'No Assumption of Client Agreements.',
+      text: 'No Assumption of Client Agreements. The Company’s payment of Covered Third-Party Costs does not make the Company a party to, ' +
+        'or otherwise responsible for, the Client’s agreement with ' + vendorA + ', any carrier, or any other third party. The Client remains ' +
+        'solely responsible for its obligations under those agreements, including renewal, termination, and any change in pricing. The Client ' +
+        'will promptly notify the Company of any renewal, price increase, or other change in the applicable third-party fees or costs. Any ' +
+        'amount the Company pays under this section is fixed at the amount stated above and will not increase if the Client’s third-party ' +
+        'fees increase.',
+    },
+    {
+      boldPrefix: 'Repayment.',
+      text: 'Repayment. Upon a Cessation of Use (as defined in this SOW), the Client shall repay the Company all Covered Third-Party Costs ' +
+        'paid or reimbursed by the Company during the twelve (12) months preceding the Cessation of Use, within ' + repaymentDays +
+        ' days of the Cessation of Use. This repayment obligation is in addition to, and not in lieu of, any repayment obligation applicable ' +
+        'to an Upfront Merchant Incentive or Buyout Payment.',
+    },
+  ];
+}
+
 // MSA §1.8 "Cessation of Use" was dropped from the 2027 MSA, so any SOW with an
 // upfront payment carries the definition itself.
 function cessationOfUseParagraph() {
@@ -349,16 +403,18 @@ function insertSelectedClauses(body, fields, clauses) {
   const incentive = clauses.upfrontIncentive;
   const exclusivity = clauses.exclusivity;
   const buyout = clauses.softwareBuyout;
+  const reimburse = clauses.thirdPartyReimbursement;
   const minTerm = !!(incentive || buyout);
 
   // Compensation-clause group — anchored right after the Revenue Share
   // section's Negative Net Revenue paragraph.
-  if (incentive || exclusivity || buyout) {
+  if (incentive || exclusivity || buyout || reimburse) {
     let cursor = findParagraphIndex(body, 'Negative Net Revenue; Carryforward.');
     if (cursor === -1) cursor = findParagraphIndex(body, 'Revenue Share is calculated and paid');
     if (cursor !== -1) {
       if (incentive) cursor = insertParagraphsAfter(body, cursor, upfrontIncentiveParagraphs(fields, incentive, !!clauses.grossRevShare));
       if (buyout) cursor = insertParagraphsAfter(body, cursor, softwareBuyoutParagraphs(fields, buyout, !incentive));
+      if (reimburse) cursor = insertParagraphsAfter(body, cursor, thirdPartyReimbursementParagraphs(fields, reimburse));
       if (minTerm) cursor = insertParagraphsAfter(body, cursor, [cessationOfUseParagraph()]);
       if (exclusivity) cursor = insertParagraphsAfter(body, cursor, exclusivityParagraphs(exclusivity));
     }
@@ -496,7 +552,7 @@ function applyCoreMergeFields(body, fields, clauses) {
     body.replaceText(r.pattern, escapeReplacement(r.value));
   });
 
-  applyCoveredThirdPartyCosts(body, fields, clauses.thirdPartyCosts, !!clauses.grossRevShare);
+  applyCoveredThirdPartyCosts(body, fields, clauses.thirdPartyCosts, !!clauses.grossRevShare, !!clauses.thirdPartyReimbursement);
 
   // Coverage cap — fill from the Limit $ (orderCap). If none is set, remove the
   // whole "Coverage Cap for High-Value Orders" section rather than leaving the
@@ -522,9 +578,10 @@ function applyCoreMergeFields(body, fields, clauses) {
 
 // ── Covered Third-Party Costs (2027 SOW section) ────────────────────────────
 // Selected: fill the vendor / product / amount into the template's AfterShip
-// sample. Not selected: remove the section and the Net Revenue "(b) Covered
-// Third-Party Costs" carve-outs so the draft never mentions them.
-function applyCoveredThirdPartyCosts(body, fields, tpc, gross) {
+// sample. Not selected: remove the section, and — unless the capped
+// reimbursement clause defines Covered Third-Party Costs instead — the Net
+// Revenue "(b) Covered Third-Party Costs" carve-outs too.
+function applyCoveredThirdPartyCosts(body, fields, tpc, gross, reimbursed) {
   const defIdx = findParagraphIndex(body, 'means the SaaS fees the Company pays');
   if (tpc) {
     if (defIdx === -1) return;
@@ -548,6 +605,7 @@ function applyCoveredThirdPartyCosts(body, fields, tpc, gross) {
     if (prev && prev.getType() === DocumentApp.ElementType.PARAGRAPH &&
         prev.asParagraph().getText().trim() === 'Covered Third-Party Costs') prev.removeFromParent();
   }
+  if (reimbursed) return;
   body.replaceText('minus \\(a\\) the total amount of claims the Company actually pays out \\(and any refunds the Company issues\\) for that period, and \\(b\\) any Covered Third-Party Costs the Company pays or reimburses under this SOW for that period\\.',
     'minus the total amount of claims the Company actually pays out (and any refunds the Company issues) for that period.');
   body.replaceText('claims paid out \\(together with any refunds issued\\) and Covered Third-Party Costs exceed premiums collected',

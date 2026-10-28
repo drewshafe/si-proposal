@@ -937,7 +937,7 @@
 
             <div class="msa-clause" id="msaClauseTpc">
                 <label class="msa-clause-toggle">
-                    <input type="checkbox" id="msaTpcEnable" onchange="this.closest('.msa-clause').classList.toggle('active', this.checked)">
+                    <input type="checkbox" id="msaTpcEnable" onchange="msaTpcExclusive(this)">
                     Covered Third-Party Costs <span class="msa-clause-hint">ShipInsure pays a vendor's SaaS fees directly (e.g. AfterShip Returns) — deducted from Net Revenue</span>
                 </label>
                 <div class="msa-clause-fields">
@@ -950,6 +950,21 @@
                             <option value="annually">Annually</option>
                         </select>
                     </div>
+                </div>
+            </div>
+
+            <div class="msa-clause" id="msaClauseTpr">
+                <label class="msa-clause-toggle">
+                    <input type="checkbox" id="msaTprEnable" onchange="msaTpcExclusive(this)">
+                    Third-Party Cost Reimbursement (capped) <span class="msa-clause-hint">ShipInsure reimburses the merchant's platform/shipping costs up to annual caps; repaid on Cessation of Use — requires Upfront Incentive or Software Buyout</span>
+                </label>
+                <div class="msa-clause-fields">
+                    <div class="input-group"><label for="msaTprVendorA">Vendor/Platform Name (a)</label><input type="text" id="msaTprVendorA" placeholder="e.g. Recharge"></div>
+                    <div class="input-group"><label for="msaTprAmountA">Annual Cap for (a) ($ per Contract Year)</label><input type="text" id="msaTprAmountA" placeholder="e.g. 6000"></div>
+                    <div class="input-group span-2"><label for="msaTprCategoryB">Cost Category (b)</label><input type="text" id="msaTprCategoryB" placeholder="e.g. return shipping labels for orders on which a ShipInsure premium was collected"></div>
+                    <div class="input-group"><label for="msaTprAmountB">Annual Cap for (b) ($ per Contract Year, optional)</label><input type="text" id="msaTprAmountB" placeholder="leave blank for no cap"></div>
+                    <div class="input-group"><label for="msaTprReportingDays">Reimbursement Window After Documentation (days)</label><input type="text" id="msaTprReportingDays" value="30"></div>
+                    <div class="input-group"><label for="msaTprRepaymentDays">Repayment Window on Cessation of Use (days)</label><input type="text" id="msaTprRepaymentDays" value="30"></div>
                 </div>
             </div>
 
@@ -1895,6 +1910,15 @@
             el.className = cls || '';
         }
 
+        // The two third-party options both define "Covered Third-Party Costs" — one at a time.
+        function msaTpcExclusive(el) {
+            if (el.checked) {
+                const other = document.getElementById(el.id === 'msaTpcEnable' ? 'msaTprEnable' : 'msaTpcEnable');
+                if (other.checked) { other.checked = false; other.closest('.msa-clause').classList.remove('active'); }
+            }
+            el.closest('.msa-clause').classList.toggle('active', el.checked);
+        }
+
         function msaExhibitBToggle() {
             const on = ['msaQualityGuarEnable', 'msaMfrDefectEnable', 'msaMissingItemsEnable', 'msaCustomClaimsEnable']
                 .some(id => document.getElementById(id).checked);
@@ -1912,6 +1936,7 @@
             const includeIncentive = ch('msaIncEnable');
             const includeExclusivity = ch('msaExclEnable');
             const includeThirdParty = ch('msaTpcEnable');
+            const includeReimbursement = ch('msaTprEnable');
             const includeBuyout = ch('msaBuyEnable');
             const includeCustomClaims = ch('msaCustomClaimsEnable');
             const includeQualityGuarantee = ch('msaQualityGuarEnable');
@@ -1919,6 +1944,10 @@
             const includeMissingItems = ch('msaMissingItemsEnable');
             const includeGross = ch('msaGrossEnable');
 
+            if (includeReimbursement && !includeIncentive && !includeBuyout) {
+                msaSetStatus('Third-Party Cost Reimbursement requires Upfront Merchant Incentive or Software Buyout to also be selected.', 'error');
+                return;
+            }
             if (includeExclusivity && !includeIncentive && !includeBuyout) {
                 msaSetStatus('Exclusivity requires Upfront Merchant Incentive or Software Buyout to also be selected.', 'error');
                 return;
@@ -1972,6 +2001,14 @@
                         product: v('msaTpcProduct'),
                         amount: v('msaTpcAmount'),
                         period: v('msaTpcPeriod') || 'monthly',
+                    } : null,
+                    thirdPartyReimbursement: includeReimbursement ? {
+                        vendorA: v('msaTprVendorA'),
+                        amountA: v('msaTprAmountA'),
+                        categoryB: v('msaTprCategoryB'),
+                        amountB: v('msaTprAmountB'),
+                        reportingDays: v('msaTprReportingDays') || '30',
+                        repaymentDays: v('msaTprRepaymentDays') || '30',
                     } : null,
                     customClaims: includeCustomClaims ? {
                         reasons: v('msaCustomClaimReasons'),
