@@ -1251,7 +1251,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Shared Supabase client (same project as the calculators) — powers ☁ Cloud Folders. -->
-    <script src="sb.js"></script>
+    <script src="https://drewshafe.github.io/si-roi-calculator/sb.js"></script>
+    <script src="https://drewshafe.github.io/si-rep-hub/folder-bar.js"></script>
 
     <script>
         // ── MSA + SOW Draft generation ──
@@ -1720,6 +1721,18 @@
             if (cfSelect) cfSelect.addEventListener('change', e => loadCloudConfig(e.target.value));
             // Silent populate if already signed in (e.g. returned from a magic link).
             populateCloudFolders(false);
+            // Merchant Folders save/load bar (Rep Hub). Proposal saves are the whole form;
+            // MSA / MNDA saves (filed automatically after a draft) open here too and refill the form.
+            if (window.SIFolderBar) SIFolderBar.mount({
+                kind: 'proposal', tool: 'Proposal', acceptKinds: ['proposal', 'msa', 'mnda'],
+                before: document.querySelector('.input-container'),
+                getData: formSnapshot,
+                applyData: (d, kind, row) => {
+                    applySnapshot(kind === 'proposal' ? d : (d.form || {}));
+                    if (kind !== 'proposal' && row && row.doc_url) msaSetStatus('Loaded the settings behind “' + row.title + '”. Its Google Doc: ' + row.doc_url, 'success');
+                },
+                defaultTitle: () => 'Proposal – ' + ((document.getElementById('merchantName').value || '').trim() || 'Merchant')
+            });
             const savedCsSavings = localStorage.getItem('si_proposal_cs_savings_enabled');
             if (savedCsSavings !== null) _csSavingsEnabled = savedCsSavings === '1';
             updateCsSavingsToggleUI();
@@ -1821,6 +1834,61 @@
             const btn = document.getElementById('csSavingsToggleBtn');
             btn.classList.toggle('active', _csSavingsEnabled);
             btn.textContent = (_csSavingsEnabled ? '✓ ' : '') + 'Calculate & Show CS Cost Savings';
+        }
+
+        // ── Merchant Folders (Rep Hub): save / restore the whole generator form ──
+        const SNAP_SKIP = { cloudFolderSelect: 1, savedMerchantSelect: 1 };
+        function formSnapshot() {
+            const fields = {};
+            document.querySelectorAll('.input-container input, .input-container select, .input-container textarea').forEach(el => {
+                if (!el.id || SNAP_SKIP[el.id] || el.type === 'file') return;
+                fields[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+            });
+            const features = Array.from(document.querySelectorAll('#featuresGrid input[type=checkbox]:checked')).map(cb => cb.value);
+            const incentives = Array.from(document.querySelectorAll('#customIncentivesList .custom-incentive-row')).map(row => ({
+                name: row.querySelector('.ci-name').value, amount: row.querySelector('.ci-amount').value, mode: row.querySelector('.ci-mode').value }));
+            return { fields: fields, features: features, incentives: incentives, cs: _csSavingsEnabled };
+        }
+        function applySnapshot(d) {
+            if (!d || !d.fields) return;
+            const f = d.fields;
+            // The calc link first (its handler pre-fills features + MSA fields), then every
+            // saved value on top so the restore matches what was saved exactly.
+            ['merchantName', 'calculatorLink'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && f[id] != null) { el.value = f[id]; el.dispatchEvent(new Event('input', { bubbles: true })); }
+            });
+            Object.keys(f).forEach(id => {
+                if (id === 'merchantName' || id === 'calculatorLink') return;
+                const el = document.getElementById(id); if (!el) return;
+                if (el.type === 'checkbox') { el.checked = !!f[id]; el.dispatchEvent(new Event('change', { bubbles: true })); }
+                else el.value = f[id];
+            });
+            if (Array.isArray(d.features)) document.querySelectorAll('#featuresGrid input[type=checkbox]').forEach(cb => { cb.checked = d.features.includes(cb.value); });
+            if (Array.isArray(d.incentives)) {
+                document.getElementById('customIncentivesList').innerHTML = '';
+                d.incentives.forEach(ci => addCustomIncentiveRow(ci));
+            }
+            if (typeof d.cs === 'boolean' && d.cs !== _csSavingsEnabled) toggleCsSavings();
+        }
+        // After a Draft MSA / MNDA: file it in the merchant's folder (matching the Merchant
+        // Name — found or created — and made the active merchant) with its Doc link + form.
+        async function fileDraftInFolder(kind, label, payload, docUrl) {
+            if (!window.SIsb || !SIsb.saveAsset) return;
+            try {
+                if (!(await SIsb.currentUser())) return;
+                const name = (payload.merchantName || '').trim();
+                let folder = SIsb.getActiveFolder();
+                if (name && (!folder || folder.name.toLowerCase() !== name.toLowerCase())) {
+                    const f = await SIsb.createFolder({ name: name });
+                    folder = SIsb.setActiveFolder({ id: f.id, name: f.name, logo_path: f.logo_path });
+                }
+                if (!folder) return;
+                const clean = Object.assign({}, payload); delete clean.secret;
+                const day = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                await SIsb.saveAsset({ merchant_ref: folder.id, kind: kind, title: label + ' – ' + (name || folder.name) + ' – ' + day, data: { form: formSnapshot(), payload: clean }, doc_url: docUrl });
+                msaSetStatus(label + ' draft created and saved to the ' + folder.name + ' folder.', 'success');
+            } catch (e) { console.warn('Filing the draft in Merchant Folders failed:', e); }
         }
 
         function msaSetStatus(msg, cls) {
@@ -1934,6 +2002,7 @@
                 if (!resp.ok || !data.ok) throw new Error(data.error || ('Request failed (' + resp.status + ')'));
                 msaSetStatus('Draft created — opening in a new tab.', 'success');
                 window.open(data.docUrl, '_blank', 'noopener');
+                fileDraftInFolder('msa', 'MSA + SOW', payload, data.docUrl);
             } catch (err) {
                 msaSetStatus('Error: ' + err.message, 'error');
                 console.error('draftMSA failed:', err);
@@ -1978,6 +2047,7 @@
                 if (!resp.ok || !data.ok) throw new Error(data.error || ('Request failed (' + resp.status + ')'));
                 msaSetStatus('MNDA draft created — opening in a new tab.', 'success');
                 window.open(data.docUrl, '_blank', 'noopener');
+                fileDraftInFolder('mnda', 'MNDA', payload, data.docUrl);
             } catch (err) {
                 msaSetStatus('Error: ' + err.message, 'error');
                 console.error('draftMNDA failed:', err);
